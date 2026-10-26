@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""Build standalone interview question-bank page from reviewed public JSON.
+"""Build the public, static interview question bank from reviewed study material.
 
-Only bundled educational questions and reference explanations are published.
-Do not load or bundle learner answers, progress, private project notes, or tokens.
+All learner answers and review progress remain in browser localStorage.
 """
 from __future__ import annotations
 
@@ -13,50 +12,38 @@ from pathlib import Path
 TOTAL_QUESTIONS = 224
 
 
-def get_question_bank(root: Path) -> dict:
-    source = root / "quiz" / "data" / "questions.json"
-    payload = json.loads(source.read_text(encoding="utf-8"))
-    items = payload.get("questions", [])
-    if payload.get("schema") != "rl-infra-question-bank-v1":
-        raise ValueError("Unsupported question bank schema")
-    if len(items) != TOTAL_QUESTIONS or payload.get("question_count") != TOTAL_QUESTIONS:
-        raise ValueError("The question bank must have 224 numbered questions")
-    for index, question in enumerate(items, start=1):
-        if (
-            question.get("id") != index
-            or question.get("code") != f"Q{index:03d}"
-            or not all(question.get(k) for k in ("question", "brief", "deep", "followup"))
-        ):
-            raise ValueError(f"Invalid or incomplete question Q{index:03d}")
-    return payload
+def read_bank(root: Path) -> dict:
+    content = json.loads((root / "quiz" / "data" / "questions.json").read_text(encoding="utf-8"))
+    questions = content.get("questions", [])
+    if content.get("schema") != "rl-infra-question-bank-v1" or len(questions) != TOTAL_QUESTIONS:
+        raise ValueError("Expected a complete 224-question bank")
+    for index, q in enumerate(questions, start=1):
+        if q.get("id") != index or q.get("code") != f"Q{index:03d}":
+            raise ValueError(f"Unexpected question numbering at item {index}")
+        if not all(q.get(k) for k in ("question", "brief", "deep", "followup", "domain")):
+            raise ValueError(f"Missing text for Q{index:03d}")
+        if q.get("level") not in ("基础", "进阶"):
+            raise ValueError(f"Unrecognized difficulty for Q{index:03d}")
+    return content
 
 
-def generate_quiz(root: Path, output: Path) -> int:
+def build(root: Path, output: Path) -> int:
     root = root.resolve()
     template = (root / "quiz" / "template.html").read_text(encoding="utf-8")
     css = (root / "quiz" / "style.css").read_text(encoding="utf-8")
     js = (root / "quiz" / "app.js").read_text(encoding="utf-8")
-    # Avoid UTC shifting the browser's local due date to yesterday in UTC+ time zones.
-    js = js.replace(
-        'return now.toISOString().slice(0, 10);',
-        'return [now.getFullYear(), two(now.getMonth() + 1), two(now.getDate())].join("-");',
-    )
-    payload = get_question_bank(root)
-    data_json = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
-    data_json = (data_json.replace("<", r"\u003c").replace(">", r"\u003e")
-                 .replace("&", r"\u0026").replace("\u2028", r"\u2028")
-                 .replace("\u2029", r"\u2029"))
+    data = json.dumps(read_bank(root), ensure_ascii=False, separators=(",", ":"))
+    # Avoid an accidental closing script tag in the embedded JSON.
+    data = (data.replace("<", r"\u003c").replace(">", r"\u003e")
+                .replace("&", r"\u0026").replace("\u2028", r"\u2028")
+                .replace("\u2029", r"\u2029"))
     replacements = {
-        "{{QUIZ_STYLE}}": css,
-        "{{QUIZ_DATA}}": data_json,
-        "{{QUIZ_SCRIPT}}": js,
+        "{{QUIZ_STYLE}}": css, "{{QUIZ_DATA}}": data, "{{QUIZ_SCRIPT}}": js
     }
-    for placeholder, value in replacements.items():
-        if placeholder not in template:
-            raise ValueError(f"Missing template slot {placeholder}")
-        template = template.replace(placeholder, value)
-    if "<script type=\"application/json\"" not in template:
-        raise ValueError("Missing JSON data wrapper")
+    for key, value in replacements.items():
+        if key not in template:
+            raise ValueError(f"Missing template slot {key}")
+        template = template.replace(key, value)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(template, encoding="utf-8")
     return TOTAL_QUESTIONS
@@ -66,9 +53,8 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, default=Path("dist/quiz/index.html"))
     args = parser.parse_args()
-    root = Path(__file__).resolve().parent.parent
-    count = generate_quiz(root, args.output.resolve())
-    print(f"Built question bank: {count} questions; browser-local progress only.")
+    count = build(Path(__file__).resolve().parent.parent, args.output.resolve())
+    print(f"Built {args.output}: {count} questions, no learner data.")
 
 
 if __name__ == "__main__":

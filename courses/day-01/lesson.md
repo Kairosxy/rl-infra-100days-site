@@ -105,4 +105,4 @@ $$
 
 回想一个采样系统：同一组结果必须收齐时，哪些等待是算法依赖，哪些只是外层 Batch Barrier？先写问题和证据，不需要公开公司名称或内部指标。
 
-把经过脱敏、且你确认可以公开的内容记到 [项目叙事记录](https://github.com/Kairosxy/rl-infra-100days/blob/main/portfolio/project_narrative.md)。
+把经过脱敏、且你确认可以公开的内容记到 个人项目笔记（仅在本地记录，不提交公开仓库）。

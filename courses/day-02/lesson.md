@@ -122,4 +122,4 @@ python -m unittest discover -s examples/day_02 -p 'test_*.py' -v
 
 选一个你见过的 OOM 或显存规划问题：它发生在初始化、Forward、Backward，还是多步运行后？当时有哪些证据能区分 Activation 与模型状态？
 
-把可以公开的判断依据记到 [项目叙事记录](https://github.com/Kairosxy/rl-infra-100days/blob/main/portfolio/project_narrative.md)，没有测量的数据标为“尚未测量”。
+把可以公开的判断依据记到 个人项目笔记（仅在本地记录，不提交公开仓库），没有测量的数据标为“尚未测量”。

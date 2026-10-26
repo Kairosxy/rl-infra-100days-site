@@ -203,4 +203,4 @@ Day 05：Value、GAE 与偏差—方差。重点推导 Baseline 为什么能降�
 
 在你熟悉的 Rollout/Trainer 链路中，哪些条件决定 Rollout Logprob 能否作为训练基准？分别记录采样配置、Policy Version、Token 对齐和 Mask 的证据；不要把所有 Logprob Drift 都归因于量化。
 
-将可公开的结论记到 [项目叙事记录](https://github.com/Kairosxy/rl-infra-100days/blob/main/portfolio/project_narrative.md)。本课评分标准见 [Day 04 面试问答](qa.md)。
+将可公开的结论记到 个人项目笔记（仅在本地记录，不提交公开仓库）。本课评分标准见 [Day 04 面试问答](qa.md)。

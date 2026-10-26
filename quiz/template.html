@@ -1,93 +1,96 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="RL Infra 100 天课程面试刷题库：224 道题、来源解析、随机练习、错题复习。">
-<title>RL Infra · 面试刷题库</title>
-<style>{{QUIZ_STYLE}}</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="RL Infra 面试题库：224 道 RL、OPD、Agentic RL、分布式系统问题。">
+  <title>面试题库 | RL Infra · 100 Days</title>
+  <style>{{QUIZ_STYLE}}</style>
 </head>
 <body>
-<header class="top">
-  <a class="brand" href="../"><span class="mark">RL↗</span><span><strong>RL Infra / 100 Days</strong><small>学习与面试训练</small></span></a>
-  <nav><a href="../">课程</a><a class="active" href="./">刷题库</a><a href="https://github.com/Kairosxy/rl-infra-100days-site" target="_blank" rel="noopener">GitHub ↗</a></nav>
+<header class="topbar">
+  <a class="brand" href="../"><span class="logo">RL↗</span><span><strong>RL Infra / 100 Days</strong><small>课程 · 实验 · 面试</small></span></a>
+  <nav><a href="../">课程</a><a aria-current="page" href="./">刷题库</a><a href="https://github.com/Kairosxy/rl-infra-100days-site" target="_blank" rel="noopener">GitHub ↗</a></nav>
 </header>
 <div class="layout">
   <aside class="sidebar">
-    <div class="eyebrow">QUESTION BANK</div>
-    <h2>筛选题目</h2>
-    <label for="search">关键词</label><input id="search" type="search" placeholder="如 PPO、staleness、KV Cache">
-    <label for="topic">方向</label><select id="topic"><option value="all">全部方向</option></select>
-    <label for="chapter">章节</label><select id="chapter"><option value="all">全部章节</option></select>
-    <label for="level">难度</label><select id="level"><option value="all">全部难度</option><option value="基础">基础</option><option value="进阶">进阶</option></select>
-    <label for="status">练习状态</label><select id="status"><option value="all">全部</option><option value="new">未练习</option><option value="weak">错题与薄弱项</option><option value="due">今日待复习</option><option value="mastered">已掌握</option><option value="saved">收藏</option></select>
-    <div class="filter-line"><strong id="match-count">224</strong><span>道符合筛选</span><button id="clear" type="button">清除</button></div>
-    <section class="statistics">
-      <div class="eyebrow">YOUR PROGRESS</div>
-      <h2>练习记录</h2>
-      <div class="grid">
-        <div><strong id="seen">0</strong><small>已练习</small></div>
-        <div><strong id="mastered">0</strong><small>已掌握</small></div>
-        <div><strong id="due">0</strong><small>待复习</small></div>
-        <div><strong id="saved">0</strong><small>已收藏</small></div>
-      </div>
-      <div class="bar"><div id="progress"></div></div>
-      <div class="backup-actions"><button id="export" type="button">导出进度 ↓</button><button id="import" type="button">导入进度 ↑</button><input id="import-file" type="file" accept=".json,application/json" hidden></div>
-      <p class="hint">练习答案、自评和笔记只保存在当前浏览器。请定期导出备份，不会自动发布到 GitHub。</p>
-    </section>
+    <div class="overline">QUESTION BANK</div>
+    <h2>题目筛选</h2>
+    <label for="search">查找题号或关键词</label>
+    <input type="search" id="search" placeholder="Q047 / OPD / logprob" autocomplete="off">
+    <label for="domain">方向</label>
+    <select id="domain"><option value="">全部方向</option></select>
+    <label for="chapter">章节</label>
+    <select id="chapter"><option value="">全部章节</option></select>
+    <label for="level">层次</label>
+    <select id="level"><option value="">基础与进阶</option><option value="基础">基础（Q001–104）</option><option value="进阶">进阶（Q105–224）</option></select>
+    <label for="status">自评状态</label>
+    <select id="status"><option value="">全部状态</option><option value="new">未练</option><option value="weak">需要巩固</option><option value="due">到期复习</option><option value="good">基本掌握</option><option value="star">已收藏</option></select>
+    <div class="filter-note"><span id="filtered">224</span> 道符合筛选 <button id="clear" type="button">清除</button></div>
+    <hr>
+    <div class="overline">YOUR PROGRESS</div>
+    <h2>练习记录</h2>
+    <div class="metrics">
+      <div><strong id="attempted">0</strong><small>练过</small></div>
+      <div><strong id="learned">0</strong><small>掌握</small></div>
+      <div><strong id="due-count">0</strong><small>待复习</small></div>
+      <div><strong id="starred-count">0</strong><small>收藏</small></div>
+    </div>
+    <div class="progress"><div id="progress-fill"></div></div>
+    <p class="explain">答题记录只保存在当前浏览器。换手机、清理浏览器记录前请先导出。</p>
+    <div class="save-actions"><button type="button" id="export">导出记录 ↓</button><button type="button" id="import">导入记录 ↑</button><input id="import-file" type="file" hidden accept="application/json,.json"></div>
   </aside>
   <main>
-    <div class="eyebrow">RL / OPD / AGENTIC RL / TRAINING SYSTEMS</div>
-    <div class="hero"><div><h1>面试刷题库<span>.</span></h1><p>224 道问题、两份参考解释。先自己回答，再翻看来源内容。</p></div><div class="total"><strong>224</strong><small>QUESTIONS</small></div></div>
-    <div class="modes" role="group" aria-label="刷题模式">
-      <button type="button" data-mode="sequential" class="active">按顺序</button>
-      <button type="button" data-mode="random">随机十题</button>
-      <button type="button" data-mode="due">今日复习</button>
-      <button type="button" data-mode="wrong">错题重练</button>
-      <span id="session-label">顺序练习</span>
+    <div class="eyebrow">RL / OPD / AGENTIC RL · 面试训练</div>
+    <div class="hero">
+      <div><h1>面试刷题库<span>.</span></h1><p>224 道问题，先回答，再看解析。每道题保留速答要点、详细解释和追问。</p></div>
+      <div class="total"><strong>224</strong><span>QUESTIONS</span></div>
+    </div>
+    <div class="toolbar">
+      <div class="modes" role="group" aria-label="刷题模式">
+        <button type="button" data-mode="all" aria-pressed="true">顺序练习</button>
+        <button type="button" data-mode="random" aria-pressed="false">随机 10 题</button>
+        <button type="button" data-mode="due" aria-pressed="false">今日复习</button>
+        <button type="button" data-mode="weak" aria-pressed="false">错题重练</button>
+      </div><span id="mode-description">自由练习</span>
     </div>
     <div class="content-grid">
-      <section class="question">
-        <div class="metadata"><div><strong id="qid">Q001</strong><span id="topic-label"></span><span id="difficulty"></span></div><button id="star" type="button" aria-pressed="false">☆ 收藏</button></div>
-        <h2 id="question-title" tabindex="-1">正在加载题目……</h2>
-        <p id="alias" class="alias" hidden></p>
-        <p class="hint">建议口头回答两分钟：结论、关键推导、工程例子、如何验证。</p>
-        <label for="answer" class="answer-label">我的回答（不强制提交）</label>
-        <textarea id="answer" rows="7" placeholder="先写下自己的理解。点击查看后，再对照速答和详细解析。"></textarea>
-        <div class="between"><span id="save-indicator">草稿仅本地保存</span><span id="char-count">0 字</span></div>
-        <div class="actions">
-          <button id="reveal" class="primary" type="button" aria-expanded="false">查看参考答案</button>
-          <button id="copy" type="button">复制题目</button>
-          <a id="lesson-link" href="../">对应课程 ↗</a>
-        </div>
-        <div id="reference" class="reference" hidden>
-          <h3>参考解释</h3>
-          <p class="subtle">两个来源按 Q 编号对齐，保留不同表述，不代表已经逐题完成事实校验。</p>
-          <div class="source-tabs" role="group" aria-label="参考答案来源">
-            <button data-source="deep" class="active" type="button">详细解析 · Word</button>
-            <button data-source="brief" type="button">速答要点 · Markdown</button>
-          </div>
-          <div id="explanation"></div>
-          <div class="followup"><strong>面试官追问</strong><p id="followup"></p></div>
-          <div class="self-rate"><strong>自我评估</strong><p>不做自动判分；根据是否能独立推导与解释选择。</p>
+      <article class="question-card">
+        <div class="question-top"><div class="tags"><span id="qid" class="qid">Q001</span><span id="chapter-tag" class="chapter-tag"></span><span id="level-tag"></span></div><button type="button" id="star" aria-pressed="false">☆ 收藏</button></div>
+        <h2 id="question-title" tabindex="-1">加载题目中……</h2>
+        <p id="alternative-title" class="alternative" hidden></p>
+        <p class="prompt">练习建议：用 90 秒说结论，再解释条件、公式和工程证据。</p>
+        <label for="answer" class="answer-label">我的回答</label>
+        <textarea id="answer" rows="7" placeholder="先尝试独立回答，再展开参考答案。"></textarea>
+        <div class="draft-info"><span id="saved" role="status">草稿仅存在本机</span><span id="count">0 字</span></div>
+        <div class="answer-actions"><button type="button" id="show" class="main-action" aria-expanded="false">查看参考答案</button><button type="button" id="copy">复制题目</button><a id="course-link" href="../">关联课程 ↗</a></div>
+        <section id="reference" class="reference" hidden>
+          <h3>对照参考答案</h3>
+          <p class="small">两个来源保留各自表述；答案中的数学公式尚未逐条校勘。</p>
+          <div class="reference-tabs" role="tablist" aria-label="解析来源"><button type="button" data-source="deep" aria-selected="true">详细解析 · Word</button><button type="button" data-source="brief" aria-selected="false">速答要点 · Markdown</button></div>
+          <div id="reference-text" class="reference-text"></div>
+          <div class="followup"><strong>面试官可能继续追问</strong><p id="followup"></p></div>
+          <div class="self-check"><h4>自评掌握情况</h4><p>这只是你自己的复习标记，不是自动判分。</p>
             <div class="ratings">
-              <button data-rate="again" type="button">再练一次<small>今天</small></button>
-              <button data-rate="hard" type="button">还不熟练<small>明天</small></button>
-              <button data-rate="good" type="button">基本掌握<small>间隔复习</small></button>
-              <button data-rate="easy" type="button">非常熟练<small>稍后复习</small></button>
+              <button type="button" data-rating="again">再练一次<small>今日</small></button>
+              <button type="button" data-rating="hard">还不熟练<small>明天</small></button>
+              <button type="button" data-rating="good">基本掌握<small>间隔复习</small></button>
+              <button type="button" data-rating="easy">非常熟练<small>延后复习</small></button>
             </div>
           </div>
-        </div>
-        <div class="pagination"><button id="prev" type="button">← 上一题</button><span id="position">1 / 224</span><button id="next" type="button">下一题 →</button></div>
-      </section>
-      <aside class="notes-col">
-        <div class="note"><div class="eyebrow">HOW TO ANSWER</div><h3>面试答题框架</h3><ol><li>首先给出结论。</li><li>说清假设和适用条件。</li><li>给一个数值或代码例子。</li><li>说明错误边界和验证手段。</li></ol></div>
-        <div class="note"><div class="eyebrow">PERSONAL NOTES</div><h3>薄弱点记录</h3><label for="note" class="sr-only">本题笔记</label><textarea id="note" rows="6" placeholder="记下没想清楚的推导、不同实现的差异或待查证问题。"></textarea></div>
-        <div class="note"><div class="eyebrow">SOURCE POLICY</div><p class="subtle">参考答案来自两份用户提供的题库资料，部分 Word 公式需结合原论文核验。题库既不是自动评分器，也不替代动手实验。</p></div>
+        </section>
+        <div class="pager"><button type="button" id="prev">← 上一题</button><span id="position">1 / 224</span><button type="button" id="next">下一题 →</button></div>
+      </article>
+      <aside class="right-rail">
+        <section class="note-card"><div class="overline">ANSWER FRAMEWORK</div><h3>回答结构</h3><ol><li>先说结论。</li><li>说明前提与公式。</li><li>举一个数值或反例。</li><li>落到实现、指标与验证。</li></ol></section>
+        <section class="note-card"><div class="overline">PERSONAL NOTES</div><h3>这题的薄弱点</h3><label class="sr-only" for="notes">本题笔记</label><textarea id="notes" rows="5" placeholder="不确定的假设、容易混淆的概念……"></textarea></section>
+        <section class="note-card"><div class="overline">SOURCE</div><p>题目来自用户提供的两份 RL / OPD / Agentic RL 面试手册；按 Q001–Q224 合并。两套参考解释均可查看。</p></section>
       </aside>
     </div>
-    <footer><span>RL Infra 100 Days · 任意课程与题目均可自由浏览</span><a href="../">返回课程 →</a></footer>
+    <footer>学习者答案、评分与复习记录只在浏览器本地保存 · <a href="../">返回课程首页</a></footer>
   </main>
 </div>
-<script type="application/json" id="quiz-data">{{QUIZ_DATA}}</script>
+<script id="quiz-data" type="application/json">{{QUIZ_DATA}}</script>
 <script>{{QUIZ_SCRIPT}}</script>
-</body></html>
+</body>
+</html>

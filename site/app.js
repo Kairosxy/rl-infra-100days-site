@@ -185,7 +185,7 @@
     id("day-label").textContent = "DAY " + pad(activeDay) + " / 100";
     id("course-title").textContent = course.title;
     id("course-subtitle").textContent =
-      "本课包含讲义、实验和面试题；回答会先保存在浏览器。";
+      "按日发布，自由选课；答题和自评完全自愿，草稿只保存在浏览器。";
     document.title = "Day " + pad(activeDay) + " · " + course.title + " | RL Infra";
 
     renderCourseList();

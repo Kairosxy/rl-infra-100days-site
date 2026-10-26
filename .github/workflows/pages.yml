@@ -30,16 +30,17 @@ jobs:
         run: python scripts/build_site.py --output dist/index.html
       - name: Build interview question bank
         run: python scripts/build_quiz.py --output dist/quiz/index.html
-      - name: Validate course pages and question bank
+      - name: Validate course pages, question bank and public boundary
+        run: python -m unittest discover -s scripts -p 'test_*.py' -v
+      - name: Check browser JavaScript syntax
         run: |
-          python -m unittest discover -s scripts -p 'test_site_builder.py' -v
-          python -m unittest discover -s scripts -p 'test_quiz.py' -v
-          python -m unittest discover -s scripts -p 'test_public_boundary.py' -v
+          node --check site/app.js
+          node --check quiz/app.js
       - name: Save offline HTML
         uses: actions/upload-artifact@v4
         with:
           name: rl-infra-100days-public-html
-          path: dist/index.html
+          path: dist
           retention-days: 30
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

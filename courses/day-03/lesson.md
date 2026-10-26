@@ -129,4 +129,4 @@ python -m unittest discover -s examples/day_03 -p 'test_*.py' -v
 
 回想一次梯度累积、Loss Reduction 或 DDP 通信问题。记录当时的目标分母、更新边界和验证方法；如果没有可复用的真实案例，就用本课实验结果，不要把假设写成项目事实。
 
-将脱敏后的决策记到 [项目叙事记录](https://github.com/Kairosxy/rl-infra-100days/blob/main/portfolio/project_narrative.md)。
+将脱敏后的决策记到 个人项目笔记（仅在本地记录，不提交公开仓库）。
