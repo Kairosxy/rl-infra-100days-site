@@ -30,7 +30,7 @@ class InterviewQuizTest(unittest.TestCase):
             self.assertIn("Q001", content)
             self.assertIn("Q224", content)
             self.assertIn("我的回答", content)
-            self.assertIn("导出练习记录", content)
+            self.assertIn("导出进度", content)
             self.assertNotIn("{{QUIZ_DATA}}", content)
             self.assertNotIn("{{QUIZ_STYLE}}", content)
             self.assertNotIn("{{QUIZ_SCRIPT}}", content)
