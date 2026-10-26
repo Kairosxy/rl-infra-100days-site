@@ -43,7 +43,8 @@ class CourseWebsiteTest(unittest.TestCase):
         html = render_lesson_markdown(source, ROOT)
         self.assertIn("arithmatex", html)
         self.assertIn("language-", html)
-        self.assertIn("math", html.lower())
+        self.assertIn(r"\(", html)
+        self.assertIn(r"\[", html)
 
     def test_questions_present_for_every_published_lesson(self):
         for item in course_payload(ROOT):
