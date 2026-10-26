@@ -77,3 +77,12 @@ make reference
 ## 自动发布
 
 向 `main` 提交课程、题库或网站修改后，GitHub Actions [Publish course website](.github/workflows/pages.yml) 自动生成 HTML 并部署 Pages。构建失败需要以工作流日志为准，不能视为更新已上线。
+
+## 从旧仓库保留的工程资料
+
+- [CPU 示例与参考系统测试](.github/workflows/cpu-tests.yml)：课程示例运行和 Ruff 静态检查。
+- [GPU 实验记录模板](docs/gpu_experiment_template.md)：可公开的环境版本、实验基线和测量记录。
+- [项目决策与面试陈述模板](docs/project_narrative_template.md)：整理设计取舍和可复现证据。
+
+旧仓库中的空白答案模板、过时的作答解锁进度和双仓库同步流程不再迁移；网页里的草稿、自评和错题继续只保存在浏览器中。
+
