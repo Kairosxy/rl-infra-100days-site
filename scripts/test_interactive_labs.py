@@ -14,17 +14,33 @@ ROOT = Path(__file__).resolve().parent.parent
 class TeachingLabsTest(unittest.TestCase):
     def test_all_100_days_have_research_or_experiment_questions(self):
         text = (ROOT / "course_map" / "day_schedule.md").read_text(encoding="utf-8")
-        matches = re.findall(r"^\|\s*(\d{2,3})\s*\|\s*[A-H]\s*\|\s*(?:深挖|实作|研读|综合)\s*\|", text, re.M)
-        self.assertEqual([int(x) for x in matches], list(range(1, 101)))
+        matches = re.findall(
+            r"^\|\s*(\d{2,3})\s*\|\s*[A-I]\s*\|\s*([^|]+)\|\s*([^|]+)\|",
+            text, re.M,
+        )
+        self.assertEqual([int(x[0]) for x in matches], list(range(1, 101)))
+        for _, student_question, evidence in matches:
+            self.assertTrue(student_question.strip())
+            self.assertTrue(evidence.strip())
 
     def test_first_five_are_aligned_to_new_sequence(self):
-        titles = [x["title"] for x in course_payload(ROOT) if x["day"] <= 5]
-        self.assertEqual(len(titles), 5)
-        self.assertIn("SFT", titles[0])
-        self.assertIn("梯度", titles[1])
-        self.assertIn("Logprob", titles[2])
-        self.assertIn("PPO", titles[3])
-        self.assertIn("GRPO", titles[4])
+        pages = [x for x in course_payload(ROOT) if x["day"] <= 5]
+        self.assertEqual(len(pages), 5)
+        # Check mechanisms and numeric evidence, not required marketing terms in titles.
+        required_terms = {
+            1: ("梯度", "0.549834"),
+            2: ("Baseline", "0.1875"),
+            3: ("Token", "Logprob", "Mask"),
+            4: ("PPO", "Ratio", "Clip"),
+            5: ("GRPO", "Advantage", "0.125"),
+        }
+        for day, terms in required_terms.items():
+            text = (ROOT / "courses" / f"day-{day:02d}" / "lesson.md").read_text(encoding="utf-8")
+            for term in terms:
+                self.assertIn(term, text)
+        day_one = (ROOT / "courses" / "day-01" / "lesson.md").read_text(encoding="utf-8")
+        self.assertNotIn("Day 05", day_one)
+        self.assertNotIn("第五课", day_one)
 
     def test_labs_have_all_required_inputs_and_no_telemetry(self):
         html = (ROOT / "labs" / "index.html").read_text(encoding="utf-8")
