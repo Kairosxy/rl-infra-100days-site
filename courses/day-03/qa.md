@@ -1,22 +1,23 @@
-# Day 03 面试问答
+# Day 03 · 面试追问
 
-## 题 1：梯度累积什么时候等价于完整 Batch？（10 分）
+## 2、2、1 三个 Micro-batch 都跑通了，为什么梯度错？
 
-**评分标准**
-- 写出完整 Batch 的平均 Loss：2 分
-- 推导 Micro-batch 梯度加权关系：3 分
-- 正确处理 Loss Reduction 与有效 Token 数：2 分
-- 只在累积结束后执行 Optimizer Step：2 分
-- 提到浮点顺序和随机算子的细微差异：1 分
+给定三个局部平均梯度：`[-0.7,-0.2]`、`[-3.3,-4.8]`、`[3,-3]`。目标是五条样本的 MSE Mean。分别计算正确梯度和错误的三个 Mean 等权平均，并解释是哪条样本的权重被放大。
 
-**追问**：每个 Micro-batch 的有效 Token 数不同，还能简单地每份 Loss 除以累积次数吗？合格回答应指出：如果目标是全局 Token Mean，需要以全局有效 Token 数作为分母；局部 Token Mean 再等权平均通常会改变权重。
+**判别依据：** 正确值 `[-1,-2.6]`；错误值 `[-0.3333,-2.6667]`。解释清楚是目标函数的样本权重变化，而不是浮点误差。
 
-## 题 2：为什么 Gradient Clipping 通常放在累积之后？（10 分）
+**追问：** 若三组的有效 Token 数分别是 100、100、10，目标函数改为全局有效 Token Mean，该用什么分母？如果需求反而是 Sequence Mean 呢？
 
-**评分标准**
-- 说明 Clip 是非线性操作：3 分
-- 解释逐 Micro-batch Clip 与全局 Clip 不等价：3 分
-- 说明 AMP 中先 Unscale 再 Clip：2 分
-- 能提出梯度向量对照实验：2 分
+## 为什么不能把 `optimizer.step()` 移进 Micro-batch 循环？
 
-**追问**：如果两个梯度向量的 Norm 一样，能否说明更新相同？不能；方向和各参数分量也必须一致。
+固定一个完整 Batch，分三次 Forward/Backward。说明一次 AdamW Step 与三次 AdamW Step 的状态差异：参数点、Moment、Step Counter 如何变化？如何用最小测试证明两条轨迹不等价？
+
+**判别依据：** 能指出当前样本的梯度不再都对同一个 $w$ 求导。现有测试的一次完整更新对应 Counter=1，错误循环为 Counter=3。
+
+**追问：** 两个梯度分别是 $[3,0]$ 和 $[-3,4]$，Clip Norm=2。分别裁剪后相加是否与先求和再裁剪一致？计算最终两个向量。
+
+## DP=2、每卡 Micro-batch=2，Global Batch=256
+
+需要累积多少次？在哪里使用 DDP 的 `no_sync()`？如果不同 Rank 的有效 Token 数不一致，仅仅延迟同步能否保证全局 Token Mean 正确？
+
+**判别依据：** 64 次；`no_sync()` 覆盖前 63 次的 Forward 和 Backward；归一化取决于全局有效 Token 数及 DDP 的聚合语义。

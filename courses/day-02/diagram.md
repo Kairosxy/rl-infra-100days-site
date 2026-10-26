@@ -1,16 +1,9 @@
-# Day 02 图解 · 前向为什么会占住显存
+# Day 02 · 图解：前向留下了什么，反向要用什么
 
-![Transformer 前向、反向与显存账本](assets/transformer_memory.svg)
+![Transformer 训练时的参数、激活与反向状态](assets/transformer_memory.svg)
 
-## 图中需要读懂的关系
+读这张图时，重点找 **Tensor 生命周期**：某些 Activation 在 Forward 中出现，却要到 Backward 才能释放；Gradient 和算子 Workspace 又在后续阶段产生。显存峰值取决于这些对象在时间上的重叠，不是「模型权重 + 一份最大矩阵」就能完整解释。
 
-前向阶段不仅输出最终预测，还会产生反向传播需要的中间值。反向阶段利用这些值计算参数梯度；如果某些值没有保存，就必须由算子或 Checkpointing 机制重新计算。
+图中的 Attention 显式 Score 形状 `[B,H,L,L]`，对应讲义中的 25 MiB / 4.13 GiB 计算。它是朴素存储的成本模型；实际是否物化要核对 Attention Backend。
 
-Attention 的显式 Score 张量形状为 [B, heads, L, L]，所以元素数量随序列长度平方增长。FlashAttention 的重要变化是减少对完整中间矩阵的物化，而不是把标准全 Attention 的计算复杂度变成线性。
-
-## 排障时先问
-
-1. OOM 发生在模型初始化、Forward、Backward 还是多步运行后？
-2. 主要占用来自参数/优化器状态，还是随序列长度变化的 Activation？
-3. 当前 Attention Backend 是否真的避免了完整 Score 矩阵？
-4. Checkpointing 减少的内存是否正好是当前瓶颈？
+Activation Checkpointing 用反向重计算替代保存某些中间激活。它改变的是图中保存/重算的路径，不会使 Optimizer State 自动变小。比较 Checkpointing 前后的显存，应该记录具体前后向阶段和峰值，而不是只比较模型文件大小。

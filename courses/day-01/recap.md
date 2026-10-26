@@ -1,29 +1,13 @@
-# Day 01 复习卡 · RL 数据流
+# Day 01 · 5 分钟复习：身份、组与版本
 
-## 一句话
+不看讲义，先回答：两份列表长度都是 4，为什么按位置 `zip` 可能让 RL 训练方向反过来？
 
-RL Infra 要让模型生成的轨迹、评分、概率、训练目标和策略版本保持可追溯，同时避免不必要的等待。
+**自己重建数据链。** Rollout 产出 `trajectory_id`、`group_id`、`response_ids`、Mask 和生成时的策略版本；Verifier 返回带相同 `trajectory_id` 的 Reward；Sampler 按 ID Join，并验证完整性与版本语义；Learner 才能按某个明确的目标计算可微 Logprob/Loss。
 
-## 四个字段
+**手算 30 秒。** 四条 Reward 为 `[1,0,1,0]`，均值 0.5、总体标准差 0.5，标准化后 Advantage 为 `[1,-1,1,-1]`。只拿前三条算，统计量变了，不能称为原四样本 Group 的同一个目标。
 
-| 字段 | 要回答的问题 |
-|---|---|
-| `trajectory_id` | 这条回答是谁？ |
-| `group_id` | 它和哪些回答属于同一个 Prompt 组？ |
-| `response_mask` | 哪些 Token 应参与训练目标？ |
-| `policy_version` | 生成时使用的是哪个策略版本？ |
+**最小诊断。** 如果 `reward_mean` 没变，训练质量却异常，先将 Reward 完成顺序打乱、验证按 ID Join 后每条轨迹的配对不变。只看 Shape 和 Reward Mean 不能证明身份正确。
 
-## 三个容易混淆的判断
+**不要混淆两种时间点。** Group 所需数据完整，与外层 Batch 全部结束、Trainer 可以执行一次优化，是不同条件。v10 生成的轨迹，即使 v11 时才消费，也必须保留生成时的版本事实。
 
-1. 数据齐全不代表算法条件满足。例如 Reward 已返回，但同组轨迹可能尚未收齐。
-2. Shape 正确不代表语义正确。Reward 与轨迹错配后，Shape 仍可能完全一致。
-3. 异步不代表一定更快，也不自动代表 Off-policy。要看瓶颈、样本版本和算法实际使用的概率分布。
-
-## 30 秒自测
-
-- 一条轨迹至少要关联哪些数据？
-- 为什么不能把 Reward 常数直接当成可微 Loss？
-- Group 完成和 Batch 完成有什么区别？
-- 哪些日志可以帮助定位数据错配？
-
-答不出来的点记入 `progress.md`，不要把“看完课程”当作掌握。
+补充实验：[Reward ID Join 负例测试](../../examples/day_01/test_trajectory_contract.py)。

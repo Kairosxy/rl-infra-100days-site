@@ -1,108 +1,121 @@
-# Day 01/100 · 一条 RL 训练样本怎样变成一次参数更新
+# Day 01 · 一条回答如何安全地变成训练样本
 
-**所属模块**：RL 与训练基础  
-**学习目标**：从 Prompt 讲到 Optimizer Update；理解训练数据里必须保留的身份、Mask 和策略版本信息。  
-**学习产出**：画出训练数据流；能解释四个关键字段；完成一个最小数据契约检查。
+RL Trainer 最怕的错误不一定会让程序崩溃。有一种更隐蔽的情况：模型生成了四条回答，Verifier 也返回四个 Reward，Tensor Shape 全对，但 Reward 被贴到了错误的回答上。Loss 正常下降，模型却在学习错误的反馈。
 
-## 1. 从一个例子开始
+这一课沿着 **Rollout → Reward → Sampler → Learner** 追踪一条样本，重点解决三个问题：怎样不丢失身份；什么时候一个 Group 才算完整；策略版本该跟着谁走。暂时不推导 PPO 或 GRPO 的完整 Loss。
 
-Prompt 是“计算 17 × 19，并说明过程”。Rollout Policy 生成回答，Verifier 检查结果并给 Reward。Trainer 根据 Reward、策略概率和算法目标计算 Loss，再通过反向传播更新参数。更新后的权重随后同步到 Rollout，下一轮生成使用新策略。
+## Reward 比回答晚到，而且顺序不一样
 
-SFT 通常使用数据集中已有的目标答案；RL 的回答由策略生成，Reward 也必须和生成它的轨迹关联起来。这让 RL 多出一类工程问题：数据不只是要传到正确的 GPU，还要保持它原来的语义。
+假设 Prompt 是「17 × 19 = ?」。采样器要求每个 Prompt 生成四条回答，得到：
 
-## 2. 一轮训练的路径
+| Trajectory | 回答（简化） | 真实 Reward |
+|---|---|---:|
+| `t-A1` | `323` | 1 |
+| `t-A2` | `324` | 0 |
+| `t-A3` | `323` | 1 |
+| `t-A4` | `321` | 0 |
 
-![一次 RL 训练的数据流](assets/rl_training_loop.svg)
+Rollout 返回顺序为 A1、A2、A3、A4。Verifier 独立运行，结果可能按 **A4、A1、A3、A2** 返回，Reward 数组对应 `[0,1,1,0]`。如果程序直接做 `zip(trajectories, rewards)`，它会把 A1 错标为 0、A2 错标为 1。列表长度没有变化，平均 Reward 也仍然是 0.5，监控面板未必能发现。
 
+正确做法是把评分结果当作 `(trajectory_id, reward)`，按稳定 ID 关联，而不是用完成次序推断身份：
 
+~~~python
+reward_by_id = {result.trajectory_id: result.reward for result in reward_results}
+for trajectory in trajectories:
+    trajectory.reward = reward_by_id[trajectory.trajectory_id]
+~~~
 
-每个方框代表一个逻辑阶段，不意味着必须由不同进程执行。可以同卡运行，也可以把 Rollout 和 Training 分开；改变部署方式不能改变算法需要的数据依赖。
+这段伪代码省略了真正重要的拒收逻辑：检查重复 Reward ID、缺失 ID、未知 ID，以及非有限 Reward。它只解释关联方式；仓库中可直接运行的实现是 [`join_rewards_by_trajectory_id`](../../examples/day_01/trajectory_contract.py)，会明确拒绝这些异常。
 
-## 3. 固定例子
+在异步场景里尤其不能用列表位置关联：完成顺序、过滤顺序和 Trainer 最终消费顺序可能完全不同。
 
-前十课使用同一组便于估算的参数：
+## Trajectory 要保存哪些事实
 
-- Policy：约 1B 参数的 Dense Transformer。
-- 4 张 GPU：2 张负责 Rollout，2 张负责 Training。
-- 64 个 Prompt Group，每组生成 4 条轨迹，共 256 条。
-- Prompt 约 512 Token，Response 约 128 Token。
-- 暂时假设每组四条轨迹均有效，且来自同一个策略版本。
+一条训练轨迹至少需要保留生成出的 Token、可训练 Token 的位置、生成策略版本，以及与 Prompt/Group 的身份关系。这里先用最小字段理解：
 
-这是课程用的计算沙盘，不是唯一部署方案，也不是实测配置。
+~~~text
+trajectory_id  = "t-A1"      # 单条生成结果的稳定身份
+group_id       = "g-17x19"   # 所属 Prompt Group
+response_ids   = [11, 12, 13]
+response_mask  = [1, 1, 1]   # 本例的响应位置均参与训练
+reward         = 1.0
+policy_version = 10         # 生成它时使用的 Policy
+~~~
 
-## 4. Trajectory 不只是回答文本
+`trajectory_id` 防止评分错配；`group_id` 让 Sampler 知道哪些轨迹共享一组统计量；`response_mask` 决定哪些位置进入目标函数；`policy_version` 说明这条数据来自哪个生成策略。缺少其中任一语义，后续的 Advantage、Logprob 或 Staleness 检查就容易靠猜测补齐。
 
-训练数据至少需要保留这些信息：
+**字段同名不代表各框架的契约相同。** 这里的 `policy_version` 是教学字段；实际框架还可能区分 `behavior_policy_version`、checkpoint ID 和采样参数版本。`response_mask` 也未必等于训练使用的 `loss_mask`：EOS、Padding、工具观察和多模态 Token 是否参与 Loss，要按具体算法定义。
 
-| 字段 | 用途 | 丢失或错配的风险 |
-|---|---|---|
-| `trajectory_id` | 标识单条轨迹 | Reward 可能配给另一条回答 |
-| `response_ids` | 实际生成的 Token | Logprob 与动作错位 |
-| `response_mask` | 哪些 Token 参与 Loss | Padding 或无效 Token 进入训练 |
-| `reward` | 轨迹评分 | 无法追踪优化信号 |
-| `group_id` | 标识同一 Prompt 的组 | GRPO 组内统计错误 |
-| `policy_version` | 记录生成策略版本 | 无法分析样本新旧与概率语义 |
+当前 CPU 示例能检查 Mask 的长度和 0/1 取值，但没有验证 Token 语义、EOS 归属或跨进程唯一 ID。不要把它当成完整的生产数据契约。
 
-字段名称可以因框架而异。这里定义的是数据契约需要表达的信息，不代表 VERL 使用完全相同的 Schema。
+## 为什么 Group 收齐和 Batch 收齐不是同一种等待
 
-## 5. 三个不变量
-
-**样本身份不变。** Trajectory、Reward、Mask 和 Logprob 必须能对应到同一条样本。Tensor Shape 一致不代表语义正确。
-
-**概率来源明确。** Rollout Logprob 是生成时记录的概率；Old Logprob 是算法更新时固定使用的比较基准；Current Logprob 是当前参数重新计算的概率。三者可能相同，也可能不同。
-
-**算法依赖不能被调度绕开。** 标准 GRPO 的组内 Advantage 依赖同组 Reward。四条轨迹还没收齐时，不能假设完整的四样本组统计已经可用。反过来，如果其他 Group 已经完整，也不一定必须等整个外层 Batch 返回。能否提前训练，还取决于 Trainer 的批次、梯度累积和版本策略。
-
-## 6. 做一次数量级计算
-
-Response Token 总数：
+继续用四条回答。假设后续使用一个标准化的组内 Reward 估计：
 
 $$
-64\ \text{groups}\times4\ \text{trajectories/group}\times128\ \text{tokens}
-=32768\ \text{tokens}.
+\bar r_g=\frac{1}{G}\sum_{i=1}^{G}r_i,\qquad
+\sigma_g=\sqrt{\frac{1}{G}\sum_i(r_i-\bar r_g)^2},
+\qquad
+A_i=\frac{r_i-\bar r_g}{\sigma_g+\epsilon}.
 $$
 
-如果每条轨迹总长为 512 + 128 = 640 Token，整个批次的输入 Token 位置数为：
+这里仅借一个常见的 GRPO 式组内统计说明依赖关系，暂时忽略极小的 $\epsilon$；不同算法实现可以选不同归一化约定。
+
+完整四条 Reward 为 `[1,0,1,0]`，均值 $\bar r=0.5$，总体标准差 $\sigma=0.5$，所以：
 
 $$
-256\times640=163840.
+A=[1,-1,1,-1].
 $$
 
-这是 Token 位置数，不是 FLOPs。实际计算量还取决于层数、Hidden Size、Attention 实现、Padding 和重计算。
+如果第四条还没完成，拿前三条 `[1,0,1]` 先算，均值变成 $2/3$，标准差约 $0.4714$，得到：
 
-## 7. 动手练习
+$$
+A_{\text{前3条}}\approx[0.707,-1.414,0.707].
+$$
 
-运行 [`trajectory_contract.py`](../../examples/day_01/trajectory_contract.py)，检查每个 Group 是否恰好有 4 条轨迹、ID 是否重复、Reward 是否有限，以及 Response 与 Mask 的长度是否一致。
+早算并不是「同一算法更快得到答案」，而是改变了统计对象。若要求固定四样本 Group，就必须等待、补投到有效组大小，或明确修改算法定义。
 
-先运行正确样本，再分别删除一条轨迹、复制一个 ID、把 Reward 改成 NaN。记录每种输入为什么应该失败。实验只检查数据结构，不模拟完整 RL 算法。
+再假设同一个外层 Batch 有 Group A 和 Group B。A 的四条全部完成，B 还有一条长尾请求。这时 **A 的组内统计已经具备输入条件**，但 Trainer 能否立即更新，仍取决于 mini-batch/梯度累积、版本一致性和共享 GPU 资源约束。Group 的统计依赖是算法条件；整批都返回后才统一筛选，则可能只是实现的 Batch Barrier。两者不能混为一谈。
 
-## 8. 面试练习
+这也是后面学习 Async DataSampler、Partial Rollout 时始终要保留的区分。
 
-**题 1（10 分）**：用两分钟解释一条 RL 样本从 Prompt 到参数更新的路径。
+## 版本号记录的是生成时的事实
 
-评分：Rollout/轨迹 2 分；Reward/Advantage 2 分；Logprob/Loss 2 分；Backward/Optimizer 2 分；版本与权重同步 2 分。
+设 Rollout 使用权重 v10 生成了 `t-A1`。等待 Reward 的过程中，Trainer 更新至 v11。数据从队列进入 Trainer 时，应仍然能看到它由 **v10** 生成，而不是把「消费时的当前版本 v11」覆盖到轨迹上。
 
-**题 2（10 分）**：GRPO 一个 Prompt 要生成 4 条轨迹。只完成 3 条时，能否计算标准的四样本 Group Advantage？
+至少需要分清四个角色：
 
-评分：指出组内统计不完整 3 分；说明提前计算会改变统计量或目标 3 分；提出等待、补投或显式改变算法契约的方案 2 分；讨论长尾和资源成本 2 分。
+- **Behavior**：实际采样动作的策略。
+- **Old**：PPO 更新中用于 Ratio 分母、在当前优化阶段固定的策略。
+- **Current**：正在反向传播的策略。
+- **Reference**：用于 KL 等约束的参考策略。
 
-追问：Group A 已完成，Group B 仍在生成，是否一定要等 B？回答需要区分组内依赖和外层 Batch Barrier，并考虑 Trainer 的批次、版本与采样器契约。
+同一个时刻它们可能共享权重，但不能靠这个偶然相等把语义合并。仅仅「数据异步到达」也不能直接断言算法已经 off-policy；要看生成分布、训练目标和所用的概率。
 
-## 9. 本课复盘
+本课提供的 [`validate_trajectories`](../../examples/day_01/trajectory_contract.py) 默认拒绝同一 Group 混合版本。它还有一个显式开关允许混版，**这个开关只跳过检查，不会自动提供 off-policy correction**。
 
-不看正文，画出训练数据流，并说明 `trajectory_id`、`group_id`、`response_mask` 和 `policy_version` 各自解决什么问题。说不清的概念记入学习进度，下一次针对性复习。
+## 跑一次「不会报 Shape 错误」的失败实验
 
-下一课：Transformer 前向、反向和显存。沿用同一批次，计算模型状态与 Activation 的成本。
+从仓库根目录运行：
 
-## 10. 参考资料
+~~~bash
+python examples/day_01/trajectory_contract.py
+python -m unittest discover -s examples/day_01 -p 'test_*.py' -v
+~~~
 
-- **HybridFlow: A Flexible and Efficient RLHF Framework** (2024). 用于理解 RLHF 训练中不同计算阶段如何组织和编排。https://arxiv.org/abs/2409.19256
-- **VERL 官方仓库**。对照真实训练流程和数据结构时使用；阅读前先确认当前分支与配置。https://github.com/verl-project/verl
-- **Proximal Policy Optimization Algorithms** (Schulman et al., 2017). 本课只建立数据流背景，PPO 的目标函数会在 Day 06 细讲。https://arxiv.org/abs/1707.06347
+示例脚本应输出 `Validated 8 trajectories across 2 groups.`，测试则分别检查：
 
+1. 把 Reward 返回顺序倒过来，ID Join 的输出不变。
+2. 删除一个 Reward 或复制一个 ID，会抛出 `ValueError`。
+3. 只生成三条或混入不同 `policy_version`，默认 Group 校验失败。
 
-## 项目对照（由你填写）
+再做一个不需要改代码的判断：**如果错误实现把 A1 和 A2 的 Reward 交换，平均 Reward 会不会变化？** 不会；但被强化的动作会变。这个反例说明，监控 `reward_mean` 不能替代样本身份校验。
 
-回想一个采样系统：同一组结果必须收齐时，哪些等待是算法依赖，哪些只是外层 Batch Barrier？先写问题和证据，不需要公开公司名称或内部指标。
+四条轨迹之后进入 Learner，还需要可微的 Current Logprob 才能更新参数。Day 04 会解释这一步。现在只要求确认：同一条动作的 Token、Reward、Mask、策略版本必须保持关联，调度快慢不能改变它们的归属。
 
-把经过脱敏、且你确认可以公开的内容记到 个人项目笔记（仅在本地记录，不提交公开仓库）。
+## 来源与实现边界
+
+- [课程实验：Trajectory 数据契约及 Reward ID Join](../../examples/day_01/trajectory_contract.py)；[对应负例测试](../../examples/day_01/test_trajectory_contract.py)。以上代码能够直接核对本课的校验行为。
+- [仓库数据契约](../../architecture/data_contract.md) 与 [Policy Version 语义](../../architecture/versioning.md)：课程定义，不等于某个外部框架的原生 Schema。
+- [HybridFlow / verl 论文](https://arxiv.org/abs/2409.19256)：理解 RLHF 不同计算阶段的组织方式；本文未声称验证其最新内部调用路径。
+- [PPO 原论文](https://arxiv.org/abs/1707.06347)：Old/Current 与 Ratio 的算法背景，Day 06 再推导。

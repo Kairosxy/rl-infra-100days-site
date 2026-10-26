@@ -1,24 +1,25 @@
-# Day 04 面试问答 · Policy Gradient 与 Logprob
+# Day 04 · 面试追问
 
-## 题 1：Reward 不可微，为什么仍然能更新 Policy？（10 分）
+## Reward 本身无法对参数反传，为什么 Policy 还能学习？
 
-**问题**：从期望 Reward 开始，解释 Log-Derivative Trick 如何得到策略梯度。
+从 `J(θ)=Eτ[R(τ)]` 推导 Log-Derivative Trick。然后给定两个 Logit 都为 0，采样 A、Reward=1，手算对 A/B 的 Logit 梯度，并说明下降方向。
 
-**评分标准**
-- 写出期望目标 \(J(\theta)=\mathbb{E}_{\tau\sim p_\theta}[R(\tau)]\)：2 分
-- 说明对轨迹概率求导，而不是对 Reward 求导：2 分
-- 使用 \(\nabla p=p\nabla\log p\)：2 分
-- 解释 Logprob 如何把离散动作与参数连接起来：2 分
-- 说明 Baseline 可以降低方差但不改变期望梯度的条件：2 分
+**判别依据：** 能解释是对**轨迹发生概率**求导，而不是对 Reward 程序求导；`∇log π(A)` 是可微路径，计算得到 `∂L/∂z_A=-0.5`、`∂L/∂z_B=+0.5`。
 
-**追问**：如果两个样本的 Advantage 一正一负，Loss 标量正好为 0，是否意味着没有梯度？不一定。需要检查每个样本的 Logprob、梯度和参数更新；正负项可能抵消标量值，却不抵消梯度。
+**追问：** 减去与当前状态有关但不依赖动作的 Baseline 为什么在期望下不改变策略梯度？需要使用 `Σ_a π(a|s)=1`。
 
-## 题 2：Rollout Logprob 能否直接作为 PPO 的 Old Logprob？（10 分）
+## Token Shift 错一位，程序为什么仍能训练？
 
-**评分标准**
-- 区分 Behavior/Rollout、Old、Current 和 Reference Policy：3 分
-- 说明采样温度、Top-p、策略版本可能改变概率语义：3 分
-- 解释 PPO Ratio 使用当前 Logprob 与固定 Old Logprob 的比值：2 分
-- 给出可验证的对照实验：2 分
+给出 `token_ids [B,L]` 和 `logits [B,L,V]`，说明位置 `t` 的 Logit 预测哪一个 Token。对于 Prompt 长度 $P$、Response 长度 $T$，写出响应动作与预测 Logits 的索引区间；说出一种 Shape 正常但标签错位的实现。
 
-**追问**：若 Rollout 用 Temperature 采样，而 Trainer 用原始 logits 计算 Logprob，二者不同就一定是 FP8 误差吗？不是。先确认概率分布定义、采样配置、Token Shift、Mask 和 Policy Version，再分析数值精度。
+**判别依据：** 目标 `token_ids[:,P:P+T]`；预测 Logits `logits[:,P-1:P+T-1]`。检查 Padding、不同 Prompt 长度和 Mask，不能只核对 Tensor Shape。
+
+**追问：** 两条样本有 1 和 3 个有效 Token，`token_mean` 与 `seq_mean_token_mean` 对短序列每个 Token 的梯度权重分别是多少？分别是 $1/4$ 与 $1/2$。
+
+## Rollout Logprob 与 Trainer Logprob 不一样，就说明 FP8 有问题吗？
+
+Rollout 使用 Temperature 采样，Trainer 通过当前权重在未变换的 Logits 上计算 Logprob。你会先检查哪几个定义，再考虑是否存在数值漂移？能否直接把 Rollout Logprob 当作 PPO 的 Old Logprob？
+
+**判别依据：** 先确定采样分布、Token Shift、Mask、Policy Version 和固定 Old Policy 基准。数值不等可能来自比较的分布不同，不能直接归因于量化误差；复用 Old 必须满足算法契约。
+
+**追问：** 两个样本 Advantage 为 +1/-1，Loss 恰好为 0，是否可能梯度非零？给一个张量级理由。

@@ -1,24 +1,23 @@
-# Day 02 面试问答
+# Day 02 · 面试追问
 
-## 题 1：1B 参数模型为什么不只需要 2 GB 显存？（10 分）
+## 1B BF16 权重 2 GB，为什么训练显存会超过 12 GB？
 
-**问题**：假设参数为 BF16，估算训练状态并说明还缺哪些项。
+假设一张卡保存完整参数、BF16 梯度和 FP32 Adam Moment。先列出静态账单，说明为什么 12 GB 不能当成进程峰值。再解释「有一份 FP32 Master Weights」和「改用 FSDP」分别改变哪一类占用。
 
-**评分标准**
-- 参数大小按 2 Bytes/参数估算：2 分
-- 梯度大小与 Dtype 假设：2 分
-- Adam 一阶、二阶状态：2 分
-- Activation、Workspace、通信缓冲区：2 分
-- 说明分片和 Master Weights 会改变账本：2 分
+**判别依据：** 能算出 2+2+4+4=12 GB（非 GiB），能把 Activation/临时区与分片状态分开。说「FSDP 把所有显存按卡数平均分」不合格。
 
-**追问**：FSDP 能否解决所有 OOM？合格回答应区分参数/梯度/优化器状态分片与激活峰值，指出长序列仍可能因 Activation OOM。
+**追问：** 为什么 OOM 发生在 Backward，而不是加载模型时？指出保存的前向信息与梯度、Workspace 重叠的时间关系。
 
-## 题 2：序列长度从 4K 增长到 32K，为什么 Attention 显存可能暴涨？（10 分）
+## 长上下文从 4K 增加到 32K，FlashAttention 还会不会 OOM？
 
-**评分标准**
-- 显式 Attention 矩阵为 L×L：3 分
-- 长度扩大 8 倍，矩阵元素扩大 64 倍：3 分
-- 区分朴素矩阵物化与 FlashAttention：2 分
-- 提出检查 Backend 和测量峰值的方法：2 分
+先计算完整 `[B,H,L,L]` 矩阵的元素数扩大多少倍，再说明为什么这个倍数不等于实际显存峰值的增长倍数。给出两种你会检查的真实配置，以及至少一个记录峰值的方法。
 
-**追问**：FlashAttention 是否让 Attention 的计算复杂度变成 O(L)？需要明确回答不是；它主要优化 IO 与中间矩阵存储，标准全 Attention 的算术量仍随序列长度呈二次增长。
+**判别依据：** 64 倍是显式矩阵元素数的比例；FlashAttention 不物化完整矩阵，但其他 Activation 仍增长。应核对 Attention Backend、Micro-batch、Checkpointing 配置，而非只背 FlashAttention 的名称。
+
+**追问：** 如果已经开启 Activation Checkpointing，显存仍主要耗在 Optimizer States，上调重计算比例是否一定有效？说明为什么不一定。
+
+## 一张「显存估算截图」能证明训练速度吗？
+
+CPU 计算器报告 Attention Score 为 4.13 GiB、Optimizer 状态约 12 GB。有人据此断言「H200 必然比 H100 快多少倍」。指出缺失的关键信息，以及这份实验究竟验证了什么。
+
+**判别依据：** 能区分容量预算、内核/带宽/吞吐实测以及硬件比较所需工作负载和测量环境。

@@ -1,17 +1,9 @@
-# Day 03 图解 · 梯度累积和更新边界
+# Day 03 · 图解：梯度累加与参数更新的分界
 
-![梯度累积与参数更新边界](assets/gradient_accumulation.svg)
+![梯度累积与 AdamW 更新边界](assets/gradient_accumulation.svg)
 
-## 为什么只能在累积结束后更新？
+同一批次的 Micro-batch 可以分开 Forward/Backward，但每次求导使用的参数必须处于同一个更新点，最后才合成目标梯度并执行一次 Optimizer Step。图中需要辨认的是 **Backward 循环** 与 **Optimizer Step** 的边界。
 
-假设一次训练批次拆成 4 个 Micro-batch。每个 Micro-batch 先计算自己的梯度，梯度累加到同一组参数的 .grad 中。完成所有 4 次 Backward 后，再统一裁剪梯度并调用一次 Optimizer Step。
+对照五条样本的实际例子：2/2/1 切分后的局部平均梯度必须按 2/5、2/5、1/5 加权。把三个局部 Mean 等权平均，虽然遵守图中「最后才 Step」的时间顺序，仍会得到错误梯度。**正确同步顺序并不自动证明 Loss Reduction 正确。**
 
-如果每个 Micro-batch 都调用 step()，第 2 个 Micro-batch 开始时参数已经改变，Adam 的 Moment 和 Step Counter 也改变了。后续梯度不再是同一参数点上对完整 Batch 梯度的累加。
-
-## 等价条件检查
-
-- 每个 Micro-batch 的 Loss 归一化与完整 Batch 目标一致。
-- 所有梯度在同一次参数更新前累加。
-- Gradient Clipping 在相同的逻辑边界执行。
-- 不存在改变等价性的 Batch-dependent 操作或随机性差异。
-- DDP 的梯度平均和梯度累积次数计算一致。
+另一个边界在 DDP：`no_sync()` 可以减少非最后一个 Micro-batch 的梯度同步，但它不改变当前目标函数的分母。独立测试两件事：数学梯度是否一致、通信是否被正确推迟。

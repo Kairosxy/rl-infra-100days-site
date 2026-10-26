@@ -1,30 +1,23 @@
-# Day 01 面试问答
+# Day 01 · 面试追问
 
-## 题 1：描述 RL 训练链路（10 分）
+## Reward Mean 一样，为什么训练质量会坏？
 
-**问题**：从 Prompt 到模型参数更新，逐步解释每个阶段的输入和输出。
+一个 Prompt 生成 `t1,t2,t3,t4`，评分服务乱序返回。两个程序都算出平均 Reward=0.5，但只有一个程序按 `trajectory_id` 关联。请设计输入证明另一种实现不正确，并说明为什么监控 Mean 无法发现。
 
-**评分标准**
-- Rollout 与 Trajectory：2 分
-- Reward / Advantage：2 分
-- Logprob 与 Loss：2 分
-- Backward / Optimizer：2 分
-- Policy Version 与权重同步：2 分
+**判别依据：** 能给出有具体 ID 的反例，说明错误与数组长度、Mean、Shape 无关；说明必须校验重复/缺失/未知 ID，而非只校验两份列表的数量。
 
-**追问**：如果 Reward 已经算出，为什么还要计算策略 Logprob？
+**追问：** Reward 服务对同一 `trajectory_id` 重试两次并返回不同分数，是「取最新值」还是「拒收」？必须先交代幂等和评分版本契约；在当前实验的定义中会拒绝重复 ID。
 
-合格回答应说明：Reward 是评价信号；Policy Gradient 通过已采样动作的 Logprob 构造可微的梯度估计。对一个与模型计算图无关的 Reward 常数求导，不能更新 Policy。
+## Group A 已完成，Group B 还在生成，要不要等 B？
 
-## 题 2：组内依赖与异步调度（10 分）
+标准四样本组的 Reward 为 `[1,0,1,0]`。解释为什么少一条时不能直接计算「同一个四样本组」的统计量。现在 A 已齐，B 只完成 3/4；给出 A 能提前处理、不能提前执行 Trainer 更新的条件各一条。
 
-**问题**：GRPO 的一个 Prompt 生成 4 条轨迹。只完成 3 条时，能否先计算标准的四样本 Group Advantage？
+**判别依据：** 区分 **Group Advantage 输入完整** 与 **Sampler Batch/Trainer 更新边界**；同时考虑版本一致性、mini-batch 和资源互斥。不能只回答「异步可以提前训练」。
 
-**评分标准**
-- 明确四样本统计尚不完整：3 分
-- 说明提前计算会改变统计量或目标：3 分
-- 提出等待、补投或显式修改算法契约的方案：2 分
-- 说明长尾与资源成本：2 分
+**追问：** 异步队列里一条轨迹由 v10 生成，但 v11 时才消费，给它打上 v11 标签是否合理？说明 Behavior Version 与 Current Version 各自记录什么。
 
-**追问**：如果 Group A 已完整，而 Group B 仍在生成，是否一定要等待 B？
+## 项目排障题：Mask 长度检查全部通过，Loss 仍可能错吗？
 
-合格回答应区分组内依赖和外层 Batch Barrier。Group A 是否能立即进入训练，还取决于 Trainer 批次、梯度累积、版本策略和采样器契约；不能把“Group 已完成”直接等同于“Trainer 一定可以立即更新”。
+举出一个合法的 0/1 Mask，但其有效位置语义错误的例子。例如 Response Padding 或工具 Observation 被当成 Action 训练。说出必须额外保留哪个位置级别的契约，以及应如何构造负例。
+
+**判别依据：** 明确「长度和取值合法」比「Token 语义合法」弱。当前 CPU Validator 只覆盖前者。
