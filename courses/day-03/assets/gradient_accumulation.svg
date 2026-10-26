@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="900" viewBox="0 0 920 900" role="img" aria-labelledby="title desc">
+<title id="title">梯度累积与参数更新</title><desc id="desc">Sketch-style pastel teaching diagram showing multiple microbatch backward passes accumulating gradients before one clipping and optimizer step.</desc>
+<defs><marker id="a" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto"><path d="M1 1 L10 5 L1 9" fill="none" stroke="#252a30" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect width="920" height="900" rx="20" fill="#fffdf7"/>
+<g font-family="Comic Sans MS, Chalkboard, Trebuchet MS, cursive" fill="#22272d"><text x="45" y="55" font-size="30" font-weight="bold" transform="rotate(-.5 45 55)">梯度累积：多次 Backward，一次更新</text><text x="47" y="86" font-family="Comic Sans MS, Segoe Print, Kaiti SC, cursive" font-size="17" fill="#59636b">让所有 Micro-batch 的梯度对应同一组参数，再统一裁剪与更新。</text></g>
+<g stroke="#252a30" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+<path d="M48 142 Q53 135 64 138 L254 138 Q266 140 265 152 L264 253 Q262 264 250 263 L62 262 Q50 260 51 248 Z" fill="#dff1d9" stroke="#6ea66b"/>
+<path d="M296 142 Q301 135 312 138 L502 138 Q514 140 513 152 L512 253 Q510 264 498 263 L310 262 Q298 260 299 248 Z" fill="#fff0c8" stroke="#d5a04d"/>
+<path d="M544 142 Q549 135 560 138 L750 138 Q762 140 761 152 L760 253 Q758 264 746 263 L558 262 Q546 260 547 248 Z" fill="#ffe1df" stroke="#d77d7e"/>
+<path d="M784 142 Q789 135 800 138 L869 138 Q880 140 879 152 L878 253 Q876 264 864 263 L798 262 Q786 260 787 248 Z" fill="#e2efff" stroke="#7299d4"/>
+</g>
+<g font-family="Comic Sans MS, Chalkboard, Trebuchet MS, cursive" fill="#252a30" text-anchor="middle">
+<text x="157" y="180" font-size="22" font-weight="bold">Micro-batch 1</text><text x="157" y="218" font-size="18">Forward</text><text x="157" y="244" font-size="18">Backward</text>
+<text x="405" y="180" font-size="22" font-weight="bold">Micro-batch 2</text><text x="405" y="218" font-size="18">Forward</text><text x="405" y="244" font-size="18">Backward</text>
+<text x="653" y="180" font-size="22" font-weight="bold">Micro-batch K</text><text x="653" y="218" font-size="18">Forward</text><text x="653" y="244" font-size="18">Backward</text>
+<text x="833" y="180" font-size="20" font-weight="bold">一次</text><text x="833" y="212" font-size="19">Step</text>
+</g>
+<g stroke="#252a30" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#a)"><path d="M268 200 L287 200"/><path d="M516 200 L535 200"/><path d="M764 200 L778 200"/><path d="M158 266 C158 308 232 308 232 330"/><path d="M405 266 L405 330"/><path d="M653 266 C653 308 580 308 580 330"/></g>
+<path d="M112 335 Q118 327 132 329 L786 329 Q801 331 800 345 L798 438 Q796 450 781 448 L129 447 Q114 445 115 431 Z" fill="#f4f8fc" stroke="#9eb7ce" stroke-width="3"/>
+<text x="460" y="368" text-anchor="middle" font-family="Comic Sans MS, Chalkboard, cursive" font-size="24" font-weight="bold" fill="#263b50">梯度累加器 · parameter.grad</text>
+<text x="460" y="408" text-anchor="middle" font-family="Comic Sans MS, Segoe Print, Kaiti SC, cursive" font-size="20" fill="#263746">g = g₁/K + g₂/K + … + gₖ/K</text>
+<path d="M460 451 L460 486" stroke="#252a30" stroke-width="3" fill="none" marker-end="url(#a)"/>
+<path d="M170 492 Q175 484 188 486 L732 486 Q746 489 745 502 L744 582 Q741 594 728 592 L187 591 Q173 589 174 576 Z" fill="#eee5ff" stroke="#9a84d1" stroke-width="3"/>
+<text x="460" y="528" text-anchor="middle" font-family="Comic Sans MS, Chalkboard, cursive" font-size="23" font-weight="bold" fill="#3f355e">统一做 Gradient Clipping</text>
+<text x="460" y="559" text-anchor="middle" font-family="Comic Sans MS, Segoe Print, Kaiti SC, cursive" font-size="18" fill="#3f355e">然后调用一次 AdamW Step</text>
+<path d="M460 596 L460 630" stroke="#252a30" stroke-width="3" fill="none" marker-end="url(#a)"/>
+<path d="M83 635 Q88 628 100 630 L819 630 Q832 633 831 645 L830 715 Q827 726 815 724 L99 724 Q86 722 87 710 Z" fill="#ffe1df" stroke="#d77d7e" stroke-width="3"/>
+<text x="460" y="671" text-anchor="middle" font-family="Comic Sans MS, Chalkboard, cursive" font-size="22" font-weight="bold" fill="#793c48">错误做法：每个 Micro-batch 都 step()</text>
+<text x="460" y="701" text-anchor="middle" font-family="Comic Sans MS, Segoe Print, Kaiti SC, cursive" font-size="17" fill="#793c48">参数和 Adam 状态提前改变，通常不等价于大 Batch</text>
+<text x="47" y="788" font-family="Comic Sans MS, Segoe Print, Kaiti SC, cursive" font-size="17" fill="#59636b">注意：每份 Loss 的归一化要和目标一致；Token Mean 与 Sequence Mean 不一定等价。</text>
+</svg>

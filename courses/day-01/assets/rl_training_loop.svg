@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="1360" viewBox="0 0 920 1360" role="img" aria-labelledby="title desc">
+<title id="title">RL 训练数据流</title>
+<desc id="desc">A hand-drawn-style pastel teaching diagram showing prompt collection, rollout, reward processing, advantage estimation, model training, evaluation, and policy feedback.</desc>
+<defs>
+  <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto"><path d="M1 1 L10 5 L1 9" fill="none" stroke="#252a30" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  <filter id="paper"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="1" seed="14" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="1.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+</defs>
+<rect width="920" height="1360" rx="20" fill="#fffdf7"/>
+<g font-family="Comic Sans MS, Chalkboard, Trebuchet MS, cursive" fill="#22272d">
+  <text x="55" y="62" font-size="31" font-weight="bold" transform="rotate(-.7 55 62)">一轮 RL 训练是怎样跑起来的？</text>
+  <text x="57" y="94" font-family="Trebuchet MS, sans-serif" font-size="17" fill="#59636b">从 Prompt 出发，沿着数据和参数更新的方向看一遍。</text>
+</g>
+<g stroke="#262b31" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" filter="url(#paper)">
+  <path d="M190 132 Q192 127 203 130 L715 128 Q727 131 726 141 L728 233 Q725 244 714 242 L204 245 Q191 242 192 232 Z" fill="#dff1d9" stroke="#6ea66b"/>
+  <path d="M190 306 Q194 299 205 302 L715 304 Q728 306 727 318 L725 428 Q723 439 711 438 L202 436 Q190 433 192 422 Z" fill="#e2efff" stroke="#7299d4"/>
+  <path d="M190 500 Q194 494 204 496 L714 497 Q728 500 727 511 L725 630 Q722 640 710 639 L203 638 Q190 635 192 623 Z" fill="#fff0c8" stroke="#d5a04d"/>
+  <path d="M190 703 Q193 696 205 699 L714 701 Q728 703 727 714 L726 833 Q723 844 710 842 L202 842 Q190 839 192 827 Z" fill="#ffe1df" stroke="#d77d7e"/>
+  <path d="M190 906 Q194 899 204 901 L714 903 Q728 905 727 917 L726 1037 Q723 1048 711 1047 L202 1045 Q190 1042 192 1030 Z" fill="#e8e2ff" stroke="#9484ce"/>
+  <path d="M190 1110 Q194 1104 205 1106 L714 1107 Q728 1110 727 1121 L725 1229 Q722 1240 710 1238 L202 1238 Q190 1235 192 1224 Z" fill="#dff1ef" stroke="#6ea9a2"/>
+</g>
+<g font-family="Comic Sans MS, Chalkboard, Trebuchet MS, cursive" fill="#252a30">
+  <text x="222" y="170" font-size="25" font-weight="bold" transform="rotate(-.6 222 170)">1. 数据收集</text>
+  <text x="225" y="205" font-size="18">Prompt / 任务 / 环境状态</text>
+  <text x="225" y="231" font-size="17" fill="#4d5b63">输出：待生成请求与样本 ID</text>
+
+  <text x="222" y="345" font-size="25" font-weight="bold" transform="rotate(.5 222 345)">2. Rollout · 模型生成</text>
+  <text x="225" y="381" font-size="18">当前策略根据 Prompt 生成回答</text>
+  <text x="225" y="408" font-size="17">保存 Token、Logprob、Policy Version</text>
+  <g stroke="#5c86bf" fill="#f8fbff" stroke-width="1.8">
+    <path d="M570 365 Q573 359 581 360 L666 361 Q674 364 672 372 L670 392 Q669 398 660 397 L580 397 Q572 396 571 388 Z"/>
+    <path d="M582 385 Q585 379 593 380 L678 381 Q686 384 684 392 L682 412 Q681 418 672 417 L592 417 Q584 416 583 408 Z"/>
+    <path d="M594 405 Q597 399 605 400 L690 401 Q698 404 696 412 L694 432 Q693 438 684 437 L604 437 Q596 436 595 428 Z"/>
+  </g>
+  <text x="630" y="384" font-size="14" text-anchor="middle">回答 A</text>
+  <text x="642" y="404" font-size="14" text-anchor="middle">回答 B</text>
+  <text x="654" y="424" font-size="14" text-anchor="middle">回答 C …</text>
+
+  <text x="222" y="540" font-size="25" font-weight="bold" transform="rotate(-.4 222 540)">3. Reward · 评分与过滤</text>
+  <text x="225" y="576" font-size="18">规则、Verifier 或环境给出 Reward</text>
+  <text x="225" y="603" font-size="17">按 trajectory_id 对齐，过滤无效样本</text>
+  <g stroke="#c18b37" stroke-width="1.8" fill="#fffaf0">
+    <path d="M580 555 Q583 550 590 551 L665 552 Q672 554 671 562 L670 584 Q668 589 661 588 L589 588 Q581 586 582 579 Z"/>
+    <path d="M585 594 Q588 589 595 590 L670 591 Q677 593 676 601 L675 623 Q673 628 666 627 L594 627 Q586 625 587 618 Z"/>
+  </g>
+  <text x="626" y="574" font-size="15" text-anchor="middle">Reward +1.0</text>
+  <text x="631" y="613" font-size="15" text-anchor="middle">Reward -0.2</text>
+
+  <text x="222" y="744" font-size="25" font-weight="bold" transform="rotate(.4 222 744)">4. Advantage · 组内比较</text>
+  <text x="225" y="780" font-size="18">比较同一 Prompt 的多条回答</text>
+  <text x="225" y="807" font-size="17">计算 GRPO Group Advantage 或 GAE</text>
+  <g stroke="#ca7376" stroke-width="1.8" fill="none" stroke-linecap="round">
+    <path d="M584 809 L584 774 L604 774 L604 754 L624 754 L624 729"/>
+    <path d="M579 809 L634 809"/>
+  </g>
+  <g fill="#e89a9a" stroke="#c96d72" stroke-width="1.4">
+    <path d="M587 808 L587 786 L598 786 L598 808 Z"/>
+    <path d="M606 808 L606 766 L617 766 L617 808 Z"/>
+    <path d="M625 808 L625 741 L636 741 L636 808 Z"/>
+  </g>
+
+  <text x="222" y="947" font-size="25" font-weight="bold" transform="rotate(-.5 222 947)">5. Training · 计算损失并更新</text>
+  <text x="225" y="983" font-size="18">Current Logprob + Advantage → Loss</text>
+  <text x="225" y="1010" font-size="17">Backward → Gradient → Optimizer Step</text>
+  <g stroke="#8775c4" stroke-width="1.8" fill="#f8f5ff">
+    <path d="M574 970 Q578 964 586 966 L675 966 Q683 969 681 978 L679 1001 Q677 1007 669 1006 L585 1006 Q576 1004 576 996 Z"/>
+  </g>
+  <text x="628" y="990" font-size="17" text-anchor="middle">θ → θ′</text>
+
+  <text x="222" y="1150" font-size="25" font-weight="bold" transform="rotate(.4 222 1150)">6. 评估与下一轮</text>
+  <text x="225" y="1185" font-size="18">看 Reward、KL、吞吐和异常样本</text>
+  <text x="225" y="1212" font-size="17">保存 Checkpoint，新策略进入下一轮</text>
+</g>
+<g fill="none" stroke="#252a30" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)">
+  <path d="M459 248 C457 265 458 281 459 296"/>
+  <path d="M460 440 C458 460 458 477 459 490"/>
+  <path d="M459 642 C458 664 459 680 459 694"/>
+  <path d="M459 845 C457 864 458 880 459 896"/>
+  <path d="M459 1050 C458 1070 458 1086 459 1099"/>
+  <path d="M730 1175 C815 1175 835 1147 835 1088 L835 350 C835 301 807 285 756 285" stroke-dasharray="9 8"/>
+</g>
+<path d="M755 276 L770 286 L754 294" fill="none" stroke="#252a30" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="850" y="770" transform="rotate(90 850 770)" font-family="Comic Sans MS, Chalkboard, cursive" font-size="18" fill="#4e5962" text-anchor="middle">新策略用于下一轮 Rollout</text>
+<text x="54" y="1310" font-family="Trebuchet MS, sans-serif" font-size="15" fill="#66727a">示意图：表示逻辑依赖，不规定具体进程布局；异步执行仍需保留算法要求的依赖条件。</text>
+</svg>

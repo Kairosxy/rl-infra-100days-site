@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="900" viewBox="0 0 920 900" role="img" aria-labelledby="title desc">
+<title id="title">Policy Gradient 与 Logprob</title><desc id="desc">Sketch-style pastel teaching diagram showing why a sampled token needs a differentiable log probability path to the policy parameters.</desc>
+<defs><marker id="a" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto"><path d="M1 1 L10 5 L1 9" fill="none" stroke="#252a30" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect width="920" height="900" rx="20" fill="#fffdf7"/>
+<g font-family="Comic Sans MS, Chalkboard, Trebuchet MS, cursive" fill="#22272d"><text x="45" y="55" font-size="30" font-weight="bold" transform="rotate(-.5 45 55)">Reward 怎样变成策略梯度？</text><text x="47" y="86" font-family="Trebuchet MS,sans-serif" font-size="17" fill="#59636b">Reward 通常不可微；Logprob 为已采样的离散 Token 提供梯度路径。</text></g>
+<g stroke="#252a30" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">
+<path d="M48 142 Q53 135 64 138 L254 138 Q266 140 265 152 L264 265 Q262 276 250 275 L62 274 Q50 272 51 260 Z" fill="#dff1d9" stroke="#6ea66b"/>
+<path d="M296 142 Q301 135 312 138 L502 138 Q514 140 513 152 L512 265 Q510 276 498 275 L310 274 Q298 272 299 260 Z" fill="#fff0c8" stroke="#d5a04d"/>
+<path d="M544 142 Q549 135 560 138 L750 138 Q762 140 761 152 L760 265 Q758 276 746 275 L558 274 Q546 272 547 260 Z" fill="#ffe1df" stroke="#d77d7e"/>
+<path d="M784 142 Q789 135 800 138 L869 138 Q880 140 879 152 L878 265 Q876 276 864 275 L798 274 Q786 272 787 260 Z" fill="#e2efff" stroke="#7299d4"/>
+</g>
+<g font-family="Comic Sans MS, Chalkboard, Trebuchet MS, cursive" fill="#252a30" text-anchor="middle">
+<text x="157" y="180" font-size="22" font-weight="bold">1. Rollout</text><text x="157" y="218" font-size="18">Policy 采样</text><text x="157" y="246" font-size="18">Token ID</text>
+<text x="405" y="180" font-size="22" font-weight="bold">2. Reward</text><text x="405" y="218" font-size="18">Verifier / 环境</text><text x="405" y="246" font-size="18">评价回答</text>
+<text x="653" y="180" font-size="22" font-weight="bold">3. Logprob</text><text x="653" y="218" font-size="18">Teacher Forcing</text><text x="653" y="246" font-size="18">固定 Token 重算</text>
+<text x="833" y="180" font-size="20" font-weight="bold">4. Loss</text><text x="833" y="218" font-size="18">Backward</text><text x="833" y="246" font-size="18">更新参数</text>
+</g>
+<g stroke="#252a30" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#a)"><path d="M268 203 L287 203"/><path d="M516 203 L535 203"/><path d="M764 203 L778 203"/></g>
+<path d="M110 338 Q115 330 128 332 L792 332 Q805 334 804 347 L803 467 Q800 479 787 477 L127 477 Q114 475 115 462 Z" fill="#f4f8fc" stroke="#9eb7ce" stroke-width="2.4"/>
+<text x="145" y="373" font-family="Comic Sans MS, Chalkboard, cursive" font-size="24" font-weight="bold" fill="#263b50">为什么要重新算 Logprob？</text>
+<path d="M145 405 Q150 399 160 401 L424 401 Q436 403 435 414 L434 447 Q432 458 421 457 L159 456 Q147 454 148 444 Z" fill="#fff0c8" stroke="#d5a04d" stroke-width="2"/>
+<text x="291" y="423" text-anchor="middle" font-family="Trebuchet MS,sans-serif" font-size="17" fill="#5c451f">Reward 是评价信号</text><text x="291" y="444" text-anchor="middle" font-family="Trebuchet MS,sans-serif" font-size="15" fill="#5c451f">不能直接穿过离散采样反传</text>
+<path d="M480 405 Q485 399 495 401 L758 401 Q770 403 769 414 L768 447 Q766 458 755 457 L494 456 Q482 454 483 444 Z" fill="#dff1d9" stroke="#6ea66b" stroke-width="2"/>
+<text x="626" y="423" text-anchor="middle" font-family="Trebuchet MS,sans-serif" font-size="17" fill="#2c5630">Logprob 连接动作与参数</text><text x="626" y="444" text-anchor="middle" font-family="Trebuchet MS,sans-serif" font-size="15" fill="#2c5630">∇θ log πθ(a|s) 提供梯度</text>
+<path d="M438 430 L473 430" stroke="#252a30" stroke-width="2.5" fill="none" marker-end="url(#a)"/>
+<path d="M80 540 Q85 533 97 535 L820 535 Q833 537 832 550 L831 653 Q828 665 816 663 L96 663 Q83 661 84 648 Z" fill="#eee5ff" stroke="#9a84d1" stroke-width="2.4"/>
+<text x="460" y="577" text-anchor="middle" font-family="Comic Sans MS, Chalkboard, cursive" font-size="23" font-weight="bold" fill="#3f355e">训练时必须对齐</text>
+<g font-family="Trebuchet MS,sans-serif" font-size="18" fill="#3f355e" text-anchor="middle"><text x="190" y="616">Token Shift</text><text x="370" y="616">Response Mask</text><text x="550" y="616">Policy Version</text><text x="730" y="616">Loss Reduction</text></g>
+<text x="47" y="732" font-family="Trebuchet MS,sans-serif" font-size="17" fill="#59636b">图中是 REINFORCE 的直觉链路；PPO / GRPO 还要加入 Ratio、Advantage、Clip 和各自的归一化目标。</text>
+</svg>

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="RL Infra 100 天课程：直接阅读课程、查看图解、完成练习和面试问答。">
+  <meta name="color-scheme" content="light">
+  <title>RL Infra · 100 天学习工作台</title>
+  <style>{{STYLE}}</style>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]'], ['$$', '$$']],
+        processEscapes: true
+      },
+      options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到课程正文</a>
+  <header class="global-header">
+    <div class="brand-lockup">
+      <span class="brand-icon" aria-hidden="true">RL<span>↗</span></span>
+      <div class="brand-copy">
+        <strong>RL Infra / 100 Days</strong>
+        <span>课程 · 实验 · 面试</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="https://github.com/Kairosxy/rl-infra-100days-site" target="_blank" rel="noopener noreferrer">公开课程仓库 ↗</a>
+      <span class="header-tag">自主学习</span>
+    </div>
+  </header>
+  <div class="shell">
+    <aside class="sidebar" aria-label="课程目录">
+      <div class="sidebar-top">
+        <p class="eyebrow">课程目录</p>
+        <h2>从基础走到系统设计</h2>
+        <div class="progress-track"><span id="published-count">读取中…</span><span> / 100 课</span></div>
+        <p class="small-note">课程发布与个人掌握进度分别记录。</p>
+      </div>
+      <nav id="course-list" class="course-list" aria-label="已发布课程"></nav>
+      <div class="sidebar-footer">
+        <p>每五课复习一次，每十课做阶段验收。</p>
+        <a href="https://github.com/Kairosxy/rl-infra-100days/blob/main/course_map/day_schedule.md"
+           target="_blank" rel="noopener noreferrer">100 天完整课表 ↗</a>
+      </div>
+    </aside>
+    <main id="main" class="main">
+      <div class="course-header">
+        <p class="eyebrow" id="course-breadcrumb">RL 与训练基础</p>
+        <div class="course-heading-row">
+          <div>
+            <p class="day-label" id="day-label">DAY 01 / 100</p>
+            <h1 id="course-title">课程加载中</h1>
+            <p class="lead" id="course-subtitle">先阅读讲义，再通过问题检查自己的理解。</p>
+          </div>
+          <div id="draft-badge" class="draft-badge" aria-live="polite">未作答</div>
+        </div>
+      </div>
+      <div class="tabs" id="tabs" role="tablist" aria-label="课程视图">
+        <button data-view="lesson" type="button" role="tab">讲义</button>
+        <button data-view="diagram" type="button" role="tab">图解</button>
+        <button data-view="recap" type="button" role="tab">复习</button>
+        <button data-view="qa" type="button" role="tab">面试题</button>
+        <button data-view="answer" type="button" role="tab" class="answer-tab">✎ 我的作答</button>
+      </div>
+      <section id="reader" class="reader-panel" role="tabpanel">
+        <article id="article" class="markdown-body" aria-live="polite"></article>
+        <div id="example-links" class="example-links" hidden></div>
+      </section>
+      <section id="answer-panel" class="answer-panel" role="tabpanel" hidden>
+        <div class="answer-intro">
+          <span class="eyebrow">记录自己的理解</span>
+          <h2>写下答案，而不是抄讲义</h2>
+          <p>输入内容会自动保存在当前浏览器。确认无保密信息后，可下载 Markdown，或通过 GitHub Issue 提交到课程仓库。</p>
+        </div>
+        <form id="answer-form" autocomplete="off">
+          <div class="answer-card">
+            <h3>01 · 面试题</h3>
+            <label for="answer-q1" id="label-q1">题目 1</label>
+            <textarea id="answer-q1" name="q1" rows="6" placeholder="先口述一遍，再把自己的推导、例子和工程依据写下来。"></textarea>
+            <div class="score-row"><label for="answer-score1">自评</label>
+              <input type="number" id="answer-score1" name="score1" min="0" max="10" step="1" placeholder="0–10">
+              <span>／10 分</span>
+            </div>
+            <label for="answer-q2" id="label-q2">题目 2</label>
+            <textarea id="answer-q2" name="q2" rows="6" placeholder="写出结论、必要条件，以及至少一个容易答错的地方。"></textarea>
+            <div class="score-row"><label for="answer-score2">自评</label>
+              <input type="number" id="answer-score2" name="score2" min="0" max="10" step="1" placeholder="0–10">
+              <span>／10 分</span>
+            </div>
+          </div>
+          <div class="answer-card">
+            <h3>02 · 实验记录</h3>
+            <label for="answer-command">实际运行的命令</label>
+            <textarea id="answer-command" name="command" rows="3" class="mono-input" placeholder="python examples/day_01/trajectory_contract.py"></textarea>
+            <label for="answer-output">关键输出或测试结果</label>
+            <textarea id="answer-output" name="output" rows="4" class="mono-input" placeholder="贴出关键输出；没有运行就直接写“未运行”。"></textarea>
+            <label for="answer-failure">故意制造的错误与报错</label>
+            <textarea id="answer-failure" name="failure" rows="4" placeholder="如何构造反例？哪一个断言失败了？"></textarea>
+            <label for="answer-why">原因分析</label>
+            <textarea id="answer-why" name="why" rows="3" placeholder="这个失败对应什么不变量？如何避免回归？"></textarea>
+          </div>
+          <div class="answer-card">
+            <h3>03 · 质疑与项目联系</h3>
+            <label for="answer-notes">不清楚的地方或与工程经验冲突之处</label>
+            <textarea id="answer-notes" name="notes" rows="4" placeholder="可以留空。写一个具体问题比写“全部理解了”更有帮助。"></textarea>
+            <label for="answer-project">项目对照（可选）</label>
+            <textarea id="answer-project" name="project" rows="4" placeholder="问题 → 约束 → 方案 → 证据 → 代价。仅填写有权公开的内容。"></textarea>
+          </div>
+        </form>
+        <div class="submit-card">
+          <div>
+            <strong id="save-status" role="status">草稿会自动保存</strong>
+            <p>草稿仅存在这台设备。提交到 GitHub 后才会进入仓库的 answers.md；不要填写内部机密。</p>
+          </div>
+          <div class="submit-actions">
+            <button type="button" class="btn secondary" id="copy-answer">复制 Markdown</button>
+            <button type="button" class="btn secondary" id="download-answer">下载答案</button>
+            <button type="button" class="btn primary" id="submit-answer">提交到 GitHub ↗</button>
+          </div>
+        </div>
+        <div class="privacy-note">
+          <strong>提交方式：</strong>点击“提交到 GitHub”会打开预填内容的 GitHub Issue，确认发布后，仓库的 GitHub Actions 会将其同步到该课的 <code>answers.md</code>。无需提供 API Token。填写过长时请先下载答案，再在 Issue 中粘贴。<br>
+          <strong>公开范围：</strong>课程网页只包含讲义、图解和实验链接，不会发布你的答案；GitHub Pages 即使来源仓库为私有，也可能对公众开放。
+        </div>
+      </section>
+      <footer class="page-footer">
+        <span>RL Infra · 按知识依赖推进，不按日历跳课</span>
+        <a href="https://github.com/Kairosxy/rl-infra-100days/issues" target="_blank" rel="noopener noreferrer">GitHub 答案与反馈 ↗</a>
+      </footer>
+    </main>
+  </div>
+  <script type="application/json" id="course-data">{{COURSE_DATA}}</script>
+  <script>{{APP_JS}}</script>
+</body>
+</html>
