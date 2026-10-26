@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RL Infra Experiment Result",
+  "type": "object",
+  "required": ["experiment", "status", "commit", "environment", "config", "metrics", "observations", "limitations"],
+  "properties": {
+    "experiment": {"type": "string"},
+    "status": {"enum": ["designed", "implemented", "measured"]},
+    "commit": {"type": "string"},
+    "environment": {
+      "type": "object",
+      "required": ["os", "python", "torch", "hardware"],
+      "properties": {
+        "os": {"type": "string"},
+        "python": {"type": "string"},
+        "torch": {"type": "string"},
+        "hardware": {"type": "string"},
+        "gpu_count": {"type": ["integer", "null"], "minimum": 0}
+      }
+    },
+    "config": {"type": "object"},
+    "metrics": {"type": "object"},
+    "observations": {"type": "array", "items": {"type": "string"}},
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  }
+}

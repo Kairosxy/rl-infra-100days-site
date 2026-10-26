@@ -1,24 +1,18 @@
-# 公开课程网站说明
+# 课程网页与刷题库
 
-这是 `Kairosxy/rl-infra-100days-site` 的公开网站源码。学习者答案、项目复盘和学习进度不在此仓库中。
-
-## 构建
+本仓库同时托管课程讲义和网站，不需要维护第二个课程项目。
 
 ```bash
 python -m pip install -r site/requirements.txt
 python scripts/build_site.py --output dist/index.html
-python -m unittest discover -s scripts -p 'test_site_builder.py' -v
+python scripts/build_quiz.py --output dist/quiz/index.html
+python -m unittest discover -s scripts -p 'test_*.py' -v
 ```
 
-生成的 `dist/index.html` 包含所有已发布课程和插图；数学公式排版依赖在线 MathJax。浏览器本地保存的作答不会上传到网站；点击提交才打开**私有课程仓库**的 GitHub Issue，由原仓库的工作流保存答案。
+- `/`：课程页，可切换 100 天中的已发布课程；讲义、图解、复习、面试题和本地作答。
+- `/quiz/`：224 题刷题库；章节筛选、主题搜索、随机 10 题、错题复习、两套参考解释、自评及导出/导入。
+- 网站资源在构建时嵌入 HTML；MathJax 仍需要在线 CDN 完整显示数学公式。
+- 所有个人作答、笔记、自评都留在浏览器本地，不会自动进入公开仓库。建议定期备份。
+- `main` 分支 Push 触发 .github/workflows/pages.yml，自动生成并发布整个 `dist/`。
 
-## 部署
-
-请在本仓库 Settings → Pages → Build and deployment → Source 选择 **GitHub Actions**，并在 Actions 中查看 **Publish course website**。
-
-- 没有启用 Pages 时，CI 仍会构建 `rl-infra-100days-public-html` Artifact。
-- 启用并部署成功后：<https://kairosxy.github.io/rl-infra-100days-site/>
-- 将本仓库的 `courses/day-XX`、`examples/day_XX` 更新后，公开页面会自动重建。
-- 后续同步应只复制公开课程所需的 `lesson.md`、`diagram.md`、`recap.md`、`qa.md`、`assets/` 和可公开的教学示例；**绝不复制 `answers.md`、`progress.md`、`portfolio/` 或任何内部材料**。
-
-注意：Pages 网站对公众可见，课程内容发布前仍须公开化审查。
+私有历史备份仓库中的 `answers.md`、个人项目笔记与 `progress.md` 不会也不应当迁移到此处。

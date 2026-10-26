@@ -202,3 +202,4 @@ a:hover { color: #234d69; }
   .shell,.main { display: block; padding: 0; }
   .markdown-body { border: 0; box-shadow: none; padding: 0; }
 }
+.quiz-nav { font-weight: 720; color: #9e5b46!important; }

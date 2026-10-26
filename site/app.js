@@ -3,7 +3,7 @@
 "use strict";
 
 (function () {
-  const REPOSITORY = "Kairosxy/rl-infra-100days";
+  const REPOSITORY = "Kairosxy/rl-infra-100days-site";
   const COURSES = JSON.parse(document.getElementById("course-data").textContent);
   const BY_DAY = new Map(COURSES.map(function (item) { return [item.day, item]; }));
   const VIEW_NAMES = ["lesson", "diagram", "recap", "qa", "answer"];
@@ -270,39 +270,10 @@
     const result = answerMarkdown();
     try {
       await navigator.clipboard.writeText(result);
-      id("save-status").textContent = "Markdown 已复制，可粘贴到 GitHub";
+      id("save-status").textContent = "Markdown 已复制，可粘贴到自己的笔记或聊天中";
     } catch (error) {
       id("save-status").textContent = "复制失败，请使用“下载答案”";
     }
-  }
-
-  function submitAnswers() {
-    saveDraft();
-    const values = formValues();
-    if (!String(values.q1 || "").trim() && !String(values.q2 || "").trim()) {
-      id("save-status").textContent = "至少填写一道题后再提交";
-      id("answer-q1").focus();
-      return;
-    }
-    const title = "[RL Infra Answer] Day " + pad(activeDay);
-    const markdown = answerMarkdown();
-    const link = root + "/issues/new?title=" + encodeURIComponent(title) +
-      "&body=" + encodeURIComponent(markdown);
-    const anchor = document.createElement("a");
-    anchor.target = "_blank";
-    anchor.rel = "noopener noreferrer";
-    if (link.length > 7500) {
-      anchor.href = root + "/issues/new?title=" + encodeURIComponent(title);
-      id("save-status").textContent =
-        "答案较长：请先点“复制 Markdown”，再打开新 Issue 粘贴正文";
-    } else {
-      anchor.href = link;
-      id("save-status").textContent =
-        "已打开 GitHub；请在新页面确认发布 Issue 以同步答案";
-    }
-    document.body.append(anchor);
-    anchor.click();
-    anchor.remove();
   }
 
   document.querySelectorAll("[data-view]").forEach(function (button) {
@@ -314,7 +285,7 @@
   });
   id("copy-answer").addEventListener("click", copyAnswers);
   id("download-answer").addEventListener("click", downloadAnswers);
-  id("submit-answer").addEventListener("click", submitAnswers);
+  id("submit-answer").addEventListener("click", downloadAnswers);
   window.addEventListener("hashchange", render);
   render();
 })();

@@ -72,10 +72,10 @@ Mask、Packing、多轮轨迹会在 Day 08 的数据构建中引入；Off-policy
 
 ## HTML 学习工作台
 
-前四课可以通过 [单页学习工作台](../site/README.md) 阅读：讲义、图解、复习卡、面试题和学习者作答分别在独立标签中。作答草稿只保存在本地浏览器；经本人确认提交 GitHub Issue 后，同步进入 `answers.md`。后续课程沿用这一入口，不再要求在手机上手动打开多个 Markdown 文件。
+所有已发布课程可在 [课程学习工作台](https://kairosxy.github.io/rl-infra-100days-site/) 统一阅读：讲义、图解、复习和每课面试题分标签呈现。作答草稿仅保存在浏览器，支持导出 Markdown。独立的 [224 道面试刷题库](https://kairosxy.github.io/rl-infra-100days-site/quiz/) 提供筛选、随机练习、错题复习和两套参考解释。
 
 ## 页面组织
 
 每个主题根据需要提供课程正文、图解页、复习页、问答页和代码实验。图解用于帮助理解，不替代定义、推导或验证。只有当代码能说明机制或形成可复现产出时，才单独建文件。
 
-Day 1 的计划参照日期是 2026-10-23（Asia/Shanghai）。实际完成 100 课的日期取决于练习验收，不保证在 100 个自然日内完成。查看 [100 课主题表](day_schedule.md)、[系统演化主线](system_roadmap.md)和[学习进度](../progress.md)。
+Day 1 的计划参照日期是 2026-10-23（Asia/Shanghai）。实际完成 100 课的日期取决于练习验收，不保证在 100 个自然日内完成。查看 [100 课主题表](day_schedule.md)、[系统演化主线](system_roadmap.md)和浏览器内学习进度。
