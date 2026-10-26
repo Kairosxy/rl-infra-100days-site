@@ -1,11 +1,15 @@
-# Day 02 · 5 分钟复习：显存峰值来自谁
+# Day 02 · 复算卡
 
-**把这笔账闭眼算出来。** 1B 参数，BF16 参数与梯度各 2 Byte/参数，Adam 两份 FP32 Moment 各 4 Byte/参数，总计 **12 GB ≈ 11.18 GiB**。若另存 FP32 Master Weights，加 4 GB。这里还没算 Activation、Workspace、通信缓冲区，也没有考虑 FSDP/ZeRO 分片。
+单样本的 Policy Gradient 是「Reward/Advantage 乘以已采样动作的 Score」：
 
-**算一张矩阵。** 朴素显式 Attention Score 形状 `[B,H,L,L]`。`B=2,H=16,L=640,2 Byte` 时为 **25 MiB**；长度 8320，是原来的 13 倍，对应大小约 **4.13 GiB**。这些数字**不是 FlashAttention 的真实显存峰值**。
+$$
+\nabla J = \mathbb E[R(a)\nabla\log\pi(a)].
+$$
 
-**拿一个具体 OOM 做判断。** 如果初始化和 Forward 正常，但 Backward 才 OOM，优先核查保存的 Activation、梯度和临时工作区在什么时刻重叠。Checkpointing 只改变需要保存/重算的中间数据，不会直接消除 Adam Moment。
+二动作 `p=0.25`、`R(A)=1,R(B)=0`：A 的 Score 为 0.75，B 为 -0.25。没有 Baseline 时采样梯度分别为 $0.75,0$；其期望是 **0.1875**，方差是 **0.10546875**。
 
-**最容易误讲的一句话。** FlashAttention 减少完整 Attention 中间矩阵的 HBM 读写与物化，并不使稠密全 Attention 的算术成本自动变成线性。
+当 $b=0.75$，两种抽样的估计值都成为 0.1875，方差为零。这是二动作、确定性 Reward 的特例；最优常数 Baseline 不一定等于平均 Reward。
 
-本课的容量计算和假设在 [CPU 脚本](../../examples/day_02/memory_budget.py) 中可逐项修改。
+**最容易误用的条件**：Baseline 不能依赖同一状态下本次采样的 Action。设 `b(a)=R(a)` 会让估计器全部归零，破坏对真实梯度的估计。
+
+[调整 Baseline，观察期望不变但方差变化](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=2)。

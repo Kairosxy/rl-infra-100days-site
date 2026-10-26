@@ -1,121 +1,96 @@
-# Day 01 · 一条回答如何安全地变成训练样本
+# Day 01 · 模型究竟在优化什么：从 SFT 到期望 Reward
 
-RL Trainer 最怕的错误不一定会让程序崩溃。有一种更隐蔽的情况：模型生成了四条回答，Verifier 也返回四个 Reward，Tensor Shape 全对，但 Reward 被贴到了错误的回答上。Loss 正常下降，模型却在学习错误的反馈。
+在 RL 里，我们不是把已经知道的正确答案继续喂给模型，而是让模型**自己采样一次，再根据结果好不好调整它以后采取动作的概率**。这句话听起来很简单，里面却藏着几件会影响实际训练的事情：评估使用的目标是否就是训练目标？采样概率低时能不能学到？Pass@k 提升是否能说明单次回答质量提高？
 
-这一课沿着 **Rollout → Reward → Sampler → Learner** 追踪一条样本，重点解决三个问题：怎样不丢失身份；什么时候一个 Group 才算完整；策略版本该跟着谁走。暂时不推导 PPO 或 GRPO 的完整 Loss。
+先不引入 PPO 和分布式框架。只用一个可以完全算清楚的二动作模型，把它们分开。
 
-## Reward 比回答晚到，而且顺序不一样
+[打开本课可调参数实验 →](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=1)
 
-假设 Prompt 是「17 × 19 = ?」。采样器要求每个 Prompt 生成四条回答，得到：
+## 固定一个环境：只有两个动作
 
-| Trajectory | 回答（简化） | 真实 Reward |
-|---|---|---:|
-| `t-A1` | `323` | 1 |
-| `t-A2` | `324` | 0 |
-| `t-A3` | `323` | 1 |
-| `t-A4` | `321` | 0 |
+一个 Prompt 只能回答 A 或 B。Verifier 按规则返回：
 
-Rollout 返回顺序为 A1、A2、A3、A4。Verifier 独立运行，结果可能按 **A4、A1、A3、A2** 返回，Reward 数组对应 `[0,1,1,0]`。如果程序直接做 `zip(trajectories, rewards)`，它会把 A1 错标为 0、A2 错标为 1。列表长度没有变化，平均 Reward 也仍然是 0.5，监控面板未必能发现。
+| 动作 | Reward | 说明 |
+|---|---:|---|
+| A | 1 | 正确 |
+| B | 0 | 错误 |
 
-正确做法是把评分结果当作 `(trajectory_id, reward)`，按稳定 ID 关联，而不是用完成次序推断身份：
-
-~~~python
-reward_by_id = {result.trajectory_id: result.reward for result in reward_results}
-for trajectory in trajectories:
-    trajectory.reward = reward_by_id[trajectory.trajectory_id]
-~~~
-
-这段伪代码省略了真正重要的拒收逻辑：检查重复 Reward ID、缺失 ID、未知 ID，以及非有限 Reward。它只解释关联方式；仓库中可直接运行的实现是 [`join_rewards_by_trajectory_id`](../../examples/day_01/trajectory_contract.py)，会明确拒绝这些异常。
-
-在异步场景里尤其不能用列表位置关联：完成顺序、过滤顺序和 Trainer 最终消费顺序可能完全不同。
-
-## Trajectory 要保存哪些事实
-
-一条训练轨迹至少需要保留生成出的 Token、可训练 Token 的位置、生成策略版本，以及与 Prompt/Group 的身份关系。这里先用最小字段理解：
-
-~~~text
-trajectory_id  = "t-A1"      # 单条生成结果的稳定身份
-group_id       = "g-17x19"   # 所属 Prompt Group
-response_ids   = [11, 12, 13]
-response_mask  = [1, 1, 1]   # 本例的响应位置均参与训练
-reward         = 1.0
-policy_version = 10         # 生成它时使用的 Policy
-~~~
-
-`trajectory_id` 防止评分错配；`group_id` 让 Sampler 知道哪些轨迹共享一组统计量；`response_mask` 决定哪些位置进入目标函数；`policy_version` 说明这条数据来自哪个生成策略。缺少其中任一语义，后续的 Advantage、Logprob 或 Staleness 检查就容易靠猜测补齐。
-
-**字段同名不代表各框架的契约相同。** 这里的 `policy_version` 是教学字段；实际框架还可能区分 `behavior_policy_version`、checkpoint ID 和采样参数版本。`response_mask` 也未必等于训练使用的 `loss_mask`：EOS、Padding、工具观察和多模态 Token 是否参与 Loss，要按具体算法定义。
-
-当前 CPU 示例能检查 Mask 的长度和 0/1 取值，但没有验证 Token 语义、EOS 归属或跨进程唯一 ID。不要把它当成完整的生产数据契约。
-
-## 为什么 Group 收齐和 Batch 收齐不是同一种等待
-
-继续用四条回答。假设后续使用一个标准化的组内 Reward 估计：
+Policy 给 A 的概率记为 $p$，给 B 的概率为 $1-p$。为了让这个概率由模型参数决定，先把模型压缩成一个 Logit $z$：
 
 $$
-\bar r_g=\frac{1}{G}\sum_{i=1}^{G}r_i,\qquad
-\sigma_g=\sqrt{\frac{1}{G}\sum_i(r_i-\bar r_g)^2},
-\qquad
-A_i=\frac{r_i-\bar r_g}{\sigma_g+\epsilon}.
+p=\pi_\theta(A)=\sigma(z)=\frac{1}{1+e^{-z}},\qquad
+\pi_\theta(B)=1-p.
 $$
 
-这里仅借一个常见的 GRPO 式组内统计说明依赖关系，暂时忽略极小的 $\epsilon$；不同算法实现可以选不同归一化约定。
+这两个动作构成一个最小 Bandit。它没有多步环境和 Credit Assignment，但有真正的**采样分布和期望优化目标**。
 
-完整四条 Reward 为 `[1,0,1,0]`，均值 $\bar r=0.5$，总体标准差 $\sigma=0.5$，所以：
-
-$$
-A=[1,-1,1,-1].
-$$
-
-如果第四条还没完成，拿前三条 `[1,0,1]` 先算，均值变成 $2/3$，标准差约 $0.4714$，得到：
+模型的单次采样结果可能是 0 或 1；训练真正想提高的通常是对这个分布的**期望 Reward**：
 
 $$
-A_{\text{前3条}}\approx[0.707,-1.414,0.707].
+J(z)=\mathbb E_{a\sim\pi_z}[R(a)]
+=pR(A)+(1-p)R(B)=p.
 $$
 
-早算并不是「同一算法更快得到答案」，而是改变了统计对象。若要求固定四样本 Group，就必须等待、补投到有效组大小，或明确修改算法定义。
+如果 $p=0.25$，四次随机采样不保证恰好有一次正确，但期望每次正确率为 25%。
 
-再假设同一个外层 Batch 有 Group A 和 Group B。A 的四条全部完成，B 还有一条长尾请求。这时 **A 的组内统计已经具备输入条件**，但 Trainer 能否立即更新，仍取决于 mini-batch/梯度累积、版本一致性和共享 GPU 资源约束。Group 的统计依赖是算法条件；整批都返回后才统一筛选，则可能只是实现的 Batch Barrier。两者不能混为一谈。
+重要的是优化参数 $z$，而不只是观察 $J$ 的大小：
 
-这也是后面学习 Async DataSampler、Partial Rollout 时始终要保留的区分。
+$$
+\frac{\mathrm dJ}{\mathrm dz}
+=\frac{\mathrm dp}{\mathrm dz}
+=p(1-p).
+$$
 
-## 版本号记录的是生成时的事实
+当 $p=0.25$ 时，梯度为 $0.25\times0.75=0.1875$。如果对 $J$ 做梯度上升，$z$ 会增大，A 的概率会上升。至此，我们已经知道理想情况下训练想要的是哪个方向。
 
-设 Rollout 使用权重 v10 生成了 `t-A1`。等待 Reward 的过程中，Trainer 更新至 v11。数据从队列进入 Trainer 时，应仍然能看到它由 **v10** 生成，而不是把「消费时的当前版本 v11」覆盖到轨迹上。
+## SFT 的梯度为什么和它看起来相像，却不是同一个训练问题
 
-至少需要分清四个角色：
+假设教师数据直接告诉我们标准答案 A。普通 SFT 的单条 Cross Entropy 是：
 
-- **Behavior**：实际采样动作的策略。
-- **Old**：PPO 更新中用于 Ratio 分母、在当前优化阶段固定的策略。
-- **Current**：正在反向传播的策略。
-- **Reference**：用于 KL 等约束的参考策略。
+$$
+L_{\mathrm{SFT}}=-\log p,\qquad
+\frac{\mathrm dL_{\mathrm{SFT}}}{\mathrm dz}=p-1.
+$$
 
-同一个时刻它们可能共享权重，但不能靠这个偶然相等把语义合并。仅仅「数据异步到达」也不能直接断言算法已经 off-policy；要看生成分布、训练目标和所用的概率。
+在 $p=0.25$ 时，SFT 的梯度为 $-0.75$；梯度下降会增加 $z$。它和前面的 RL 梯度方向一致，这是因为环境刚好只有两个动作，A 永远得 1、B 永远得 0。
 
-本课提供的 [`validate_trajectories`](../../examples/day_01/trajectory_contract.py) 默认拒绝同一 Group 混合版本。它还有一个显式开关允许混版，**这个开关只跳过检查，不会自动提供 off-policy correction**。
+但是**训练信号的来源不同**：SFT 已经有答案 A，哪怕模型目前几乎不会采样 A，仍然能直接训练它。RL 必须面对「从当前策略抽样，得到什么反馈」这个问题。对于复杂题目、工具调用、长序列，完整的最佳答案可能不可得，而 Verifier 只能评价完成结果。此时不能把采样、评分与监督标签混作一回事。
 
-## 跑一次「不会报 Shape 错误」的失败实验
+这个简化例子还能揭示一个训练困难。
 
-从仓库根目录运行：
+如果 $p=0.01$，当前模型有 99% 的概率采到 B，而 $R(B)=0$。从某一条样本出发、使用未经 Baseline 修正的 REINFORCE 估计器时，抽到 B 的那次更新可以是零。少见的正确动作依然可能提供很大的单样本更新，但大多数回合没有有效的奖励信号。**理想的期望梯度非零，不代表有限次采样容易得到稳定梯度。**
 
-~~~bash
-python examples/day_01/trajectory_contract.py
-python -m unittest discover -s examples/day_01 -p 'test_*.py' -v
-~~~
+下节课会推导为什么这个估计器的期望仍然正确，为什么 Baseline 可以改变方差而不改变期望，以及什么条件会让它产生偏差。
 
-示例脚本应输出 `Validated 8 trajectories across 2 groups.`，测试则分别检查：
+## 我们到底在测 Pass@1 还是 Pass@k？
 
-1. 把 Reward 返回顺序倒过来，ID Join 的输出不变。
-2. 删除一个 Reward 或复制一个 ID，会抛出 `ValueError`。
-3. 只生成三条或混入不同 `policy_version`，默认 Group 校验失败。
+还是 $p=0.25$。如果四次采样相互独立，至少有一次回答 A 的概率为：
 
-再做一个不需要改代码的判断：**如果错误实现把 A1 和 A2 的 Reward 交换，平均 Reward 会不会变化？** 不会；但被强化的动作会变。这个反例说明，监控 `reward_mean` 不能替代样本身份校验。
+$$
+\mathrm{Pass@4}=1-(1-p)^4
+=1-0.75^4\approx0.6836.
+$$
 
-四条轨迹之后进入 Learner，还需要可微的 Current Logprob 才能更新参数。Day 04 会解释这一步。现在只要求确认：同一条动作的 Token、Reward、Mask、策略版本必须保持关联，调度快慢不能改变它们的归属。
+而单次采样的正确率只有 $\mathrm{Pass@1}=p=0.25$。
 
-## 来源与实现边界
+一个模型可能依靠**多采几次**得到高 Pass@k，但并没有让单次回答更可靠。比较 RL 方法时必须固定评估预算、采样参数和统计口径，否则把「更多尝试次数」带来的改进误认为「策略学好了」。
 
-- [课程实验：Trajectory 数据契约及 Reward ID Join](../../examples/day_01/trajectory_contract.py)；[对应负例测试](../../examples/day_01/test_trajectory_contract.py)。以上代码能够直接核对本课的校验行为。
-- [仓库数据契约](../../architecture/data_contract.md) 与 [Policy Version 语义](../../architecture/versioning.md)：课程定义，不等于某个外部框架的原生 Schema。
-- [HybridFlow / verl 论文](https://arxiv.org/abs/2409.19256)：理解 RLHF 不同计算阶段的组织方式；本文未声称验证其最新内部调用路径。
-- [PPO 原论文](https://arxiv.org/abs/1707.06347)：Old/Current 与 Ratio 的算法背景，Day 06 再推导。
+在真实 Reasoning LLM 中，长推理会让 Pass@k、Verifier 正确性和成本的关系更复杂。DeepSeek-R1 的公开工作展示了用 Verifiable Reward 训练推理模型的路线；这不能推出任何一个 Toy Verifier 都适合训练，尤其不能忽视 Reward Hacking 与评估集泄漏。
+
+## 把「期望」和「你实际采到了什么」放在一起
+
+打开 [互动 Lab 01](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=1)，固定 $p=0.25$，先猜采样 8 次会获得多少次 Reward=1，再点击运行。你可以多次换 Seed，比较有限次样本均值和真正的期望 $J=0.25$。
+
+然后把采样次数增加到 100 或 500 次：估计通常更稳定，但不保证每次结果单调更接近真实值。**这个实验没有模型训练，也没有 GPU**；它展示的是采样噪声，让后续的 Policy Gradient 和 Advantage 估计有具体参照。
+
+最后做一个反例：将 $p$ 改成 0.02，采样 10 次时连续看不到 Reward=1 并不代表期望 Reward 是零。这正是稀疏奖励训练需要解决的信号稀缺问题。
+
+## 用已知工作检验这个思路是否有用
+
+- [REINFORCE / Williams (1992)](https://link.springer.com/article/10.1007/BF00992696)：下一课将用 Score Function 把「期望导数」变成可采样估计的形式。
+- [DeepSeekMath (2024)](https://arxiv.org/abs/2402.03300)：引出对同一个问题多次采样、再按相对结果更新的 GRPO；等到 Day 05 才分析其组内目标。
+- [DeepSeek-R1 (2025)](https://arxiv.org/abs/2501.12948)：Verifiable Reward 用于复杂推理的代表性工作。本课只是解释其训练信号的数学原型，没有复现实验结果。
+
+**检查自己是否真的理解：** 如果你把 Reward 规则换成 $R(A)=2,R(B)=-1$，新的 $J$ 和 $\mathrm dJ/\mathrm dz$ 分别是什么？再想想：只依赖 Verifier 分数优化时，为什么还需要关心评分规则是否真的代表最终能力？
+
+本课的代码与显存工程细节刻意推迟到后面。先确立优化目标，再谈如何估计、实现和加速它。

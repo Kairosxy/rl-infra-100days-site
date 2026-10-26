@@ -1,13 +1,15 @@
-# Day 01 · 5 分钟复习：身份、组与版本
+# Day 01 · 复算卡
 
-不看讲义，先回答：两份列表长度都是 4，为什么按位置 `zip` 可能让 RL 训练方向反过来？
+**不看讲义回答：** 为什么 SFT 能从已知答案直接更新，而 RL 需要考虑模型是否采样到了有 Reward 的动作？
 
-**自己重建数据链。** Rollout 产出 `trajectory_id`、`group_id`、`response_ids`、Mask 和生成时的策略版本；Verifier 返回带相同 `trajectory_id` 的 Reward；Sampler 按 ID Join，并验证完整性与版本语义；Learner 才能按某个明确的目标计算可微 Logprob/Loss。
+二动作 Bandit，`π(A)=p=σ(z)`、`R(A)=1,R(B)=0`。
 
-**手算 30 秒。** 四条 Reward 为 `[1,0,1,0]`，均值 0.5、总体标准差 0.5，标准化后 Advantage 为 `[1,-1,1,-1]`。只拿前三条算，统计量变了，不能称为原四样本 Group 的同一个目标。
+$$
+J=p,\quad \frac{\mathrm dJ}{\mathrm dz}=p(1-p).
+$$
 
-**最小诊断。** 如果 `reward_mean` 没变，训练质量却异常，先将 Reward 完成顺序打乱、验证按 ID Join 后每条轨迹的配对不变。只看 Shape 和 Reward Mean 不能证明身份正确。
+固定 $p=0.25$：期望 Reward 0.25，精确梯度 0.1875；四次独立采样至少一次正确的概率为 $1-0.75^4\approx0.6836$，但 Pass@1 仍只有 0.25。**评估预算不同的 Pass@k 不能当作同一个指标。**
 
-**不要混淆两种时间点。** Group 所需数据完整，与外层 Batch 全部结束、Trainer 可以执行一次优化，是不同条件。v10 生成的轨迹，即使 v11 时才消费，也必须保留生成时的版本事实。
+自己改变奖励为 $R(A)=2,R(B)=-1$。需要从公式得出 $J=3p-1$、$\mathrm dJ/\mathrm dz=3p(1-p)$，而不是把 Reward 只当作一个固定标签。
 
-补充实验：[Reward ID Join 负例测试](../../examples/day_01/test_trajectory_contract.py)。
+[在线拨动 $p$，对照经验采样和理论值](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=1)。

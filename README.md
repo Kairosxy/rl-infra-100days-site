@@ -4,7 +4,7 @@
 
 ## 在线入口
 
-**[📖 课程学习工作台](https://kairosxy.github.io/rl-infra-100days-site/)** · **[📝 224 道面试刷题库](https://kairosxy.github.io/rl-infra-100days-site/quiz/)**
+**[📖 课程学习工作台](https://kairosxy.github.io/rl-infra-100days-site/)** · **[🔬 交互机制实验](https://kairosxy.github.io/rl-infra-100days-site/labs/)** · **[📝 224 道面试刷题库](https://kairosxy.github.io/rl-infra-100days-site/quiz/)**
 
 课程支持阅读讲义、插图、复习卡、面试题与本地作答。题库支持关键词搜索、章节/领域筛选、随机十题、错题重练、间隔复习、收藏和两套参考答案。
 
@@ -15,7 +15,7 @@
 - [参考训练系统](reference_system/README.md) · [架构说明](architecture/reference_system.md) · [Trajectory 数据契约](architecture/data_contract.md)
 - [实验代码](examples/) · [典型失败案例](failures/README.md) · [论文与官方资料](references/reading_list.md)
 
-当前已归档 Day 01–04；其余课程按 100 天课表逐日发布。课程**自由访问，无须完成上一课才能进入下一课**。自评、练习与补课完全自主，不影响下一课发布。
+当前已归档 Day 01–05；大纲已按概念深度重新编排（旧数据契约、显存、梯度累积内容迁至后续对应阶段），其余课程按 100 天课表逐日发布。课程**自由访问，无须完成上一课才能进入下一课**。自评、练习与补课完全自主，不影响下一课发布。
 
 ## 唯一课程仓库
 
@@ -29,6 +29,7 @@ examples/day_XX/      按天组织的可运行实验
 reference_system/     可在 CPU 运行的最小 RL 训练主线
 quiz/                 224 道结构化试题、两套答案、刷题页面
 site/                 课程浏览器页面
+labs/                 交互式数值实验与动态图
 scripts/              生成器、测试与公开内容检查
 .github/workflows/    自动构建和 Pages 部署
 ```
@@ -47,7 +48,7 @@ python -m unittest discover -s scripts -p 'test_*.py' -v
 cd dist && python -m http.server 8000
 ```
 
-访问 `http://localhost:8000/` 和 `http://localhost:8000/quiz/`。
+访问 `http://localhost:8000/`、`http://localhost:8000/labs/` 和 `http://localhost:8000/quiz/`。
 
 运行 PyTorch 教学实验和 Toy REINFORCE：
 

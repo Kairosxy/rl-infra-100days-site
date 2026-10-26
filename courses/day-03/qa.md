@@ -1,23 +1,17 @@
-# Day 03 · 面试追问
+# Day 03 · 问答与追问
 
-## 2、2、1 三个 Micro-batch 都跑通了，为什么梯度错？
+## 题 1：Logits 与 Action Token 错一位，为什么程序仍能运行？
 
-给定三个局部平均梯度：`[-0.7,-0.2]`、`[-3.3,-4.8]`、`[3,-3]`。目标是五条样本的 MSE Mean。分别计算正确梯度和错误的三个 Mean 等权平均，并解释是哪条样本的权重被放大。
+给定 `logits [B,L,V]`、`token_ids [B,L]`，Prompt 长度 $P$，Response 长度 $T$。写出选中 Response Token Logprob 的切片、Shift 与 Gather。设计一个 Shape 一致但目标 Token 错位的反例。
 
-**判别依据：** 正确值 `[-1,-2.6]`；错误值 `[-0.3333,-2.6667]`。解释清楚是目标函数的样本权重变化，而不是浮点误差。
+**判别依据：** 明确 `logits[:,P-1:P+T-1]` 预测 `token_ids[:,P:P+T]`。能说明 Mask 是在对齐后的目标 Token 上计算，不只检查数组长度。
 
-**追问：** 若三组的有效 Token 数分别是 100、100、10，目标函数改为全局有效 Token Mean，该用什么分母？如果需求反而是 Sequence Mean 呢？
+**追问：** Padding Mask 合法是否足以排除 Agentic RL 工具 Observation 对 Loss 的污染？
 
-## 为什么不能把 `optimizer.step()` 移进 Micro-batch 循环？
+## 题 2：Loss 的数值一样，Gradient 为什么可能不一样？
 
-固定一个完整 Batch，分三次 Forward/Backward。说明一次 AdamW Step 与三次 AdamW Step 的状态差异：参数点、Moment、Step Counter 如何变化？如何用最小测试证明两条轨迹不等价？
+两条序列的长度为 1、3，所有有效位置 `-logprob` 都等于 1。计算 Token Mean 与 Sequence Mean of Token Mean，并指出四个位置的梯度权重。
 
-**判别依据：** 能指出当前样本的梯度不再都对同一个 $w$ 求导。现有测试的一次完整更新对应 Counter=1，错误循环为 Counter=3。
+**判别依据：** 两种 Loss 都是 1；前者所有 Token 权重 $1/4$；后者短样本 $1/2$、长样本各 $1/6$。
 
-**追问：** 两个梯度分别是 $[3,0]$ 和 $[-3,4]$，Clip Norm=2。分别裁剪后相加是否与先求和再裁剪一致？计算最终两个向量。
-
-## DP=2、每卡 Micro-batch=2，Global Batch=256
-
-需要累积多少次？在哪里使用 DDP 的 `no_sync()`？如果不同 Rank 的有效 Token 数不一致，仅仅延迟同步能否保证全局 Token Mean 正确？
-
-**判别依据：** 64 次；`no_sync()` 覆盖前 63 次的 Forward 和 Backward；归一化取决于全局有效 Token 数及 DDP 的聚合语义。
+**追问：** 如果不同 Micro-batch 有效 Token 数不同，各 Micro-batch Loss Mean 等权平均是否等价于全局 Token Mean？

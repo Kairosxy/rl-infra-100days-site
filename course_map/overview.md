@@ -1,81 +1,55 @@
-# 100 天课程总纲
+# RL Infra · 把难问题放到正确的位置
 
-## 课程目标
+这套课程服务于已经接触过 RL / GPU / Distributed Training、但希望把概念重新连成一套可推导、可实现、可调试系统的人。按日发布，不按答题状态解锁。文档、源码和互动实验是不同的学习媒介：文章解释机制，实验验证反例，交互页面允许实时更改假设。
 
-课程面向准备 RL Infrastructure、Distributed Training Systems、Training Systems 和 Research Engineer 面试的工程师。完成课程后，应能解释一条 RL 训练链路，推导常用目标函数，定位数据、数值、通信和调度问题，并把工程经验讲成有证据的设计决策。
+## 为什么重新编排
 
-课程不假定学习者能随时回忆所有基础知识。每个主题先补必要概念，再进入数学、实现和系统权衡。已有实战经验用于构造例子，不作为跳过基础的理由。
+旧版 Day 01 的大部分内容是 Trajectory 字段和组件职责，这些是项目开发时必须有的工程契约，但不需要一整天的教学时间。旧版随后突然进入 Transformer 显存和 AdamW，直到 Day 04 才解释 RL 怎样产生梯度。对学习者来说，这造成两个断点：**还不知道在优化什么，就开始讨论如何分布式优化；还没有明确梯度估计器的假设，就直接看到复杂的框架名词**。
 
-## 学习路径
+新版先沿优化数学建立连续的因果链：目标函数 → 如何估计梯度 → LLM Token 级计算 → 为什么要限制 Policy Update → 组内相对奖励与数据分布的联系。只有这条线通了，再讨论 Learner 的显存、梯度累积、分布式拓扑和 Serving 调度。
 
-```mermaid
-flowchart TD
-    A["RL 与训练基础<br/>Day 01–10"] --> B["GPU 性能<br/>Day 11–20"]
-    B --> C["分布式训练<br/>Day 21–30"]
-    C --> D["推理系统<br/>Day 31–40"]
-    D --> E["Agentic RL 数据链路<br/>Day 41–50"]
-    E --> F["异步 RL<br/>Day 51–60"]
-    F --> G["分布式系统与可靠性<br/>Day 61–70"]
-    G --> H["正确性与优化<br/>Day 71–80"]
-    H --> I["Coding 与系统设计<br/>Day 81–90"]
-    I --> J["项目沉淀与终面<br/>Day 91–100"]
-```
+## 知识分层：学会、讲透、做出来
 
-## 十个模块
-
-| 模块 | 天数 | 学习重点 | 阶段产出 |
-|---|---:|---|---|
-| RL 与训练基础 | 01–10 | 数据契约、Transformer/Autograd、Policy Gradient、GAE、PPO、GRPO、Rollout/Learner 循环 | 最小 PPO/GRPO 训练步 |
-| GPU 性能 | 11–20 | Roofline、GEMM、Attention、Triton、FP8、Profiler | 可复现性能报告 |
-| 分布式训练 | 21–30 | DDP、FSDP、TP、PP、EP、CP、NCCL | 8–64 GPU 并行设计 |
-| 推理系统 | 31–40 | Prefill/Decode、KV Cache、调度、投机解码 | 推理吞吐基准 |
-| Agentic RL 数据链路 | 41–50 | Trajectory、Reward、工具调用、DataSampler、TransferQueue | 可测试的 DataSampler |
-| 异步 RL | 51–60 | Partial Rollout、Staleness、权重同步、恢复 | 同步/异步对照实验 |
-| 分布式系统与可靠性 | 61–70 | Ray、K8s、状态恢复、可观测性、故障注入 | 千卡级系统设计 |
-| 正确性与优化 | 71–80 | 确定性、Logprob Drift、混精、OPD、成本 | 端到端验证清单 |
-| Coding 与系统设计 | 81–90 | 并发、调度、网络、容量规划 | 现场编码与设计演练 |
-| 项目沉淀与终面 | 91–100 | 项目陈述、代码审查、模拟面试 | 可公开作品集与能力差距报告 |
-
-## 前十天：从概念走到最小系统
-
-| Day | 主题 | 在主线中的作用 |
+| 层次 | 用什么讲 | 什么叫真正学会 |
 |---|---|---|
-| 01 | RL 端到端数据流与不变量 | 定义 Trajectory、身份关联和版本语义 |
-| 02 | Transformer 前向、反向与显存 | 解释训练时的计算图和内存账本 |
-| 03 | Autograd、AdamW 与梯度累积 | 建立可验证的参数更新过程 |
-| 04 | Policy Gradient 与 Logprob | 把离散动作、Reward 和可微梯度连接起来 |
-| 05 | Value、TD Error 与 GAE | 从回报估计走向 Advantage |
-| 06 | PPO Ratio、Clip 与 KL | 理解策略更新幅度的约束 |
-| 07 | GRPO / DAPO 的组内 Advantage | 理解同一 Prompt 多条轨迹如何比较 |
-| 08 | 最小 Rollout Loop | 将 Prompt、生成、Reward、Mask 和组数据连成可运行循环 |
-| 09 | 最小 Learner Loop | 将 Logprob、Loss、Backward、Optimizer 和指标连成可运行循环 |
-| 10 | 端到端最小 PPO/GRPO | 把 Rollout 与 Learner 接起来，验证更新、Checkpoint 和恢复 |
+| **随用随查**（不是独立的一整天） | Trajectory/Reward 的最小 Schema、命名、普通数据结构、优化器参数意义 | 读得懂代码和实验配置，能找出对应文档 |
+| **机制理解** | 有输入、数值中间步骤、确定输出的直觉实验 | 不看答案能预测更改一个参数后的后果 |
+| **深入推导** | 公式从哪来、隐含假设、梯度/概率/Mask 的对应、反例 | 能写对前提，推导结果，指出不适用场景 |
+| **工程证明** | 可运行测试、性能模型、日志/Trace、源码路径、论文消融 | 能设计一组反例把错误实现与正确实现区分开 |
 
-Mask、Packing、多轮轨迹会在 Day 08 的数据构建中引入；Off-policy 与 Staleness 的完整分析放到后续版本一致性模块，避免前十天在尚未建立最小训练闭环前分散主题。
+有些简单概念只讲几段，例如 `trajectory_id` 按 ID Join，而不是整节课填满流程图。复杂主题不再仅写一句结论：例如 PPO 必须讲正负 Advantage 的分段梯度与 Clip 的局限；GRPO 必须讲完整组、零方差、长度权重与 Selection Bias；异步调度必须讲数据完整性、权重版本和资源等待的可追踪条件。
 
-## 每节课怎样学
+## 每个阶段的主问题
 
-1. 从具体问题开始，明确输入、输出和目标。
-2. 补齐所需基础概念，不以“以前学过”为前提。
-3. 给出正式定义、公式、假设和适用边界。
-4. 对应工程实现：张量 Shape、代码路径、状态、通信或调度。
-5. 做数量级估算，并设计能验证或推翻判断的实验。
-6. 回到面试：说明机制、取舍和失败模式。
+- **Day 01–14 · 策略优化与估计器**：到底在优化哪个目标？不同采样、基线、Ratio 和 Group 归一化，什么时候改变梯度？
+- **Day 15–26 · Learner 的实际计算**：同一个目标怎样被 Autograd、Micro-batch、AMP、Checkpointing 等实现保持或破坏？
+- **Day 27–42 · GPU 与分布式训练**：算子形状、FLOPs、HBM、Collective、不同并行组怎样决定 Step Time 和峰值？
+- **Day 43–56 · 推理与 Rollout**：Prefill/Decode、KV Cache、Scheduler 和采样分布怎样影响训练数据与 P99？
+- **Day 57–68 · Agentic RL 数据生产**：Action、Observation、Verifier、Group 与队列背压怎样形成可训练样本？
+- **Day 69–85 · 异步、Off-policy 与 OPD**：改变调度和权重更新节奏时，怎样证明算法语义没有悄悄变？
+- **Day 86–94 · 可靠性与容量设计**：如何定位跨 GPU/Rank/Actor 的故障，并给出可量化的缓解方案？
+- **Day 95–100 · 研究复现与系统面试**：能否区分论文主张、实际实现、可复现实测与自己的设计选择？
 
-## 复习与验收
+详细每日题目见 [100 天课表](day_schedule.md)；同一参考系统的阶段演化见 [系统主线](system_roadmap.md)。
 
-- 每天：按计划发布一课；阅读、练习和反馈均自主安排，不需要先完成上一课。
-- 每 5 天：回顾前面课程的关键概念，找出记忆断点。
-- 每 10 天：提供可选的阶段自测；如需评分，只依据真实答案、代码或测量结果，未作答不阻止后续课程发布。
-- 每个模块结束：更新知识图、实验索引和项目讲解材料。
-- 最后 10 天：把工程工作整理成可公开、可复述、有证据的作品集。
+## 第一周以同一个二动作模型推进
 
-## HTML 学习工作台
+先假设动作 A 的概率为 `p=sigmoid(z)`，奖励规则为 A 得 1、B 得 0。Day 01 直接计算期望 Reward 的导数；Day 02 用 Score Function 从采样估计梯度，并检验 Baseline 的方差；Day 03 将一个动作推广到自回归 Token，学习 Shift/Mask/Reduction；Day 04 引入旧策略概率和 Clipped Surrogate；Day 05 使用多个答案做 GRPO 组内 Advantage。公式每变一次，都问一句：**这是数学目标变化，还是系统实现错误？**
 
-所有已发布课程可在 [课程学习工作台](https://kairosxy.github.io/rl-infra-100days-site/) 统一阅读：讲义、图解、复习和每课面试题分标签呈现。作答草稿仅保存在浏览器，支持导出 Markdown。独立的 [224 道面试刷题库](https://kairosxy.github.io/rl-infra-100days-site/quiz/) 提供筛选、随机练习、错题复习和两套参考解释。
+[进入交互实验室](https://kairosxy.github.io/rl-infra-100days-site/labs/)：每个 Lab 可以先预测，再调节变量，查看与推导对应的曲线或状态。它不是自动判分系统，也不会联网记录个人作答。
 
-## 页面组织
+## 论文怎样进入课程
 
-每个主题根据需要提供课程正文、图解页、复习页、问答页和代码实验。图解用于帮助理解，不替代定义、推导或验证。只有当代码能说明机制或形成可复现产出时，才单独建文件。
+经典工作用于建立定义，新工作用于提出反例或工程取舍。按作者实际报告写明“论文提出/报告”；没有重复实现或对照实验时，不把公开报告的性能增益当作本课程实测。
 
-Day 1 的计划参照日期是 2026-10-23（Asia/Shanghai）。Day 01 计划于 2026-10-23 发布，之后每天一课，Day 100 计划于 2027-01-30 发布；自主学习进度可快可慢，不影响日历发布。查看 [100 课主题表](day_schedule.md)、[系统演化主线](system_roadmap.md)和浏览器内学习进度。
+- [REINFORCE (1992)](https://link.springer.com/article/10.1007/BF00992696)、[GAE (2015)](https://arxiv.org/abs/1506.02438)、[PPO (2017)](https://arxiv.org/abs/1707.06347)：梯度估计与受约束更新的基础。
+- [DeepSeekMath (2024)](https://arxiv.org/abs/2402.03300)、[DeepSeek-R1 (2025)](https://arxiv.org/abs/2501.12948)、[DAPO (2025)](https://arxiv.org/abs/2503.14476)、[GSPO (2025)](https://arxiv.org/abs/2507.18071)：组内学习信号、采样策略、Ratio 颗粒度与稳定性。
+- [HybridFlow / verl](https://arxiv.org/abs/2409.19256)、[AReaL](https://github.com/areal-project/AReaL)、[DORA (2026 预印本)](https://arxiv.org/abs/2604.26256)：系统与算法语义在异步训练中的相互制约。
+- [FlashAttention](https://arxiv.org/abs/2205.14135)、[PagedAttention](https://arxiv.org/abs/2309.06180)：底层 IO 与 KV 内存生命周期。
+
+## 课程文件与维护边界
+
+单日材料按需要组织为 `lesson.md`（完整推导）、`recap.md`（记忆中的关系）、`qa.md`（错误情境追问）和可选 `diagram.md`（静态图或交互指引）。不同机制使用不同结构，不强行每课配一张图片。严禁把过时的静态图当作新版内容的示意图。
+
+用户本地维护仓库应用与网站代码，定时任务默认只新增/完善当天的课件、示例和必要配图。课程允许跳课；课程更新不需要个人答案，也不把自动生成的“进度”当作真实掌握情况。
+

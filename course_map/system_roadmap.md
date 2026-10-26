@@ -1,62 +1,50 @@
-# 参考系统的演化主线
+# 从一个可手算的 Policy，到真实 RL Infra 的正确性边界
 
-课程统一围绕一个逐步增长的 RL Training System。首先验证数据和概率语义，再引入 GPU、分布式训练与异步执行。实际测量与设计推导要分开记录。
+课程保留一条有意缩小的参考线索：**数据从哪个分布生成、每一步梯度究竟更新了什么、哪些状态必须跨进程保留**。越到后面，并行、异步和服务拆分越复杂，但算法与数据的语义不能因此丢失。各阶段要有能够区分正确实现与错误实现的实验，而不只是多个接口能相互调用。
 
-```mermaid
-flowchart LR
-    A["Prompt Source"] --> B["Rollout"]
-    B --> C["Trajectory Contract"]
-    C --> D["Reward / Sampler"]
-    D --> E["Learner"]
-    E --> F["Optimizer / Version"]
-    F --> B
-    E -.-> G["Metrics / Checkpoint"]
-    C -.-> G
-```
+## 阶段一 · Day 01–14：明确优化目标
 
-## 阶段 1：Day 01–10，先跑通一个正确的小系统
+先固定一个二动作 Bernoulli Policy：`π(A)=p`，两动作 Reward 为 `[1,0]`。
 
-| 课程 | 本日概念 | 主线代码与验证目标 |
-|---|---|---|
-| 01 | Trajectory 与 Group | 按 ID Join Reward；版本校验、Mask 校验与错配负例 |
-| 02 | Transformer 计算与显存 | CPU 显存账本，区分朴素 Attention Score 与 FlashAttention |
-| 03 | Autograd 与梯度累积 | 完整 Batch 和 Micro-batch 反向梯度对照 |
-| 04 | Policy Gradient 与 Logprob | Token Shift、有效 Mask、Reduction 权重和梯度方向 |
-| 05 | Value / GAE | 计算 TD Error 和有限长轨迹的 GAE；验证边界 |
-| 06 | PPO | Ratio、Clip、KL 以及 Old/Current Policy 版本 |
-| 07 | GRPO | Group Advantage、长度归一化及全组数据要求 |
-| 08 | 最小 Rollout Loop | 把 Prompt、采样、Reward、Mask 和组数据连成可验证循环 |
-| 09 | 最小 Learner Loop | 接入 Current Logprob、Loss、Backward、Optimizer 和 Version Check |
-| 10 | 最小训练系统 | CPU Toy Policy 的 Rollout→Reward→Learner→Checkpoint，演示恢复与负例 |
+1. 期望回报为 `J=p`，以 `p=sigmoid(z)` 参数化时 `dJ/dz=p(1-p)`。
+2. 单次采样形成 Score Function 估计；Baseline 不随采样动作变化时，期望梯度不变，方差可能变化。
+3. 把单动作推广成自回归 Token，保留准确的 Shift、Action Mask 和 Reduction 定义。
+4. 固定旧策略以后引入 PPO Ratio/Clip；再把同一 Prompt 的多条回答转为 GRPO Advantage。DAPO/GSPO 的改动沿着具体失败条件讨论，不把算法名放在同一段总结里。
 
-### 固定实验背景
+**可执行证明**：至少有一组精确期望梯度与采样估计对照；一组 Token Shift 故意错一位的反例；正/负 Advantage 的 Clip 区间变化；全等 Reward 和不完整 Group 的零信号/错误统计。Day 10 的 Toy System 只能证明最小机制，不能声称已经复现大模型 PPO/GRPO 的全部细节。
 
-教材的数量级沙盘为 1B Dense Policy、4 GPU（2 Rollout、2 Training）、64 Groups × 4 Trajectories、Prompt 512 / Response 128 Token。**CPU 参考系统用更小的 Toy Model**，仅验证概率与数据语义，不把 Toy Bandit 吞吐当成 LLM 的性能。
+## 阶段二 · Day 15–26：把同一梯度变成真实的计算图
 
-### 端到端 Day 10 验收
+完成 Autograd 的梯度来源追踪、微批不等长的分母校验、AdamW/Clip/AMP 更新边界，以及 Activation/FlashAttention/FP8 的成本模型。
 
-至少验证：采样生成唯一 Trajectory ID；Reward 按 ID 对齐；Policy Version 可追踪；Mask 与 Loss 一致；梯度和 Loss 有限；Checkpoint 恢复 Policy、Optimizer 和 Step 后与不中断执行相符；至少一个错误输入被拒绝。Reward 改善不应靠单次短跑的偶然结果判断，需要多 Seed 对照。
+**工程证据**：有能计算的样本/Token Mean 对照；具体 Saved Tensor 的生命周期；量化造成的 Logprob 差异。旧仓库留下的教学实验仍可复用，但它们在新课表中的逻辑位置已变化：[不等长梯度累积](../examples/day_03/gradient_accumulation_lab.py) 属于新的 Day 16 主题，[朴素显存账本](../examples/day_02/memory_budget.py) 属于 Day 18/19 的附录案例，而不是优化目标的第一周。
 
-## 阶段 2：Day 11–40，换算真实 GPU 成本
+## 阶段三 · Day 27–56：资源约束的两个系统
 
-Day 20 输出带硬件、软件版本、Trace 和 Baseline 的性能报告；Day 30 把同一系统的训练侧映射到 TP/PP/FSDP/EP，区分计算量、通信量和通信拓扑；Day 40 把 Rollout 侧映射到实际推理服务，记录 TTFT、TPOT、吞吐、P50/P95、KV Cache 和权重更新成本。
+训练侧分析计算与数据移动：GEMM/Attention、DP、TP、PP、EP、CP、Checkpoint；推理侧分析 Prefill/Decode、KV Cache、Continuous Batching、推理分布与采样语义。
 
-## 阶段 3：Day 41–80，支持 Agentic 和异步系统
+**工程证据**：指定模型形状、序列分布、GPU 拓扑和约束，估算 FLOPs、HBM/通信字节和资源峰值；只在明确的真实环境和 Benchmark 下报告 Step Time/TTFT/TPOT/P99。理论 Roofline 不能当作硬件实测。
 
-Day 50 将单轮数据契约扩展到 Tool Call/Observation/Action Mask，加入 DataSampler/TransferQueue 与 Backpressure。Day 60 对同步与异步进行公平对照，注明 Policy Version、Staleness、Accepted、Inflight 和 Drain 时刻。Day 70 验证故障恢复与幂等，Day 80 完成 Logprob Drift、混精和确定性的验证清单。
+## 阶段四 · Day 57–85：加入 Agent 与异步
 
-## 阶段 4：Day 81–100，作品集与面试
+Rollout 不再只是一次字符串生成：工具 Observation 不能随意进入 Policy Loss，Group 收齐与整个 Batch 返回是不同时间点，Policy Version 必须指向真实生成时的参数状态，Partial Rollout 的恢复可能跨权重边界。
 
-代码和设计都指向同一参考系统。面试陈述要能沿着“问题 → 约束 → 决策 → 验证 → 代价”回答，不得用未测量的吞吐提升冒充项目成果。个人项目叙事建议保存在本地私有笔记中，面试时以可公开的证据表述实际决策和实验结果。课程发布不依赖学习者提交这类材料。
+重点研究三个能相互冲突的目标：**样本分布/算法正确性、GPU 利用效率、实现与恢复复杂度**。加入 DataSampler、队列背压、权重原子切换、Off-policy IS、OPD Teacher 分布和 Token KL。
 
-## 自由学习与每日发布
+**工程证据**：以一组标注了 `admitted/completed/accepted/inflight/drained` 的时间线，证明某种调度安排是否只是减少外层 Barrier，还是已经改动了采样分布；记录 Behavior/Old/Current Policy 的不同角色。没有实验测量时不能把“缩短等待”变成“端到端速度更快”的确定结论。
 
-网站中的 Day 01–100 按日期依次发布；已发布内容随时可看，作答与阶段验收是可选的自我诊断，不作为解锁条件。复习和错题库也独立于课程发布日期。
+## 阶段五 · Day 86–100：故障、复现与面试
 
-## 证据等级
+给同一系统注入超时、重复 Reward、Mask 错误、版本跳变、NCCL Hang、OOM 等故障，检验检测点、恢复路径和额外成本。最后才设计多 GPU RL 系统与面试演练。
 
-- **designed**：推导或方案完成，尚未运行。
-- **implemented**：代码实现完成，有对应测试，但未取得可复现性能测量。
-- **measured**：记录硬件、软件、配置、原始输出和重复测量方法之后获得实测结果。
+**结果判据**：公式可复算，错误测试必现，代码与测试能对应，性能声明包含环境和基线，引用明确区分作者报告与本项目复现。没有真实个人项目或实验结果，不应该自动编造数字和经历。
 
-参考架构的字段契约见 [data_contract.md](../architecture/data_contract.md)，版本语义见 [versioning.md](../architecture/versioning.md)。
+## 交互作为假设检验工具
+
+浏览器实验先覆盖 Day 01–05：手工控制 `p`/Baseline/Token Shift/PPO Ratio/Group Reward，界面显示**可计算的变量**和**对应的结果**，并故意暴露一类错误。后续互动内容可沿着 GAE 回溯、KV Cache 预算、异步时间线发展。不是每一天都必须有独立动画；如果实验不能改变判断，文字与代码更好。
+
+## 数据模型与成熟度
+
+随阶段逐步扩大轨迹契约。最初只是 `action, reward, logprob`；自回归后引入 `response_ids, prompt_length, valid_length, action_mask`；组内采样再引入 `group_id`；系统异步后再引入 `trajectory_id`、版本、在途状态与恢复点。字段不必在第一天全部讲完。随时区分讲义 Toy 结构和具体框架版本实际使用的 Schema。
+
+本课程所有“收益”结论都按 **derivation / tested / measured / paper-reported** 明确标注。原始输入、失败复现和证据链比绘制漂亮的架构概览更重要。

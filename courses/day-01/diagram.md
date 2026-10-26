@@ -1,9 +1,7 @@
-# Day 01 · 图解：身份在哪一段容易丢
+# Day 01 · 图解不画成框图
 
-![Rollout、Reward、Sampler 与 Learner 的数据流](assets/rl_training_loop.svg)
+本课没有画大型 RL Pipeline：不知道要优化什么之前，记住 Rollout/Reward/Trainer 方框的顺序意义有限。
 
-这张图只读**数据的归属**，不把箭头解释成串行的执行时间表。Rollout 可以并发生成，Verifier 可以乱序返回；Sampler 必须把 `trajectory_id`、Reward、Mask、Group 和生成时的版本重新对应起来。之后的数据过滤、批次划分都不应该改变这种关联。
+打开 [Lab 01：采样概率与期望 Reward](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=1)。横向滑动 $p$，直接看解析式 $J=p$ 和有限采样的结果差异。先预测、再运行、再改变采样次数，形成对随机梯度噪声的直觉。
 
-对照讲义中的四条样本：Verifier 按 A4、A1、A3、A2 完成，不等于 Trainer 应按这个顺序绑定 Reward。图中的连线表示逻辑数据依赖，并未画出独立的 GPU 资源池、并发数或某种特定的队列实现。
-
-另一处边界是 **Group 完成 vs Batch 完成**。Group A 的四条有效轨迹已经完整时，它的组内统计可以计算；不代表必须立刻跨越 Trainer 的 mini-batch、梯度累积和版本约束。后续异步章节才会讨论如何安排这个执行时间。
+**图的限制：** 这里只有二动作、确定性 Reward、独立采样。它没有 LLM Token、Prompt 分布和权重更新；真实系统不能用这个 Toy 的采样时间衡量 GPU 性能。

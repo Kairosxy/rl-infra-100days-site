@@ -1,25 +1,17 @@
-# Day 04 · 面试追问
+# Day 04 · 问答与追问
 
-## Reward 本身无法对参数反传，为什么 Policy 还能学习？
+## 题 1：PPO 的正负 Advantage，哪一边被 Clip？
 
-从 `J(θ)=Eτ[R(τ)]` 推导 Log-Derivative Trick。然后给定两个 Logit 都为 0，采样 A、Reward=1，手算对 A/B 的 Logit 梯度，并说明下降方向。
+给定 $\epsilon=0.2$，依次计算 $(A,r)=(+2,1.5),(-2,0.6),(+2,0.6),(-2,1.5)$ 的 clipped surrogate。指出哪两种情形里对 Ratio 的局部导数为零。
 
-**判别依据：** 能解释是对**轨迹发生概率**求导，而不是对 Reward 程序求导；`∇log π(A)` 是可微路径，计算得到 `∂L/∂z_A=-0.5`、`∂L/∂z_B=+0.5`。
+**判别依据：** 结果依次为 2.4、-1.6、1.2、-3.0；正 Advantage 上界之外平台，负 Advantage 下界之外平台。注意 Trainer 的 Loss 通常为该 surrogate 的负号。
 
-**追问：** 减去与当前状态有关但不依赖动作的 Baseline 为什么在期望下不改变策略梯度？需要使用 `Σ_a π(a|s)=1`。
+**追问：** 如果把负号漏掉，会怎样改变更新方向？如果有多个样本共享参数，一个样本已 Clip 是否代表该 Token 概率以后无法变化？
 
-## Token Shift 错一位，程序为什么仍能训练？
+## 题 2：Clip Range=0.2，为什么不能证明 KL 一定小？
 
-给出 `token_ids [B,L]` 和 `logits [B,L,V]`，说明位置 `t` 的 Logit 预测哪一个 Token。对于 Prompt 长度 $P$、Response 长度 $T$，写出响应动作与预测 Logits 的索引区间；说出一种 Shape 正常但标签错位的实现。
+给定 `π_old=[0.5,0.5]`、`π_current=[0.9,0.1]`，计算动作 A 的 Ratio 和 $D_{KL}(\pi_{\rm old}\|\pi_{\rm current})$。解释为什么某个样本的目标平台没有约束整个概率分布。
 
-**判别依据：** 目标 `token_ids[:,P:P+T]`；预测 Logits `logits[:,P-1:P+T-1]`。检查 Padding、不同 Prompt 长度和 Mask，不能只核对 Tensor Shape。
+**判别依据：** A Ratio=1.8；KL 约 0.5108 nats；按全分布、不同状态和额外目标分析。不能把 Clip 当作数学上严格的 Trust Region。
 
-**追问：** 两条样本有 1 和 3 个有效 Token，`token_mean` 与 `seq_mean_token_mean` 对短序列每个 Token 的梯度权重分别是多少？分别是 $1/4$ 与 $1/2$。
-
-## Rollout Logprob 与 Trainer Logprob 不一样，就说明 FP8 有问题吗？
-
-Rollout 使用 Temperature 采样，Trainer 通过当前权重在未变换的 Logits 上计算 Logprob。你会先检查哪几个定义，再考虑是否存在数值漂移？能否直接把 Rollout Logprob 当作 PPO 的 Old Logprob？
-
-**判别依据：** 先确定采样分布、Token Shift、Mask、Policy Version 和固定 Old Policy 基准。数值不等可能来自比较的分布不同，不能直接归因于量化误差；复用 Old 必须满足算法契约。
-
-**追问：** 两个样本 Advantage 为 +1/-1，Loss 恰好为 0，是否可能梯度非零？给一个张量级理由。
+**追问：** 如果 Rollout 使用 Top-p，而 Trainer 的 Old Logprob 是原始 Softmax，当前 Ratio 的语义满足你想要的 IS 假设吗？

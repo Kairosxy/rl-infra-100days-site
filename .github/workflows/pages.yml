@@ -36,6 +36,7 @@ jobs:
         run: |
           node --check site/app.js
           node --check quiz/app.js
+          node --check labs/app.js
       - name: Save offline HTML
         uses: actions/upload-artifact@v4
         with:

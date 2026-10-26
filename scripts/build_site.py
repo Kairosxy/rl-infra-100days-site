@@ -12,6 +12,7 @@ import html
 import json
 import mimetypes
 import re
+import shutil
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
@@ -100,12 +101,14 @@ def course_payload(root: Path) -> list[dict[str, object]]:
                 "请解释本课的核心机制。" if not questions else "给出一个失败案例和验证方法。"
             )
 
-        lab_folder = root / "examples" / f"day_{day:02d}"
+        # Legacy day_01..day_04 code is retained for later topics in the new syllabus.
+        # Avoid labeling these old experiments as the current lesson's lab.
+        lab_folder = root / "examples" / f"day_{day:02d}" if day > 5 else None
         labs = [
             path.relative_to(root).as_posix()
             for path in sorted(lab_folder.glob("*.py"))
             if path.is_file()
-        ] if lab_folder.exists() else []
+        ] if lab_folder is not None and lab_folder.exists() else []
 
         courses.append({
             "day": day,
@@ -133,6 +136,16 @@ def generate_site(root: Path, output: Path) -> int:
         source = source.replace(slot, value)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(source, encoding="utf-8")
+    # Publish interactive demos alongside the standalone course reader.
+    labs_source = root / "labs"
+    if labs_source.is_dir():
+        labs_target = output.parent / "labs"
+        labs_target.mkdir(parents=True, exist_ok=True)
+        for asset in ("index.html", "style.css", "app.js"):
+            source_file = labs_source / asset
+            if not source_file.is_file():
+                raise FileNotFoundError(f"Missing interactive lab asset: {source_file}")
+            shutil.copy2(source_file, labs_target / asset)
     return len(json.loads(payload))
 
 

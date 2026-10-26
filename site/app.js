@@ -180,10 +180,13 @@
     const course = getCourse();
 
     id("course-breadcrumb").textContent = activeDay <= 10
-      ? "模块一 · RL 与训练基础"
+      ? "模块 A · 策略优化与估计器"
       : "RL Infrastructure · 持续进阶";
     id("day-label").textContent = "DAY " + pad(activeDay) + " / 100";
     id("course-title").textContent = course.title;
+    const labLink = id("course-lab-link");
+    labLink.hidden = activeDay > 5;
+    if (activeDay <= 5) labLink.href = "labs/?day=" + activeDay;
     id("course-subtitle").textContent =
       "按日发布，自由选课；答题和自评完全自愿，草稿只保存在浏览器。";
     document.title = "Day " + pad(activeDay) + " · " + course.title + " | RL Infra";

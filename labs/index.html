@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="RL Infra 课程交互实验：用可计算的反例理解采样、梯度、Token Shift、PPO Clip 和 GRPO。">
+  <title>机制实验室 | RL Infra</title>
+  <link rel="stylesheet" href="./style.css">
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#lab-title">跳到实验</a>
+  <header class="header">
+    <a class="brand" href="../"><span class="logo">RL<span>↗</span></span><span><strong>RL Infra / Labs</strong><small>把假设变成看得见的差异</small></span></a>
+    <nav aria-label="页头导航"><a href="../">课程</a><a href="../quiz/">面试题</a><a href="https://github.com/Kairosxy/rl-infra-100days-site" target="_blank" rel="noopener">源码 ↗</a></nav>
+  </header>
+
+  <div class="layout">
+    <aside class="nav-column" aria-label="实验目录">
+      <p class="eyebrow">EXPLORE / 01—05</p>
+      <h2>机制实验</h2>
+      <p class="nav-summary">先自己预测结果，再调整一项变量。每个实验只解释一个问题。</p>
+      <nav id="lab-navigation" class="lab-navigation" aria-label="选择实验">
+        <button type="button" data-choose-lab="1"><b>01</b><span>采样与期望<small>Pass@1 vs Pass@k</small></span></button>
+        <button type="button" data-choose-lab="2"><b>02</b><span>Baseline 与方差<small>同一个期望梯度</small></span></button>
+        <button type="button" data-choose-lab="3"><b>03</b><span>Token Shift / Mask<small>位置错了为何还可训练</small></span></button>
+        <button type="button" data-choose-lab="4"><b>04</b><span>PPO Clipped Surrogate<small>梯度平台在哪一侧</small></span></button>
+        <button type="button" data-choose-lab="5"><b>05</b><span>GRPO Group Advantage<small>组内信号与完整性</small></span></button>
+      </nav>
+      <div class="sidebar-foot"><strong>数值说明</strong><p>全部计算在当前浏览器完成。这里没有真实模型训练、GPU 实测，也没有提交学习数据的接口。</p></div>
+    </aside>
+
+    <main class="workspace">
+      <div class="heading">
+        <div class="eyebrow" id="lab-kicker">LAB 01 / POLICY DISTRIBUTION</div>
+        <h1 id="lab-title">采样噪声会骗过你的直觉吗？</h1>
+        <p id="lab-description" class="lead">模型的期望 Reward 与少量实际采样结果未必一致。改变策略概率和采样次数，观察误差。</p>
+      </div>
+
+      <section id="lab-1" class="lab" aria-label="采样与期望实验">
+        <div class="columns">
+          <div class="panel inputs">
+            <div class="panel-label">01 / 设置实验条件</div>
+            <p class="question">给定 Reward(A)=1、Reward(B)=0。如果 A 的概率是 p，真实期望是什么？</p>
+            <label for="bandit-p" class="input-label">动作 A 的概率 <output id="bandit-p-text" for="bandit-p">0.25</output></label>
+            <input id="bandit-p" type="range" min="0.02" max="0.98" step="0.01" value="0.25">
+            <label for="bandit-n" class="input-label">随机采样次数</label>
+            <select id="bandit-n"><option value="8">8 次（很少）</option><option value="32">32 次</option><option value="128">128 次</option><option value="512">512 次</option></select>
+            <button id="bandit-roll" class="action" type="button">换一组随机样本 ↻</button>
+            <p class="micro">先预测，再点击。增加采样量不保证这一次误差单调减小。</p>
+          </div>
+          <div class="panel results" aria-live="polite">
+            <div class="panel-label">02 / 期望与一次实验结果</div>
+            <div class="metrics three">
+              <div><span>解析期望 J</span><strong id="bandit-expected">0.250</strong></div>
+              <div><span>采样 Reward 均值</span><strong id="bandit-observed">—</strong></div>
+              <div><span>dJ / dz</span><strong id="bandit-grad">0.188</strong></div>
+            </div>
+            <div class="bar-title"><span>理论正确率</span><span id="bandit-pct">25.0%</span></div>
+            <div class="bar"><span id="bandit-expected-bar"></span></div>
+            <div class="bar-title"><span>本次采样正确率</span><span id="bandit-observed-pct">—</span></div>
+            <div class="bar observed"><span id="bandit-observed-bar"></span></div>
+            <p id="bandit-count" class="annotation"></p>
+            <div class="formula">J = p · 1 + (1−p) · 0 = p<br>若 p = sigmoid(z)，则 dJ/dz = p(1−p)</div>
+            <p id="bandit-pass" class="insight"></p>
+          </div>
+        </div>
+        <p class="takeaway">先解释：当 p=0.02、只采样 8 次时，连续没有 Reward=1 是否表示策略完全学不到？再看 <a href="../#day=1&view=lesson">Day 01 讲义</a>。</p>
+      </section>
+
+      <section id="lab-2" class="lab" hidden aria-label="Baseline 与梯度方差实验">
+        <div class="columns">
+          <div class="panel inputs">
+            <div class="panel-label">01 / 调整估计器</div>
+            <p class="question">真实梯度固定时，Baseline b 改变的是期望，还是波动？</p>
+            <label for="baseline-p" class="input-label">动作 A 的概率 <output id="baseline-p-text">0.25</output></label>
+            <input id="baseline-p" type="range" min="0.05" max="0.95" step="0.05" value="0.25">
+            <label for="baseline-b" class="input-label">常数 Baseline b <output id="baseline-b-text">0.00</output></label>
+            <input id="baseline-b" type="range" min="-0.5" max="1.5" step="0.05" value="0">
+            <button id="baseline-optimal" class="action" type="button">使用本例的最小方差 Baseline</button>
+            <p class="micro">b 不能依赖本次采样动作。本例 Reward(A)=1、Reward(B)=0 且确定不变。</p>
+          </div>
+          <div class="panel results">
+            <div class="panel-label">02 / 两种可能的采样梯度</div>
+            <div class="metrics three">
+              <div><span>抽到 A 的估计 gA</span><strong id="baseline-ga">—</strong></div>
+              <div><span>抽到 B 的估计 gB</span><strong id="baseline-gb">—</strong></div>
+              <div><span>估计器方差</span><strong id="baseline-variance">—</strong></div>
+            </div>
+            <svg id="baseline-plot" viewBox="0 0 560 178" aria-label="梯度估计离散取值与期望梯度位置" role="img"></svg>
+            <p id="baseline-expect" class="annotation"></p>
+            <div class="formula">g(A) = (1−b)(1−p)，g(B) = −b(−p)<br>E[g] = p · g(A) + (1−p) · g(B)</div>
+          </div>
+        </div>
+        <p class="takeaway">这不是学到「平均 Reward 就是最优 Baseline」，而是学到：Baseline 不随 Action 改变时保留期望梯度，方差却由 Reward 与 Score 的联合分布决定。继续阅读 <a href="../#day=2&view=lesson">Day 02</a>。</p>
+      </section>
+
+      <section id="lab-3" class="lab" hidden aria-label="Token 对齐实验">
+        <div class="columns">
+          <div class="panel inputs">
+            <div class="panel-label">01 / 破坏一个索引不变量</div>
+            <p class="question">位置 t 的 Logits 预测位置 t，还是 t+1？错一位 Tensor Shape 会改变吗？</p>
+            <label for="shift-p" class="input-label">Prompt Token 数 <output id="shift-p-text">5</output></label>
+            <input id="shift-p" type="range" min="2" max="5" step="1" value="5">
+            <label class="check"><input id="shift-wrong" type="checkbox"> 故意错误：用 logits[t] 预测 token[t]</label>
+            <p class="micro">固定序列长度 L=7，真实 Token 到位置 5，位置 6 是 Padding。变动 P 用于观察哪些目标位置参与 Loss。</p>
+          </div>
+          <div class="panel results">
+            <div class="panel-label">02 / 预测位置与目标位置</div>
+            <div id="shift-table" class="token-board" aria-live="polite"></div>
+            <p id="shift-summary" class="annotation"></p>
+            <div class="formula">正确：logits[t−1] → target token[t]<br>Action Mask：prompt_length ≤ t &lt; valid_length</div>
+          </div>
+        </div>
+        <p class="takeaway">Shift 错误不会触发数组 Shape 检查；它让模型优化另一个条件概率。试着写出 <a href="../#day=3&view=lesson">Day 03</a> 的正确 Gather 切片。</p>
+      </section>
+
+      <section id="lab-4" class="lab" hidden aria-label="PPO Clip 实验">
+        <div class="columns">
+          <div class="panel inputs">
+            <div class="panel-label">01 / 观察分段函数</div>
+            <p class="question">同一个 PPO Clip，正负 Advantage 的梯度平台会落在相同一侧吗？</p>
+            <label for="ppo-a" class="input-label">Advantage 的符号</label>
+            <select id="ppo-a"><option value="2">A = +2（相对好动作）</option><option value="-2">A = −2（相对差动作）</option></select>
+            <label for="ppo-eps" class="input-label">ε / Clip Range <output id="ppo-eps-text">0.20</output></label>
+            <input id="ppo-eps" type="range" min="0.05" max="0.45" step="0.05" value="0.2">
+            <label for="ppo-r" class="input-label">新旧概率比 r <output id="ppo-r-text">1.50</output></label>
+            <input id="ppo-r" type="range" min="0.35" max="1.8" step="0.05" value="1.5">
+            <p class="micro">这里画的是被**最大化**的单个 clipped surrogate，不是负号 Loss，也不是整条训练曲线。</p>
+          </div>
+          <div class="panel results">
+            <div class="panel-label">02 / PPO Clipped Surrogate</div>
+            <div class="metrics three">
+              <div><span>r · A</span><strong id="ppo-unclipped">—</strong></div>
+              <div><span>Jclip</span><strong id="ppo-value">—</strong></div>
+              <div><span>局部 dJ/dr</span><strong id="ppo-derivative">—</strong></div>
+            </div>
+            <svg id="ppo-plot" viewBox="0 0 600 242" role="img" aria-label="PPO Clipped Surrogate 随 Ratio 变化的分段曲线"></svg>
+            <p id="ppo-explain" class="annotation"></p>
+            <div class="formula">Jclip = min(r · A, clip(r, 1−ε, 1+ε) · A)</div>
+          </div>
+        </div>
+        <p class="takeaway">局部平台不等于全策略 KL 有硬边界。看完图以后，回到 <a href="../#day=4&view=lesson">Day 04</a> 的两动作 KL 反例。</p>
+      </section>
+
+      <section id="lab-5" class="lab" hidden aria-label="GRPO Group Advantage 实验">
+        <div class="columns">
+          <div class="panel inputs">
+            <div class="panel-label">01 / 四次采样，同一 Prompt</div>
+            <p class="question">组内奖励差异，能否让同一 Reward 产生不同 Advantage？</p>
+            <p class="sub-label">点击每条回答切换 Reward 0 / 1：</p>
+            <div id="grpo-switches" class="reward-switches" role="group" aria-label="四条回答的奖励">
+              <button data-reward-index="0" type="button">T1 <strong>1</strong></button>
+              <button data-reward-index="1" type="button">T2 <strong>0</strong></button>
+              <button data-reward-index="2" type="button">T3 <strong>1</strong></button>
+              <button data-reward-index="3" type="button">T4 <strong>0</strong></button>
+            </div>
+            <label class="check"><input id="grpo-incomplete" type="checkbox"> 只收到前三条：演示不完整 Group</label>
+            <button id="grpo-reset" class="action" type="button">恢复 [1, 0, 1, 0]</button>
+            <p class="micro">预期组大小 G=4。这里展示的是总体标准差的组内标准化，分母额外加 ε=10⁻⁸。</p>
+          </div>
+          <div class="panel results">
+            <div class="panel-label">02 / 均值、方差与 Advantage</div>
+            <div class="metrics three">
+              <div><span>组内均值</span><strong id="grpo-mean">—</strong></div>
+              <div><span>总体标准差</span><strong id="grpo-std">—</strong></div>
+              <div><span>收到的条数</span><strong id="grpo-count">—</strong></div>
+            </div>
+            <div id="grpo-advantages" class="advantage-rows" aria-live="polite"></div>
+            <p id="grpo-explain" class="annotation"></p>
+            <div class="formula">Aᵢ = (rᵢ − mean(r)) / (std(r) + ε)</div>
+          </div>
+        </div>
+        <p class="takeaway">四样本 Group 不完整时，临时统计并不是原目标的提前结果。对应的调度与采样偏差问题会在 <a href="../#day=5&view=lesson">Day 05</a> 和后续 Async DataSampler 里反复出现。</p>
+      </section>
+
+      <div class="footer-row">
+        <a id="back-to-lesson" class="lesson-link" href="../#day=1&view=lesson">← 返回本课讲义</a>
+        <a href="../quiz/">进入 224 道题库 →</a>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
