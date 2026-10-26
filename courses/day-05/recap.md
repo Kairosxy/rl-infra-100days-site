@@ -1,12 +1,11 @@
-# Day 05 · 复算卡
+# Day 05 · 组内有差异才有相对信号
 
-同 Prompt 下 $G=4$ 条 Reward `[1,0,1,0]`，总体均值 0.5、标准差 0.5，组内标准化后 Advantage 为 `[+1,-1,+1,-1]`。
+同一个 Prompt 的四条 Reward 为 `[1,0,1,0]`，总体均值 0.5、标准差 0.5，标准化的 Advantage≈`[1,-1,1,-1]`。
 
-**两个最容易改错的问题：**
+全对 `[1,1,1,1]` 或全错 `[0,0,0,0]`，在带正数 $\epsilon$ 的相对奖励估计下，Advantage 全为 0。它们不能区分本组内部谁更值得鼓励。
 
-1. 全部 Reward 相同（全对或全错），减去组内均值以后每个分子为 0，带正常数 $\epsilon$ 的标准化 Advantage 全为零。这个组对该 PG 项没有区分度。
-2. 只收齐 `[1,0,1]` 就算，均值变 $2/3$，标准差约 0.4714，Advantage 为 `[0.707,-1.414,0.707]`。这是三样本组统计，不是原定四样本组的「提前版」。
+第四条还没返回时，先拿 `[1,0,1]` 算，均值变成 2/3，标准差约 0.4714，Advantage≈`[0.707,-1.414,0.707]`；这不是原四样本组的同一个目标。
 
-更深一层：组内 Reward 确定 Advantage，但**Token/Sequence Reduction** 仍决定长短 Response 的梯度权重。动态过滤零方差 Group 会提高某些采样效率，却也会改变被选中的 Prompt 分布。
+**有一个值得记住的更深层问题：** 组内 Mean 包含了该样本自己的 Reward，不符合普通 Action-independent Baseline 的条件。在固定大小 $G=2$、未做标准差归一化的 Bernoulli Toy 里，组内中心化估计的期望梯度是 0.125，真实梯度为 0.25。别把这一比例直接外推到标准化的 GRPO。
 
-[修改四个 Reward，观察统计量是否改变](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=5)。
+[切换 Reward 与“只收到前三条”的状态](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=5)。

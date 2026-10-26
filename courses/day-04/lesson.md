@@ -1,120 +1,162 @@
-# Day 04 · PPO Clip 约束了哪一段梯度，为什么它不是 KL 的保险丝？
+# Day 04 · 同一批回答训练第二遍，为什么 PPO 要限制更新幅度？
 
-前几课已经把期望 Reward、采样梯度、Token Logprob 连起来了。现在一个自然的问题是：如果我们把同一批 Rollout 样本反复拿来做多轮梯度更新，**用于生成样本的旧策略与正在更新的新策略会越来越不一样**，继续使用原来的梯度估计会发生什么？
+模型已经生成了一批回答。当时它给某个已采样动作的概率是 0.2。Trainer 用这批数据更新一次参数后，给同一个动作的概率变成 0.3。
 
-PPO 用一个易实现的 Clipped Surrogate 约束部分更新方向。难点不在于背公式，而在于看清：**正负 Advantage 截断的区间不同，Clip 后哪些样本没有梯度，以及这个目标没有保证什么**。
+你想再利用这批昂贵的回答训练一遍。看上去只需要多调用一次 `backward()`；但现在动作来自**旧的 0.2 分布**，你正试图优化的是**新的 0.3 分布**。
 
-[互动 Lab 04：拖动 Ratio，看哪一侧梯度被截断 →](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=4)
+这两种分布不能在推导里直接当成同一个。PPO 的 Ratio 和 Clip 就是从这个问题出发，才有必要存在。
 
-## 先看一个 Action 的 Ratio
+## 旧样本能不能描述新策略？
 
-对同一状态 $s$ 和已采样动作 $a$，设 Old Policy 固定为 $\pi_{\mathrm{old}}$，Current Policy 为 $\pi_\theta$。重要性比率：
-
-$$
-r_t(\theta)
-=\frac{\pi_\theta(a_t|s_t)}
-{\pi_{\mathrm{old}}(a_t|s_t)}
-=\exp\bigl(\log\pi_\theta(a_t|s_t)-\log\pi_{\mathrm{old}}(a_t|s_t)\bigr).
-$$
-
-例如已采样动作 A 在旧策略下概率为 0.2、新策略下为 0.3，则 Ratio 是 $1.5$。这意味着新策略给已采样动作更高的概率，**并不说明整条轨迹的真实期望 Reward 按比例提升 1.5 倍**。
-
-PPO 的常见 clipped surrogate 对每个动作的 Advantage $A_t$ 写为：
+先不谈 PPO。只有两个动作 A/B，Old Policy 给它们的概率是：
 
 $$
-J_t^{\mathrm{clip}}(\theta)
-=\min\!\left(
-r_t A_t,\ 
-\operatorname{clip}(r_t,1-\epsilon,1+\epsilon) A_t
-\right).
+\pi_{\rm old}=[0.2,0.8].
 $$
 
-Trainer 通常最小化负的 Surrogate，加上所选实现的 KL/Entropy/Critic 等项。下面只研究这个单动作 Surrogate；完整 PPO 是多个 Token/Step 的统计目标。
-
-## 正 Advantage：超过上界时，不再继续鼓励这个 Action
-
-固定 $A=+2$、$\epsilon=0.2$，允许区间为 $r\in[0.8,1.2]$。
-
-当 $r=1.5$：
+Current Policy 已经变成：
 
 $$
-rA=1.5\times2=3,\qquad
-\operatorname{clip}(r)A=1.2\times2=2.4,
+\pi_\theta=[0.3,0.7].
 $$
 
-所以 $J^{\mathrm{clip}}=2.4$。如果 $r$ 继续从 1.5 增大到 1.8，这个样本对 $r$ 的目标值保持 2.4，**局部导数为 0**（在分段边界不讨论不可微点）。
-
-这个单样本不再推动已被明显提高概率的正 Advantage 动作。它不是说别的样本、别的损失项或共享参数再也不能改变该动作的概率。
-
-如果 $r=0.6$ 呢？$rA=1.2$，截断项为 1.6，取更小的 1.2，梯度不为零。**正 Advantage 的左侧下降没有被同样截断**，因为目标希望能纠正被压低的好动作。
-
-## 负 Advantage：下界另一侧才出现平台
-
-让 $A=-2$、$\epsilon=0.2$。当 $r=0.6$：
+假设你想知道 Current Policy 的平均 Reward，A 得 1、B 得 0，答案显然是：
 
 $$
-rA=-1.2,\qquad
-\operatorname{clip}(r)A=0.8\times(-2)=-1.6.
+J_{\rm current}=0.3\times1+0.7\times0=0.3.
 $$
 
-取最小值 $-1.6$，继续压低 $r$ 并不会让这个样本的 clipped surrogate 再变化。这次平台在**左侧** $r<0.8$。
+但手头样本来自 Old Distribution。若不做修正，按旧样本平均 Reward，你估计的是 0.2。
 
-| Advantage | 未饱和的 Surrogate | 哪一侧被 Clip 成平台 |
+概率论给了一个精确恒等式：只要新分布的正概率动作在旧分布下也有正概率（Support 条件），对固定函数 $f(a)$ 有：
+
+$$
+\mathbb E_{a\sim\pi_\theta}[f(a)]
+=\mathbb E_{a\sim\pi_{\rm old}}
+\left[\frac{\pi_\theta(a)}{\pi_{\rm old}(a)}f(a)\right].
+$$
+
+比率就是：
+
+$$
+r(a)=\frac{\pi_\theta(a)}{\pi_{\rm old}(a)}
+=\exp\!\bigl(\log\pi_\theta(a)-\log\pi_{\rm old}(a)\bigr).
+$$
+
+本例 $r(A)=0.3/0.2=1.5$，$r(B)=0.7/0.8=0.875$。用旧分布求加权期望：
+
+$$
+0.2\times1.5\times1+0.8\times0.875\times0=0.3.
+$$
+
+这就是 Importance Sampling 的基本直觉。**Ratio 修正的是采样分布的差别，不是某个“经验上的学习率放大倍数”。**
+
+但这里仍有一个重要限制：上面的等式说的是给定状态下的动作分布。真实 RL 中，状态访问分布也可能随策略变化。只给每个 Token 乘一个 Ratio，不会自动修复所有由长轨迹、环境反馈与不同状态分布引起的偏差。
+
+## 为什么 Ratio 很大时，直接加权会让优化不稳定？
+
+想象旧分布认为某个动作只有万分之一的概率，新分布认为它有 10% 的概率。它的 Ratio 就是 1000。该动作在旧样本中很难出现，但偶尔出现的一条可能拥有极大权重。
+
+因此一种直接的 Importance Weighted 估计可以在期望层面合理，却在有限样本中出现很高的方差。使用旧样本反复优化时，模型还可能逐渐离产生这批数据的策略更远。
+
+PPO 常见的 Clipped Surrogate 并不是简单把所有 Ratio 裁剪掉，而是对**有符号的 Advantage** 取两项中的较小值：
+
+$$
+J^{\rm clip}(r,A)=
+\min\!\bigl(rA,\operatorname{clip}(r,1-\epsilon,1+\epsilon)A\bigr).
+$$
+
+Trainer 最小化的 Loss 通常是这项的**负号**，并可能加入其他 Critic、KL 或 Entropy 项。当前只研究单条样本对 Clipped Surrogate 的贡献，不能把这一项当作完整训练器。
+
+## 为什么正负 Advantage 的平台在不同侧？
+
+设 $\epsilon=0.2$，允许区间 $[0.8,1.2]$。
+
+如果一个已采样动作相对较好，$A=+2$：
+
+- $r=1.0$ 时，$J^{clip}=2.0$。
+- $r=1.5$ 时，原项是 3.0，裁剪项是 2.4，取 **2.4**。
+- $r$ 继续变成 1.8 时，结果仍是 **2.4**。这条样本对 Ratio 的局部梯度进入平台。
+- 但 $r=0.6$ 时，原项 1.2、裁剪项 1.6，取 **1.2**，仍有使好动作恢复概率的梯度。
+
+坏动作 $A=-2$ 则相反：
+
+- $r=0.6$：原项 −1.2、裁剪项 −1.6，取 **−1.6**；继续降低概率不再改善这个样本的 Clipped Surrogate。
+- $r=1.5$：原项 −3.0、裁剪项 −2.4，取 **−3.0**；坏动作概率升高仍会受到抑制。
+
+把结果整理为一眼能判断的条件：
+
+$$
+\frac{\partial J^{clip}}{\partial r}=
+\begin{cases}
+0,& A>0 \ \text{且}\ r>1+\epsilon,\\
+0,& A<0 \ \text{且}\ r<1-\epsilon,\\
+A,&\text{其他非边界位置}.
+\end{cases}
+$$
+
+这里的导数是**把当前 Advantage 视为固定常数时，单样本对 $r$ 的局部导数**；实际对模型参数求导，还要乘上 $\partial r/\partial\theta$。在折点处不声称存在唯一的通常导数。
+
+这些区间不是任意选的。它们正好在限制某个样本对当前策略“已经朝有利方向走过头”的进一步鼓励。**Clip 是有偏的优化目标选择，用来改善更新行为；它不再等于前面那个未经裁剪的精确 Importance Weighted 期望。**
+
+## 你能用 Clip Range=0.2 保证 KL 很小吗？
+
+不能。用一个完整的二动作反例就能看出来：
+
+$$
+\pi_{\rm old}=[0.5,0.5],\quad
+\pi_\theta=[0.9,0.1].
+$$
+
+对于 A，$r(A)=1.8$；若它是正 Advantage 样本，Clipped Surrogate 早已进入平台。但两份完整分布的 Forward KL 是：
+
+$$
+D_{\rm KL}(\pi_{\rm old}\|\pi_\theta)
+=\tfrac12\log\tfrac{0.5}{0.9}
++\tfrac12\log\tfrac{0.5}{0.1}
+\approx0.510826\ {\rm nats}.
+$$
+
+一条样本的局部梯度进入平台，不表示整个词表、其他状态或者别的样本无法继续改变参数。**Clip Range 不是全策略 KL 的数学硬上界。**
+
+实际项目必须定义并记录 KL 的方向、比较对象、采样分布和统计口径。一个仅对采样 Token 算的近似 KL，也不等于对全词表完整积分得到的精确 KL。
+
+## Tensor 里哪个字段应该固定不动？
+
+一个常见的最小 Loss 核心为：
+
+~~~python
+ratio = torch.exp(current_log_probs - old_log_probs.detach())
+unclipped = ratio * advantages.detach()
+clipped = torch.clamp(ratio, 1.0 - eps, 1.0 + eps) * advantages.detach()
+loss_per_token = -torch.minimum(unclipped, clipped)
+
+loss = (loss_per_token * action_mask).sum() / action_mask.sum().clamp_min(1)
+~~~
+
+这段代码假定 `current_log_probs`、`old_log_probs`、`advantages`、`action_mask` 已经表示**同一批已采样动作且形状正确**。这里只是选择全局有效 Token Mean 的一个示例，并不是所有 PPO/GRPO 的通用 Reduction。
+
+至少需要记住：
+
+| 量 | 应该是什么 | 典型错误 |
 |---|---|---|
-| $A>0$ | $rA$ | $r>1+\epsilon$ |
-| $A<0$ | $rA$ | $r<1-\epsilon$ |
+| `old_log_probs` | 当前 PPO 优化阶段固定的比较基准 | 每次 Step 重新读取 Current，令 Ratio 总回到 1 |
+| `current_log_probs` | 当前可微 Policy 对固定动作重新算的 Logprob | 拿无 Autograd 的 Rollout 数字反传 |
+| `advantages` | 这一轮定义下的优势估计，当前 Loss 视为常数 | 无意穿过优势估计过程反传 |
+| `action_mask` | 明确的可训练动作位置 | Padding 或 Tool Observation 进入 Loss |
 
-如果 $A=0$，不论 Ratio 怎样，当前样本的 Surrogate 都是 0；这不是 PPO 的 bug，而是 Advantage 估计器没有给这条样本提供方向。
+注意 Old 和 Behavior 并不是任何情况下都相同。Rollout 时使用的权重版本、Temperature、Top-p 等采样变换，决定了真实生成分布。分母概率不是只要名字叫 `old_log_probs` 就一定代表正确行为策略。
 
-把表格死记下来还不够。拖动 [Lab 04](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=4) 的 Ratio 并来回切换 Advantage 的符号。你的目标是**先预测平台在左边还是右边**，再检查曲线和数值。
+## 亲自制造两个完全不同的问题
 
-## 为什么「Clip=0.2」不等于「策略 KL 一定很小」
+在 [PPO Ratio 实验](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=4) 中，固定 $\epsilon=0.2$，先把 $A$ 从 +2 改成 −2，预测平坦区会从哪侧移动。再把 $r$ 从 1.0 增加到 1.5，观察同一项的导数何时为零。
 
-Surrogate 对**已采样 Action 的 Ratio** 分段截断。它没有对整个词表、所有状态或下一轮采样产生硬约束。
+接着做一个代码层面的负例：把 `old_log_probs` 错设为每一次新算的 `current_log_probs`。这会让 Ratio 数值始终是 1，从而看不到真正的新旧策略差异。该错误比单纯「Clip 过多」更值得先排查。
 
-构造一个极小的二动作分布：
+学习 PPO 不能只会背 $\epsilon=0.2$。关键是能从**旧样本所来自的概率分布**推到 Ratio，能手算正负 Advantage 的两个分段目标，并且知道这套限制**没有**证明全局策略更新一定安全。
 
-$$
-\pi_{\mathrm{old}}=[0.5,0.5],\qquad
-\pi_{\mathrm{current}}=[0.9,0.1].
-$$
+## 核对文献
 
-动作 A 的 Ratio 已经达到 $0.9/0.5=1.8$，对正 Advantage 的 A 样本，其 clipped surrogate 进入平台。但两个完整分布的 Forward KL 仍为：
-
-$$
-D_{\mathrm{KL}}(\pi_{\mathrm{old}}\|\pi_{\mathrm{current}})
-=0.5\log\frac{0.5}{0.9}
-+0.5\log\frac{0.5}{0.1}
-\approx0.5108.
-$$
-
-这里 KL 使用自然对数，单位是 nats。即使 A 样本已经被 Clip 住，**整个策略仍可能与 Old 有明显差异**，因为未观测动作、其他状态和共享参数都会变化。PPO Clip 不能单独作为全局 Trust Region 或 KL 上界的数学证明。实际训练需要继续监控 KL、Clip Fraction、Entropy 等指标，并明确它们的计算分布与估计口径。
-
-注意：这个例子只是证明「单个 clipped surrogate 平台不蕴含全分布的 KL 界」，**不是一次 PPO 训练真的运行到了该分布**。
-
-## 几个经常被混在一起的实现选择
-
-**Old 和 Behavior 不一定始终相同。** 如果每次优化都使用刚由 Old 采出的 on-policy 数据，二者在那次采样中可以一致。如果样本在异步队列中跨过权重更新、使用不同的 Sampling Temperature/Top-p，情况就复杂了。Ratio 分母到底是什么分布必须由算法定义，不能看到 `old_log_probs` 字段就认定它与真实 Behavior 相等。
-
-**Ratio 的粒度很重要。** 这是一个 Step/Token 级目标；对于自回归序列，直接把所有 Token Logprob 相加再 exponentiate，会得到 Sequence Probability Ratio，和逐 Token Ratio 的数值范围及裁剪效果完全不同。GSPO 等工作恰恰把这层差异作为算法设计点，而非普通实现优化。
-
-**Reduction 仍然属于目标函数。** Day 03 的 Token Mean、Sequence Mean 改变了每条回答占到的梯度权重。把 PPO Clipping 实现正确，却在末尾改变了长度归一化，依旧可能得到不同的训练行为。
-
-## 一个不依赖 GPU 的错误判断练习
-
-设 $\epsilon=0.2$，请先手算：
-
-1. $A=+2,r=1.5$：结果 2.4，局部 Ratio 导数 0。
-2. $A=-2,r=0.6$：结果 -1.6，局部 Ratio 导数 0。
-3. $A=+2,r=0.6$：结果 1.2，局部 Ratio 导数 +2。
-4. $A=-2,r=1.5$：结果 -3.0，局部 Ratio 导数 -2。
-
-实验页面会画出完整分段折线并标出当前位置。若把损失 `loss=-Jclip` 误写成 `loss=+Jclip`，所有梯度更新方向将反过来；这是值得写进测试的失败例子。
-
-你现在应该能回答：**为什么 PPO 的同一段 Clip 规则，对坏动作和好动作必须产生不同的梯度平台？** 下一课把单条动作变为一个 Prompt 下多条回答，看看 GRPO 如何构造 Advantage，以及为什么并不是「PPO 去掉 Critic 就结束了」。
-
-## 核心资料
-
-- [PPO：Proximal Policy Optimization Algorithms (2017)](https://arxiv.org/abs/1707.06347)。本课使用其 clipped surrogate 结构，并未把它当成严格 KL 约束。
-- [OpenAI Spinning Up：PPO](https://spinningup.openai.com/en/latest/algorithms/ppo.html)，用于对照 Clip、Target KL 和实验观测的不同角色。
-- [GSPO：Group Sequence Policy Optimization (2025)](https://arxiv.org/abs/2507.18071)，用于后续比较 Token/Sequence Ratio 的选择。
+- [PPO 原论文 (2017)](https://arxiv.org/abs/1707.06347)：Clipped Surrogate 的来源，以及与 Trust-Region 思想的关系。
+- [OpenAI Spinning Up：PPO](https://spinningup.openai.com/en/latest/algorithms/ppo.html)：Clip Ratio、KL 监控和常见实现差异。
+- [PyTorch `torch.clamp`](https://docs.pytorch.org/docs/stable/generated/torch.clamp.html)：数值截断 API；注意真正的 PPO Loss 还需要 `min(rA,clipped(r)A)`。

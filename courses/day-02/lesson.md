@@ -1,147 +1,146 @@
-# Day 02 · 采样只有一个动作，怎么得到策略梯度？
+# Day 02 · 同一个模型，为什么有时没有梯度，有时突然更新很大？
 
-昨天算出目标 $J(z)=p$ 和精确梯度 $p(1-p)$。这个结果依赖我们能列出 A/B 两个动作的 Reward；真正的 LLM 一个 Response 可能有上百个 Token，所有可能轨迹无法穷举。Trainer 拿到的通常是**从当前 Policy 采出的有限几个动作和 Verifier 分数**。
+还是那道只有两个答案的题：A 正确得 1 分，B 错误得 0 分。模型只有一个 Logit 参数 $z$，A 的概率是 $p=\sigma(z)$。
 
-今天的问题是：没有枚举整个动作空间，能否用采样结果估计 $\nabla J$？估计值为什么波动？Baseline 为什么能改方差但不能随便依赖 Action？
+假设模型现在做对的概率仅有 **25%**。你把一条样本放进 Trainer，输出的梯度是 0。第二次运行同一套代码，梯度突然变成 0.75。再运行十次，大部分时候还是 0。
 
-[互动 Lab 02：试着把梯度估计的方差压到零 →](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=2)
+代码不一定有 Bug。这可能是**采样梯度的方差**：Trainer 优化的是期望奖励，但每次只能看到很少的随机结果。
 
-## 从一个恒等式推导 REINFORCE
+## 为什么单次梯度可以完全不等于目标梯度？
 
-离散动作空间内：
+固定 $p=0.25$，奖励 $R(A)=1,R(B)=0$。我们真正希望增加的目标是：
 
 $$
-J(\theta)=\sum_a\pi_\theta(a)R(a).
+J(z)=p,\qquad \frac{\mathrm dJ}{\mathrm dz}=p(1-p)=0.1875.
 $$
 
-假设环境和 Reward 规则本身不直接依赖 Policy 参数，交换求和与求导：
+用 REINFORCE 采样梯度时，对于具体动作 $a$：
+
+$$
+\hat g(a)=R(a)\,\frac{\partial\log\pi_z(a)}{\partial z}.
+$$
+
+Bernoulli 策略的 Score Function 为：
+
+$$
+\frac{\partial\log\pi_z(a)}{\partial z}
+=\mathbf1[a=A]-p.
+$$
+
+只有两种结果：
+
+| 采样结果 | 发生概率 | Reward | $\hat g$ |
+|---|---:|---:|---:|
+| A | 0.25 | 1 | $1(1-0.25)=0.75$ |
+| B | 0.75 | 0 | $0(0-0.25)=0$ |
+
+二者的期望是
+
+$$
+\mathbb E[\hat g]
+=0.25\times0.75+0.75\times0
+=0.1875.
+$$
+
+**“平均正确”不代表每一次都正确。** 如果一个 Batch 只采了四次，全部没抽到 A 的概率是 $0.75^4\approx31.64\%$。这轮的样本梯度可能全部为零，但它不是对理想目标梯度的证明。
+
+方差可以精确算：
 
 $$
 \begin{aligned}
-\nabla_\theta J
-&=\sum_aR(a)\nabla_\theta\pi_\theta(a)\\
-&=\sum_a\pi_\theta(a)R(a)\nabla_\theta\log\pi_\theta(a)\\
-&=\mathbb E_{a\sim\pi_\theta}
-\bigl[R(a)\nabla_\theta\log\pi_\theta(a)\bigr].
+\operatorname{Var}(\hat g)
+&=\mathbb E[\hat g^2]-(\mathbb E[\hat g])^2\\
+&=0.25(0.75)^2-(0.1875)^2\\
+&=\boxed{0.10546875}.
 \end{aligned}
 $$
 
-第二行只使用 $\nabla_\theta\pi=\pi\nabla_\theta\log\pi$。**Reward 不需要可微**，但我们必须能在当前参数下计算采样动作的 Logprob 并对其求导。这个乘积称为 Score Function 估计器。
+单样本梯度标准差约 0.3248，比其期望 0.1875 还大。增加独立样本数可以缩小**均值估计的方差**：假设独立同分布，$N$ 条样本平均值的方差是 $0.10546875/N$。若模型参数不断更新或采样相关，这个 $1/N$ 的简单结论就需要重新检查前提。
 
-对于昨天的 Bernoulli Policy，令 $I_A=\mathbf1[a=A]$，则
+## 为什么减去一个常数，期望梯度不会变？
 
-$$
-\frac{\partial\log\pi_z(a)}{\partial z}=I_A-p.
-$$
-
-从当前分布采到一次动作 $a$ 后，单样本估计值是
+直觉上，可以对每条 Reward 减去一个基准 $b$，只把“比基准好还是差”的部分用于学习：
 
 $$
-g(a)=R(a)(I_A-p).
+\hat g_b(a)=(R(a)-b)\,
+\frac{\partial\log\pi_z(a)}{\partial z}.
 $$
 
-它有时为零，甚至可能与真正期望梯度相差很远；**无偏**只意味着从正确的采样分布反复采样，其平均值趋向目标梯度。不是每条轨迹都给出正确方向，也不是数据越旧越依然无偏。
+这听起来像在篡改 Reward。它什么时候合法？关键是 $b$ **不能根据同一个状态下本次采样的动作再改变**：
 
-## 手算一次：估计器正确，但抖动很大
-
-继续固定 $p=0.25$、$R(A)=1,R(B)=0$。
-
-| 抽到的动作 | 概率 | $g(a)$ |
-|---|---:|---:|
-| A | 0.25 | $1(1-0.25)=0.75$ |
-| B | 0.75 | $0(0-0.25)=0$ |
+$$
+\begin{aligned}
+\mathbb E_a[b\nabla_z\log\pi_z(a)]
+&=b\sum_a \pi_z(a)\nabla_z\log\pi_z(a)\\
+&=b\sum_a\nabla_z\pi_z(a)\\
+&=b\nabla_z1=0.
+\end{aligned}
+$$
 
 因此：
 
 $$
-\mathbb E[g]=0.25\times0.75+0.75\times0
-=0.1875.
+\mathbb E[\hat g_b]=\mathbb E[\hat g]=0.1875.
 $$
 
-与昨天的精确梯度一致。可如果只训练一次：75% 的概率抽中 B，梯度估计是 0；25% 的概率抽中 A，估计却是 0.75。
+这就是 Baseline 的价值：不用改变期望优化方向，却可能显著改善采样效率。严格说，它并非保证**任意** $b$ 都减少方差；一个很差的 $b$ 可以让方差更大。
 
-把波动写成方差：
+## 这个例子里，平均 Reward 竟然不是最好的 Baseline
 
-$$
-\operatorname{Var}[g]=\mathbb E[g^2]-(\mathbb E[g])^2
-=0.25(0.75)^2-(0.1875)^2
-=0.10546875.
-$$
-
-这说明了为什么只画一条 Reward 曲线或拿单个 Batch 验证算法很危险：**期望方向正确，有限样本方差仍可能很大。**
-
-## Baseline 到底凭什么不改变期望？
-
-把估计器改成
+固定 $p=0.25$，可把两种结果显式写出来：
 
 $$
-g_b(a)=(R(a)-b)(I_A-p).
+\hat g_b(A)=0.75(1-b),\qquad
+\hat g_b(B)=0.25b.
 $$
 
-只要 $b$ 对给定状态下的采样 Action 不产生依赖，且采样仍来自用于求导的 Policy，Baseline 引入项的期望就为：
+若 $b=0$，它们分别是 0.75 和 0；若 $b=0.25$（等于平均 Reward），它们变成 0.5625 和 0.0625；若 $b=0.75$，两种结果都为 **0.1875**。
+
+在这个特殊的二动作、确定性 Reward、单参数模型里，$b=0.75$ 恰好使方差降为零。可以不背任何定理，直接从“让两种可能的梯度取值相等”得到：
 
 $$
-\mathbb E_a[b\nabla_\theta\log\pi_\theta(a)]
-=b\sum_a\nabla_\theta\pi_\theta(a)
-=b\nabla_\theta 1=0.
+0.75(1-b)=0.25b
+\quad\Rightarrow\quad b^*=0.75.
 $$
 
-因此 $\mathbb E[g_b]=\mathbb E[g]$。注意，这是关于**梯度期望**的等式；对于用同一 Batch 训练出的 Baseline、有限样本的归一化或跨版本采样，需要进一步检查统计依赖和估计器偏差。
-
-本例还可以准确算出一个方差最小的常数 Baseline。若把 $b$ 看成可调常数：
+也可以从一般的常数 Baseline 最小方差条件求出：
 
 $$
-g_b(A)=(1-b)\times0.75,\qquad
-g_b(B)=(0-b)\times(-0.25)=0.25b.
-$$
-
-要求两种抽样结果的梯度值相同，就有
-
-$$
-0.75(1-b)=0.25b\quad\Longrightarrow\quad b=0.75.
-$$
-
-此时 $g_b(A)=g_b(B)=0.1875$，方差竟然为 **0**。这只是只有两个确定性动作的特殊玩具环境，不能据此认为真实 LLM 找到一个 Baseline 就能消除方差。
-
-更关键的是，**最优 Baseline 不是必然等于平均 Reward**。这里 $\mathbb E[R]=0.25$，而本例的最优常数 Baseline 是 0.75。一般的最小方差常数与 Score Function 的平方大小有关：
-
-$$
-b^*=\frac{\mathbb E[R\,\|\nabla\log\pi(a)\|^2]}
+b^*=
+\frac{\mathbb E[R(a)\|\nabla\log\pi(a)\|^2]}
 {\mathbb E[\|\nabla\log\pi(a)\|^2]}.
 $$
 
-这是对单参数或指定梯度范数意义下的推导，不是所有模型参数共享的通用最优 Critic。
+**平均 Reward 是 0.25，最小方差 Baseline 是 0.75。** 这说明学习 Baseline 不能只背“减去平均 Reward”。
 
-## 一个会让梯度彻底坏掉的 Baseline
+这个结果不代表真实 LLM 可以将方差降到零。高维模型的不同参数对“最优基准”的要求可能不同，Reward 也可能有环境噪声和多步依赖。
 
-考虑错误实现 §baseline=reward(a)§。它依赖本次采样的动作，于是每条样本都有 §reward-baseline=0§，梯度直接消失。这个反例明确违反了前面的 Action-independent 条件，**不能用「Baseline 不改变期望」为它辩护**。
+## 两个反例让你判断什么时候会出 Bug
 
-真实 RL 中的 $V(s)$、GAE、组内平均 Reward 都不是同一件事：状态价值通常试图估计未来 Return；GAE 用 TD Error 的时序加权；GRPO 用同 Prompt Group 的样本比较。它们怎么估计 Advantage、引入什么偏差和方差，需要分别研究。
+**反例一：Baseline 由当前采样动作计算。**
 
-## 从一个动作到整个 Response
+如果你写 `b(a)=R(a)`，每条样本都满足 $R(a)-b(a)=0$，梯度恒为零。虽然表面看起来“相对 Reward 为零”，但刚才保证期望不变的证明已经失效：你不能把依赖本次 Action 的 $b(a)$ 拿到动作求和之外。
 
-在自回归模型中，一条轨迹的动作概率为每个 Token 条件概率的乘积：
+**反例二：数据来自另一个策略，却用当前策略的无修正估计器。**
 
-$$
-\log\pi_\theta(y|x)=\sum_{t=1}^{T}\log\pi_\theta(y_t|x,y_{<t}).
-$$
+刚才的等式假定 $a\sim\pi_z$。若行为策略采到 A 的概率为 0.9，而用于求导的当前策略仍是 $p=0.25$，直接平均 $R(a)\nabla\log\pi_z(a)$，期望会变成 $0.9\times0.75=0.675$，**不再等于当前目标的 0.1875**。
 
-因此在合适的回报定义和环境假设下，最基础的 REINFORCE 梯度估计可以写为：
+不能因为某个字段叫 `log_prob` 就认定样本来自当前分布。要先检查生成权重、采样变换，以及概率到底属于哪个 Policy。
 
-$$
-\hat g=(R-b)\sum_{t=1}^T\nabla_\theta\log\pi_\theta(y_t|x,y_{<t}).
-$$
+## 自己画出方差，而不是靠记公式
 
-它仍然需要 Token Shift、Action Mask 和明确定义的长度 Reduction。**把所有 Token 的 Loss 简单 mean()，可能改变长短轨迹的相对权重；这属于目标定义问题，不是 API 的细节。** 明天会把这些 Tensor 的位置逐项展开。
+打开 [Baseline 交互实验](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=2)。设置 $p=0.25$，从 $b=0$ 缓慢拉到 0.75，观察两种抽样动作对应的梯度点怎样靠拢。
 
-## 交互检验与源码定位
+再把 $b$ 调到 1.5，检查方差是否总在下降。最后将 $p$ 改成 0.6，预测这时本例能使两种估计值相等的 $b^*$ 是否仍然是 0.75。
 
-打开 [Lab 02](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=2)，把 $p$ 固定为 0.25，依次比较 $b=0$、$b=0.25$、$b=0.75$。检查三次的**期望梯度始终 0.1875**，但方差不同。然后把 Baseline 改成一个动作相关的函数，思考为什么不能再使用这个推导。
+对于任意 $p$，由 $(1-b)(1-p)=bp$ 得到 $b^*=1-p$。当 $p=0.6$，它是 **0.4**。你应能根据公式预测交互曲线，而不是先看 UI 才知道答案。
 
-仓库已有 [Policy Gradient CPU 演示](../../examples/day_04/policy_gradient_lab.py)：它在小 Tensor 上检查负 Logprob Loss 的梯度方向，包含「Loss 值正好抵消但梯度并没有消失」的反例。旧代码路径上的 §day_04§ 是历史命名，本课只借它验证 Score Function 的梯度，不代表新大纲的 Day 04。
+如果要写成代码，针对本例最有价值的不是造一个庞大 Trainer，而是模拟 10,000 次采样，按同一套 $p$ 和 $b$ 估计经验方差，并与解析方差比较。样本量增大时，经验估计通常更稳定，但单次结果不保证单调。
 
-### 文献
+## 资料
 
-- [Williams, 1992: REINFORCE](https://link.springer.com/article/10.1007/BF00992696)：Score Function 估计器的经典来源。
-- [OpenAI Spinning Up：Policy Gradient](https://spinningup.openai.com/en/latest/spinningup/rl_intro3.html)：提供离散轨迹与 Baseline 的推导。
-- [PPO](https://arxiv.org/abs/1707.06347)：使用由采样建立的优势与概率比例做多轮更新，为什么 Ratio 必须小心处理将在 Day 04 讲。
+- [Williams (1992), REINFORCE](https://link.springer.com/article/10.1007/BF00992696)：采样动作梯度估计的基础。
+- [OpenAI Spinning Up：Policy Gradient](https://spinningup.openai.com/en/latest/spinningup/rl_intro3.html)：Log-Derivative Trick、Baseline 的适用条件。
+- [Greensmith et al., Variance Reduction Techniques for Gradient Estimates in Reinforcement Learning (2004)](https://www.jmlr.org/papers/v5/greensmith04a.html)：为什么 Baseline 的最小方差条件不只是简单减去平均 Reward。
+
+把本课完整走通后，一个“有时候没梯度”的训练现象就至少有两个完全不同的解释：**采样本来就没有提供有效信号，或者代码把原本有效的梯度错误地抵消掉了。** 前者属于估计器统计特性，后者需要修改实现。

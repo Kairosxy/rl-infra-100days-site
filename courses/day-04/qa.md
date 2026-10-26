@@ -1,17 +1,17 @@
-# Day 04 · 问答与追问
+# Day 04 · 两个能检验理解的问题
 
-## 题 1：PPO 的正负 Advantage，哪一边被 Clip？
+## 题 1：同一批数据训练第二遍，为何不能忽略 Old Policy？
 
-给定 $\epsilon=0.2$，依次计算 $(A,r)=(+2,1.5),(-2,0.6),(+2,0.6),(-2,1.5)$ 的 clipped surrogate。指出哪两种情形里对 Ratio 的局部导数为零。
+Old Policy 为 [0.2,0.8]，Current 为 [0.3,0.7]；A 得 1，B 得 0。用旧分布直接平均 Reward 会得到什么？加入正确的 Importance Ratio 后会得到什么？写出新旧分布必须满足的 Support 条件。
 
-**判别依据：** 结果依次为 2.4、-1.6、1.2、-3.0；正 Advantage 上界之外平台，负 Advantage 下界之外平台。注意 Trainer 的 Loss 通常为该 surrogate 的负号。
+**答案依据：** 不修正得 0.2，修正后得 0.3；A Ratio=1.5，B Ratio=0.875。等式只是在固定状态下重加权动作分布，不能自动解决长时域状态分布变化。
 
-**追问：** 如果把负号漏掉，会怎样改变更新方向？如果有多个样本共享参数，一个样本已 Clip 是否代表该 Token 概率以后无法变化？
+**追问：** 如果 Old Policy 对某动作概率为 0，Current 却大于 0，是否可以靠 Ratio 精确修复？
 
-## 题 2：Clip Range=0.2，为什么不能证明 KL 一定小？
+## 题 2：为什么正负 Advantage 的 Clip 平台不在同一侧？
 
-给定 `π_old=[0.5,0.5]`、`π_current=[0.9,0.1]`，计算动作 A 的 Ratio 和 $D_{KL}(\pi_{\rm old}\|\pi_{\rm current})$。解释为什么某个样本的目标平台没有约束整个概率分布。
+固定 $\epsilon=0.2$，分别求 $A=+2,r=1.5$ 和 $A=-2,r=0.6$ 的 Surrogate 和局部斜率；解释为什么不能从这两个平台推断完整策略的 KL 一定被限制。
 
-**判别依据：** A Ratio=1.8；KL 约 0.5108 nats；按全分布、不同状态和额外目标分析。不能把 Clip 当作数学上严格的 Trust Region。
+**答案依据：** 分别为 2.4 与 −1.6，离开折点的局部斜率都为零；Loss 在实际最小化时还要取负号。另一组完整策略 [0.5,0.5] 与 [0.9,0.1] 的 KL≈0.510826 nats，可作为反例。
 
-**追问：** 如果 Rollout 使用 Top-p，而 Trainer 的 Old Logprob 是原始 Softmax，当前 Ratio 的语义满足你想要的 IS 假设吗？
+**追问：** 将 `old_log_probs` 在每次 Optimizer Step 后覆盖成 `current_log_probs`，Ratio 监控会出现什么误导？

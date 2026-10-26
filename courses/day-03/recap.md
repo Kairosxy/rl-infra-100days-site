@@ -1,21 +1,18 @@
-# Day 03 · 复算卡
+# Day 03 · 用一个索引规则重建整个 Loss
 
-Teacher Forcing 固定已经生成的动作，让 Current Policy 重新计算**可微条件 Logprob**。位置 $t$ 的 Logits 预测位置 $t+1$ 的 Token。
-
-对于 Prompt 长度 $P$、Response 长度 $T$：
+输入 Token `[B,L]`，Causal LM 的 Logits `[B,L,Vocab]`。位置 $t-1$ 的 Logits 预测位置 $t$ 的目标 Token，所以：
 
 ~~~python
-action_ids = token_ids[:, P:P + T]
+action_ids = input_ids[:, P:P + T]
 action_logits = logits[:, P - 1:P + T - 1, :]
 ~~~
 
-变长序列里，应把目标位置 $t$ 的有效 Action Mask 定义为 $P_i\le t<V_i$（本课简单 Prompt+Response+Padding 情形），而非全部非零 Token 都训练。
+Prompt 长度 $P=2$、有效 Token 长度 4、完整序列长度 5 时，目标位置 1,2,3,4 的 Action Mask 是 **[0,1,1,0]**。
 
-两条序列的有效 Token 数分别 1 和 3：
+二 Token Response 的采样概率若为 0.8 和 0.7，则联合概率 0.56，联合 Logprob 约 **−0.579818**；终局 Reward=1、Token Logprob Sum 目标下，负号 Loss 为 **0.579818**。
 
-- Token Mean：每个 Token 权重 $1/4$。
-- Sequence Mean of Token Mean：短样本每 Token 权重 $1/2$，长样本每 Token 权重 $1/6$。
+两条 Response 各有 2、4 个有效 Token，如果每个位置 Loss=1：全局 Token Mean 与逐 Sequence Mean 的标量都可以是 1，但每个 Token 的梯度权重不同。
 
-两种 Loss 标量有时相同，梯度仍不同。**能训练不等于对齐正确；Shape 正常不等于 Token 没错位。**
+**重要的诊断：** Shift 错一格，Shape 常常仍合法；Mask 错把 Padding 当 Action，Loss 仍能下降。验证索引关系必须比“能 backward”更强。
 
-[切换正确/错误 Shift，并查看 Token 对齐](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=3)。
+[改动索引并观察预测者与目标的位置](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=3)。

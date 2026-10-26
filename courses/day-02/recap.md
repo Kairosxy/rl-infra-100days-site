@@ -1,15 +1,21 @@
-# Day 02 · 复算卡
+# Day 02 · 方差从何而来
 
-单样本的 Policy Gradient 是「Reward/Advantage 乘以已采样动作的 Score」：
+固定 `p(A)=0.25`，Reward(A)=1、Reward(B)=0：
 
 $$
-\nabla J = \mathbb E[R(a)\nabla\log\pi(a)].
+g(A)=0.75,\quad g(B)=0,\quad
+\mathbb E[g]=0.1875,\quad
+\operatorname{Var}(g)=0.10546875.
 $$
 
-二动作 `p=0.25`、`R(A)=1,R(B)=0`：A 的 Score 为 0.75，B 为 -0.25。没有 Baseline 时采样梯度分别为 $0.75,0$；其期望是 **0.1875**，方差是 **0.10546875**。
+如果 Baseline 为常数 $b$：
 
-当 $b=0.75$，两种抽样的估计值都成为 0.1875，方差为零。这是二动作、确定性 Reward 的特例；最优常数 Baseline 不一定等于平均 Reward。
+$$
+g_b(A)=0.75(1-b),\qquad g_b(B)=0.25b.
+$$
 
-**最容易误用的条件**：Baseline 不能依赖同一状态下本次采样的 Action。设 `b(a)=R(a)` 会让估计器全部归零，破坏对真实梯度的估计。
+$b=0.75$ 时，两种结果都变成 0.1875，方差为 0；**它不是平均 Reward 0.25**。这是确定性二动作、单参数模型的特殊情况，不能外推成 LLM 总能把方差消掉。
 
-[调整 Baseline，观察期望不变但方差变化](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=2)。
+**最容易让证明失效的改动：** 把 `b` 写成当前采样动作的 Reward；它会把每个优势值都消成零。动作相关 Baseline 不满足 `E[b∇logπ]=0` 所需条件。
+
+[调整 Baseline，观察两个可能梯度点](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=2)。

@@ -1,142 +1,141 @@
-# RL Infra 100 天 · 基于问题难度重构的课表
+# RL Infra 100 Days · 从一次更新到一个可证明正确的系统
 
-**发布与掌握分离：**2026-10-23 为 Day 01，每天北京时间 09:00 发布下一课；所有已发布课程可以任意跳转。以下 Day 是内容顺序，不是学完上一课才能解锁下一课的门槛。
+**如何使用：** 每天北京时间 09:00 自动发布一课。每天是一段新的学习材料，不是一次必须通过的考试；随时跳课、重学、跳过练习都可以。表里的 100 个编号是内容投放节奏，而不是把一百个名词平均切成一百天。
 
-## 哪些值得占一整天
+## 为什么这样排
 
-**深挖：** 影响目标函数、数据分布、系统成本或正确性的机制，至少要求推导/成本模型、反例和可复现的验证。**实作：** 通过代码、单元测试、测量或故障注入才能学会的能力。**研读：** 对经典/新论文的机制、证据和局限做比较。**综合：** 对同一参考系统做一轮可以自证的设计和验证。
+先回答「策略凭什么沿这个方向更新」，再回答「代码是否真的计算了这个梯度」，接着追问「计算落在 GPU/多卡上时哪些代价和语义会变化」，最后才有资格讨论 Rollout/Agent/Async/OPD。**同一个训练样本**贯穿推导、Tensor、进程、队列和恢复过程；系统多了一层复杂度，就新增一条能够验证的约束。
 
-不再独立安排「名词解释日」。`trajectory_id`、常规代码命名、AdamW 的字段列表、组件清单这类容易查文档的内容，在正确性实验实际需要它们时顺带解释，通常 10–20 分钟足够。另一方面，不把 PPO、GRPO、GAE、FP8、KV/通信调度、Partial Rollout/Off-policy 这样需要公式、张量和实验的主题挤在一节“综述”中。课程分配资源以需要推理的深度为标准，而不是给每个名词同样篇幅。
+这次不把 DAPO、GSPO、EAGLE、Ray 或 TransferQueue 各自当作必须占一天的「产品介绍」。经典与新工作都应先交代它想解决的失效条件，然后才读实现和实验。术语、Schema、CLI 参数能随用随查；概率分布、梯度估计、Mask、非线性优化、数值精度、通信、调度和数据选择偏差则要讲到具体计算和反例。
 
-## 八条相互咬合的主线
+## 九段完整的学习任务
 
-- **A · Day 01–14 策略优化与估计器**：研究问题必须能落到可计算的目标函数、概率分布及失败的训练信号。
-- **B · Day 15–26 Learner 内部实现**：理解各类状态的计算生命周期，保证理论梯度与分布式执行一致。
-- **C · Day 27–42 GPU 与分布式训练**：每种并行/算子优化都追问通信、显存峰值和真实瓶颈。
-- **D · Day 43–56 推理调度与 Rollout**：以 KV、请求调度和行为策略分布一致性为真实约束。
-- **E · Day 57–68 Agentic RL 数据生产**：只在算法和环境的契约清楚后谈多轮并发和组采样。
-- **F · Day 69–85 异步、Off-policy 与 OPD**：带上策略版本、样本滞后和训练质量再衡量吞吐改善。
-- **G · Day 86–94 可靠性与容量规划**：由真实故障证据倒推系统设计，不背云原生术语。
-- **H · Day 95–100 研究复现与系统面试**：能独立审查论文声明、代码实现和实验有效性。
+**A｜Day 01–12 · 从一次反馈到一次可信更新。** 从定义目标到可观测梯度，数学和代码能指向同一个量。
+**B｜Day 13–24 · 把目标写成不会悄悄变味的 Learner。** Mask、Reduction、参数版本和 Optimizer 的更新边界一致。
+**C｜Day 25–36 · 弄清 GPU 的真实成本。** 任何“省显存、提速度”的结论必须指明对象、单位和测量条件。
+**D｜Day 37–50 · 一次更新跨过多张 GPU。** 梯度、状态和通信可以正确拆分与恢复。
+**E｜Day 51–64 · 推理如何变成可靠的数据生产者。** 服务速度、采样分布和 Trainer 需要的 Logprob 是三件事。
+**F｜Day 65–74 · 从单次生成到多轮 Agent 轨迹。** 行为、观察、评分和环境状态都能追溯。
+**G｜Day 75–88 · 让生成与训练并发而不偷换目标。** 允许并发不等于允许丢失版本、样本身份或选择偏差。
+**H｜Day 89–94 · 蒸馏与 RL 目标怎样相互作用。** Teacher 分布、KL 方向与资源代价必须对齐。
+**I｜Day 95–100 · 用证据调试并设计系统。** 以实验、失败路径和代价模型而非架构名词作结论。
 
-## 逐日题目与可验证产物
+## 逐日学习安排
 
-| Day | 主线 | 深度 | 当天真正要回答的问题 | 核心证据 / 可操作产物 |
-|---:|:---:|:---:|---|---|
-| 01 | A | 深挖 | 没有监督答案时，Reward 如何改变模型的动作分布？ | 手算 Bernoulli Policy 的期望回报与梯度；互动拨动 p |
-| 02 | A | 深挖 | 为什么不可微 Reward 能训练 Policy？Baseline 如何改变方差？ | 从 log-derivative 推导；同一估计的方差曲线 |
-| 03 | A | 深挖 | LLM 的一个 Token Logprob 究竟对齐哪个位置？ | Teacher Forcing、Shift、Mask、Token vs Sequence Mean |
-| 04 | A | 深挖 | PPO 的 Clip 究竟截断了什么，为什么不保证 KL 安全？ | 正负 Advantage 的分段目标与梯度 |
-| 05 | A | 深挖 | 组内排序怎样产生训练信号；为什么全对/全错没有信号？ | GRPO 标准化、Group 缺失和长度偏差 |
-| 06 | A | 深挖 | DAPO 在 GRPO 上改了什么，以及为什么这些改动必要？ | Dynamic Sampling、Clip-Higher、Token PG 的消融设计 |
-| 07 | A | 深挖 | 一条轨迹提前结束，GAE 的 Bootstrap 应该怎样处理？ | terminal 与 truncation 的手算和 mask |
-| 08 | A | 深挖 | 旧策略样本重用时，Importance Ratio 在纠正什么？ | IS 期望、方差爆炸、截断引入偏差 |
-| 09 | A | 深挖 | GRPO、GSPO 和 PPO 的 Ratio 粒度如何影响长回答？ | Token/Sequence Ratio 对比，长度变更的反例 |
-| 10 | A | 实作 | 能否让最小 Policy 真正完成一次正确的更新？ | CPU Toy Step + 参数梯度/Token Mask 断言 |
-| 11 | A | 深挖 | 可验证奖励真能代表推理能力吗？ | Verifier Error、Reward Hacking、训练偏差的反例 |
-| 12 | A | 深挖 | KL 与 Entropy 约束的是哪个分布？ | Forward/Reverse KL 与 Reference/Old Policy 区分 |
-| 13 | A | 实作 | 为什么固定 Seed 仍可能无法复现 RL 更新？ | Sampling RNG、非确定算子、多 Seed 的对照表 |
-| 14 | A | 研读 | DeepSeekMath、R1、DAPO、GSPO 分别解决了哪个问题？ | 从论文主张回推机制、复现缺口和限制 |
-| 15 | B | 深挖 | Autograd 图中哪些量应该 Detach，哪些必须可微？ | Old/Current、Advantage/Reward 的梯度路径 |
-| 16 | B | 深挖 | 不等长 Micro-batch 为什么会改变梯度？ | 2/2/1 与 Token Reduction 的错误实现 |
-| 17 | B | 深挖 | AdamW、梯度裁剪和累积的更新边界在哪里？ | Moment/Step Counter、先裁剪后累积反例 |
-| 18 | B | 深挖 | Activation 到底在哪个时刻占着显存？ | Forward/Backward 生命周期、Checkpointing 峰值 |
-| 19 | B | 深挖 | FlashAttention 省的是 HBM IO 还是算术量？ | Tiling 与 online softmax 的 IO 成本账 |
-| 20 | B | 深挖 | FP8 的 Scale 是如何定义并传播的？ | per-tensor/per-block 量化误差与溢出 |
-| 21 | B | 实作 | 同样一组 Tensor，精度变化如何影响 Logprob？ | BF16/FP8 或模拟量化的误差分布 |
-| 22 | B | 深挖 | MoE Routing 的不稳定性怎样传到 RL？ | Expert 分布、负载与随机性 |
-| 23 | B | 深挖 | Packing 后哪些 Token 才是 RL 的 Action？ | 变长、Position、Attention Mask、Action Mask |
-| 24 | B | 深挖 | 同一个 Loss 数字，为什么不同 Reduction 给出不同梯度？ | Token/Sequence/Group 加权的显式矩阵 |
-| 25 | B | 实作 | 一次 NaN 如何定位到第一个坏 Tensor？ | 梯度、Loss、Scale、异常样本的检查脚本 |
-| 26 | B | 综合 | 能不能重现一轮真实的最小 Learner 更新？ | Toy Learner 正确性、Checkpoint 与恢复 |
-| 27 | C | 深挖 | GPU 为什么算力很高，实际 Kernel 却跑不满？ | Roofline 的算术强度与带宽上限 |
-| 28 | C | 深挖 | 怎样根据 GEMM 形状判断 Tensor Core 的收益？ | 矩阵尺寸、Tile、Padding 的成本测算 |
-| 29 | C | 深挖 | 长上下文 Attention 的时间成本由什么决定？ | Prefill Attention 与 FlashAttention 反例 |
-| 30 | C | 深挖 | CUDA Graph 为什么会快，又在哪些场景失效？ | Launch Overhead、静态形状与动态图变体 |
-| 31 | C | 实作 | Profiler 里如何区分计算、等待与通信？ | Nsight/Torch Profiler 的可复核证据 |
-| 32 | C | 深挖 | All-reduce 的通信量为何不等于 Step Time？ | α–β 模型、Ring/Tree、Overlap |
-| 33 | C | 深挖 | DDP Bucketing 与 no_sync 如何改变等待时间？ | Gradient Hook、Bucket 时机与累积 |
-| 34 | C | 深挖 | FSDP2/ZeRO 为什么能省显存却仍会 OOM？ | All-gather Peak 与 Shard 生命周期 |
-| 35 | C | 深挖 | TP 列并行与行并行在哪一步通信？ | 线性层张量轴和 Collective 推导 |
-| 36 | C | 深挖 | 1F1B 如何减少 PP Bubble，又引入什么复杂度？ | Pipeline 迭代调度与显存账 |
-| 37 | C | 深挖 | DP/TP/PP 的组合如何影响单 Step 性能？ | 固定模型和硬件下的成本模型 |
-| 38 | C | 深挖 | EP 的 All-to-All 成本怎么估？ | Token Routing、Grouped GEMM、负载失衡 |
-| 39 | C | 深挖 | Context Parallel 如何处理超长序列？ | Attention 依赖、通信与 KV 分块 |
-| 40 | C | 深挖 | NCCL、NVLink、RDMA 性能瓶颈如何区分？ | 通信图、拓扑与可测试假设 |
-| 41 | C | 实作 | 分布式 Checkpoint 要保存哪些状态才能真正恢复？ | Optimizer、RNG、Shard 与 Reshard |
-| 42 | C | 综合 | 如何为具体模型选择并行拓扑？ | 8–64 卡可解释资源配置与失败边界 |
-| 43 | D | 深挖 | Prefill 与 Decode 的瓶颈为什么不同？ | 算术强度、KV 读写与 Batch 敏感性 |
-| 44 | D | 深挖 | KV Cache 容量怎么算，何时成为真实瓶颈？ | Layers/Heads/HeadDim/Token 的内存式 |
-| 45 | D | 深挖 | PagedAttention 解决了哪种碎片，代价是什么？ | Block 分配、释放与虚拟映射 |
-| 46 | D | 深挖 | Continuous Batching 为什么改善吞吐，也会伤 P99？ | Admission、Decode Scheduling 与队首阻塞 |
-| 47 | D | 深挖 | Prefix Cache 在什么分布下才能命中？ | Radix Tree、相同前缀与回收策略 |
-| 48 | D | 深挖 | Chunked Prefill 如何改变 TTFT/TPOT 的权衡？ | Prefill–Decode 抢占实验 |
-| 49 | D | 深挖 | EOS、Stop 与 Sampling 过滤怎样改写轨迹分布？ | 停止条件的 Bias、长度与 Finish Reason |
-| 50 | D | 深挖 | 训推两套 Logprob 为什么不一致？ | Sampling Transform、Precision、Tokenization 对照 |
-| 51 | D | 深挖 | 投机解码怎样在理论上保持目标分布？ | Acceptance/Correction 的算式与反例 |
-| 52 | D | 深挖 | MTP 与 EAGLE 增益由什么决定？ | Draft Cost、Acceptance、Tail Length |
-| 53 | D | 深挖 | PD 解耦的 KV 传输什么时候划算？ | Transfer Cost、Prefill/Decode Pool 调度 |
-| 54 | D | 深挖 | MoE 推理中 TP/EP 配置何时相互制约？ | 专家并行与通信瓶颈 |
-| 55 | D | 深挖 | 吞吐提升是否一定意味着时延下降？ | TTFT/TPOT/P95/P99 与公平负载实验 |
-| 56 | D | 综合 | 怎样设计不会自欺的 Serving Benchmark？ | 输入/输出长度分布、Warmup、容量上限 |
-| 57 | E | 深挖 | Agent 的哪些 Token 应该参与训练？ | Action/Observation 与多轮 Mask |
-| 58 | E | 深挖 | 工具调用失败该怎样影响 Reward 与 Trajectory？ | Tool Schema、重试、结果归属 |
-| 59 | E | 深挖 | Sandbox 隔离保证了什么，不保证什么？ | 状态污染、网络与生命周期 |
-| 60 | E | 深挖 | 对话模板变更为什么会改变 Logprob？ | Tokenizer、Role、Special Token 的对照 |
-| 61 | E | 深挖 | Verifier 出错会把模型推向什么方向？ | False Positive/Negative 与奖励攻击 |
-| 62 | E | 深挖 | 过滤失败样本为何会引入 Selection Bias？ | Group Acceptance 与条件分布 |
-| 63 | E | 深挖 | AgentLoop 的等待在哪里：Tool、LLM 还是调度器？ | AsyncIO 状态机与超时 |
-| 64 | E | 深挖 | 多轮轨迹切开后还能算同一个目标吗？ | Mask、Step Return、状态拼接 |
-| 65 | E | 深挖 | Reward Join 和重试如何实现幂等？ | Trajectory Identity、去重和溯源 |
-| 66 | E | 深挖 | TransferQueue 背压该传到谁？ | Producer–Consumer 预算与排空顺序 |
-| 67 | E | 深挖 | 长尾样本是纯性能问题还是统计问题？ | P95、取消策略与采样偏差 |
-| 68 | E | 综合 | 从工具调用到可训练 Group 的最小 Agent Harness | Actor、Verifier、Sampler 的可运行切片 |
-| 69 | F | 深挖 | 同步 RL 真正的 Barrier 在哪里？ | 必要依赖与外层 Batch Wait 时间线 |
-| 70 | F | 深挖 | 训推 Colocation 能节约什么，却要付什么代价？ | GPU 互斥、Sleep/Wake 与权重转移 |
-| 71 | F | 深挖 | 新权重什么时候能对 Rollout 可见？ | Version Publication、原子切换 |
-| 72 | F | 深挖 | Partial Rollout 暂停时怎样保存状态？ | KV、RNG、Sampling State、Tool State |
-| 73 | F | 深挖 | 同一轨迹跨多个 Policy Version 会发生什么？ | Token 粒度来源与概率契约 |
-| 74 | F | 深挖 | Staleness 究竟该按时间、Step 还是 Version 定义？ | 不同阈值定义的反例 |
-| 75 | F | 深挖 | Off-policy Correction 能修复所有旧样本吗？ | Ratio 截断、Variance、Support |
-| 76 | F | 实作 | Rollout/Train Ratio 漂移怎么做可观测？ | Logprob、Mask、Distribution 与 Version |
-| 77 | F | 深挖 | 接收率驱动的补投为什么可能过度生成？ | E[Accepted]、Inflight、校准误差 |
-| 78 | F | 深挖 | 达到 Target 与全部在途请求排空有什么不同？ | Abort/Drain 的资源和样本语义 |
-| 79 | F | 深挖 | 异步系统重启后，哪些结果允许重复消费？ | Exactly-once 假象、Checkpoint/Replay |
-| 80 | F | 综合 | 同步与异步 RL 应怎样公平比较？ | Accepted/Quality/Staleness/Cost 的实验 |
-| 81 | F | 深挖 | OPD 的 Teacher 信号如何影响 Student Policy？ | Logits、全词表分布与梯度路径 |
-| 82 | F | 深挖 | Forward/Reverse KL 为何诱导不同的行为？ | Toy 分布和 Token-level Distillation |
-| 83 | F | 深挖 | Teacher Offload 何时收益大于传输成本？ | 显存、带宽、TP/EP 与服务并发 |
-| 84 | F | 深挖 | GRPO Advantage 和 OPD KL 在同一 Loss 中如何权衡？ | 梯度竞争、Mask 与 Scale |
-| 85 | F | 研读 | AReaL、DORA 等异步方案的假设和权衡 | Version、Overlap、Correctness 主张比较 |
-| 86 | G | 深挖 | Ray Actor / Object Store 的生命周期怎么影响调度？ | Object Ref、OOM、Actor Restart |
-| 87 | G | 深挖 | K8s Placement 为什么改变 TP/EP 性能？ | Topology、GPU Scheduling 与 NUMA |
-| 88 | G | 深挖 | RDMA/RPC/Zero-copy 哪一段真正在耗时？ | Latency Breakdown 与内存复制 |
-| 89 | G | 深挖 | 多 Policy Version 共存需要多少显存？ | 权重复制、路由与一致性代价 |
-| 90 | G | 深挖 | Lease/Fencing 为什么比“重试一下”可靠？ | 重复消费与僵尸任务 |
-| 91 | G | 深挖 | Metrics、Traces 与 Logs 怎样共同定位一次慢 Step？ | 跨请求 ID 和 CPU/GPU 时间线 |
-| 92 | G | 深挖 | NCCL Hang 怎么和慢 Kernel 区分？ | Rank 证据、Watchdog 和 Collective 顺序 |
-| 93 | G | 深挖 | Reward 提高但模型质量下降该怎么排？ | 数据过滤、KL、Length Bias、Precision |
-| 94 | G | 综合 | 如何对长尾 RL 负载做容量与成本规划？ | GPU-hours、P99 与预估偏差 |
-| 95 | H | 实作 | 现场编码：有背压、可取消的 Async Producer–Consumer | 任务生命周期和泄露测试 |
-| 96 | H | 综合 | 从白板画出 8 卡 RL Trainer 并解释每个等待 | Buffer、版本、权重更新与资源 |
-| 97 | H | 研读 | 如何检查一篇 RL Infra 论文的真实性和可复现性？ | Ablation、指标定义、实验对照 |
-| 98 | H | 实作 | 把课程的 Toy System 做成可以运行的评估基准 | Tests、Seed、恢复、版本语义 |
-| 99 | H | 综合 | 针对真实长尾故障写设计评审与替代方案 | 性能、正确性、成本、复杂度权衡 |
-| 100 | H | 综合 | 最后一次系统面试：算法 × 训练 × 推理 × 故障恢复 | 现场推导、编码、Benchmark 和个人盲点 |
+| Day | 进度 | 学生今天真正要解决的问题 | 当天可以验证的东西 |
+|:---:|:---:|---|---|
+| 01 | A | 拿到一次最终评分，参数为什么会改变？ | 二动作策略，手算并验证一次 SGD：p=0.5→0.5498 |
+| 02 | A | 为什么同样的策略有时更新、有时没有梯度？ | REINFORCE 采样分布、Baseline 与方差数值对照 |
+| 03 | A | 只有最终 Reward，哪些 Token 在真正接受梯度？ | 二 Token Response：Logprob 求和、Shift、Action Mask |
+| 04 | A | 同一批数据反复训练，为什么 Ratio 开始不可信？ | Old/Current 概率、PPO Clip 的两侧平台与 KL 反例 |
+| 05 | A | 不训练 Critic，能从同一 Prompt 的几条回答里学到什么？ | GRPO 组统计、全同奖励及样本内 Baseline 偏差 |
+| 06 | A | 把 Token Loss 求和或平均，优化目标还一样吗？ | 短/长回答的 Mask、Reduction 与梯度贡献 |
+| 07 | A | 一个最终分数应该归功于哪一步动作？ | Return、Reward-to-go、Credit Assignment 的两步实例 |
+| 08 | A | 时间限制和真正终止为何不能用同一个 Mask？ | Value/TD/GAE 的 backward recursion 与 Bootstrap |
+| 09 | A | 用 Critic、组内奖励和采样修正，究竟牺牲了什么？ | 对比偏差/方差/数据成本；用 DAPO 与 GSPO 检查具体假设 |
+| 10 | A | 一轮 RL 更新从数据到新权重能否逐项校验？ | CPU 最小训练循环；梯度、Mask、Loss 与一次 Step 测试 |
+| 11 | A | 训练 Reward 上升，模型为什么仍可能退化？ | Verifier 错判、奖励投机与 Pass@k 的反事实 |
+| 12 | A | 论文公式和训练代码真的在优化同一个量吗？ | 对照 PPO/GRPO 主张、Reduction 和最小单元测试 |
+| 13 | B | Rollout、Old、Current、Reference 到底是谁？ | 相同 Token 的四类概率及采样变换对照 |
+| 14 | B | Logprob 相差 0.3，先怀疑浮点误差吗？ | Tokenizer/Temperature/Top-p/版本排查树 |
+| 15 | B | 哪些张量应该 Detach，哪些需要梯度？ | Policy Gradient Autograd 路径与意外梯度反例 |
+| 16 | B | 为什么 2/2/1 的 Micro-batch 会改变梯度？ | 完整 Batch 与局部 Mean 的精确梯度比对 |
+| 17 | B | 梯度裁剪、AMP 与 Optimizer Step 的先后能交换吗？ | AdamW Moment/Step Counter 与裁剪反例 |
+| 18 | B | 变长序列 Packing 后，哪些位置仍是 Action？ | Position/Attention/Loss Mask 的不同职责 |
+| 19 | B | KL 应该和哪个策略比较，方向又是什么？ | Reference vs Old、Forward/Reverse KL 数值例子 |
+| 20 | B | 采样概率很小，Ratio 为什么会爆炸？ | Logprob 差分、数值范围、Clip 与梯度异常 |
+| 21 | B | 固定 Seed 为何仍不能保证训练结果相同？ | RNG、采样顺序、算子确定性与检查点 |
+| 22 | B | 最小 Checkpoint 恢复后为什么不是原轨迹？ | 参数、Optimizer、RNG、Sampler Cursor 恢复比对 |
+| 23 | B | 一个 Loss NaN 应从哪个中间张量开始找？ | 首个非有限 Logprob/Advantage/Grad 的定位脚本 |
+| 24 | B | 做一次无法蒙混过关的 Learner 代码审查 | 错误注入：Shift、Mask、Reduction、Step 时机 |
+| 25 | C | 一个 Transformer Block 真正做了多少计算？ | 指定 B/L/H 的 GEMM/Attention FLOPs |
+| 26 | C | 1B 权重 2 GB，为何训练会先在 Backward OOM？ | 参数、梯度、Moment、Activation 的时序账 |
+| 27 | C | 长度翻倍，为何 Attention 的成本不止翻倍？ | QKᵀ/Softmax/V 形状与朴素 L² 存储 |
+| 28 | C | FlashAttention 减少什么，并没有减少什么？ | IO 与 Online Softmax、算术复杂度分开 |
+| 29 | C | 算力很高，为什么小矩阵仍然跑不快？ | Roofline、Tile/Pad、Launch 开销的上界 |
+| 30 | C | Micro-batch 改小为什么未必能提高吞吐？ | 显存、Kernel Shape、Gradient Accumulation 时间 |
+| 31 | C | Activation Checkpointing 的节省来自哪？ | Backward 所需 Saved Tensor 的生命周期 |
+| 32 | C | FP8 Scale 一变，Logprob 误差为何可能放大？ | 量化格、Accumulation、尾部 Logprob 对照 |
+| 33 | C | CUDA Graph 为什么减少开销也会限制调度？ | Replay 条件、动态 Shape 与 Capture 边界 |
+| 34 | C | GPU Trace 上看到空洞应如何定性？ | Compute/Memory/Launch/Sync 分类与证据 |
+| 35 | C | 同样 GPU 型号，长输入短输出为何性能不同？ | Prefill/Decode 的算术强度预估 |
+| 36 | C | 用一次实验判定问题是计算、带宽还是调度 | 无 GPU 时建立成本预算；有 GPU 时记录 Profiler 基线 |
+| 37 | D | 两个 GPU 求同一个 Batch 梯度，如何证明等价？ | DDP 平均语义、Rank 间数据与 Reduction |
+| 38 | D | 为什么梯度同步不一定等到 Backward 完毕？ | Bucket、Hook、Overlap 的时间线 |
+| 39 | D | FSDP/ZeRO 分片后，显存为何仍有尖峰？ | Sharded State 与参数 All-gather 的重叠 |
+| 40 | D | Tensor Parallel 把矩阵切在哪个轴，通信发生在哪？ | Column/Row Parallel 的 Tensor Shape 和 Collective |
+| 41 | D | Pipeline 为什么有 Bubble，也可能吃更多内存？ | 1F1B、Micro-batch 数与 Activation Lifetimes |
+| 42 | D | Expert Parallel 的通信量取决于什么？ | Routing Token、All-to-All 与负载偏斜 |
+| 43 | D | 长上下文如何跨卡拆 Attention？ | Context Parallel 的依赖、分块和通信 |
+| 44 | D | All-reduce 和 All-to-All 的瓶颈怎么估算？ | α–β 成本、消息大小与交换拓扑 |
+| 45 | D | 为什么多一个 GPU 反而可能更慢？ | Compute/Comm Ratio、跨机拓扑与并发竞争 |
+| 46 | D | 如何选 DP/TP/PP/EP 而不是盲目放大并行度？ | 带显存约束的两个可比拓扑方案 |
+| 47 | D | 多个 Rank 的 Checkpoint 怎么原子保存？ | Optimizer、Shard、元信息与一致性边界 |
+| 48 | D | 恢复到不同并行度会改变哪些东西？ | Reshard、RNG/Optimizer 状态与验证计划 |
+| 49 | D | 分布式 Hang 是谁在等待谁？ | Collective 顺序、Watchdog、Rank 日志对齐 |
+| 50 | D | 为一轮 8 卡训练做容量与故障评审 | 成本表、通信量估计、OOM/Hang 的最小验证 |
+| 51 | E | Prefill 为什么更像矩阵计算，Decode 为什么更像读内存？ | TTFT/TPOT 与算术强度 |
+| 52 | E | KV Cache 该怎么算才能知道真实并发上限？ | GQA/MQA、Layer/Head/Dim/Token 的字节数 |
+| 53 | E | PagedAttention 节约哪种浪费，付出什么管理成本？ | Block Mapping/Fragmentation/Lifetime |
+| 54 | E | Continuous Batching 究竟在调度哪些请求？ | Admission、Prefill、Decode 的请求状态 |
+| 55 | E | Prefix Cache 何时真正命中，何时只是占内存？ | 前缀相等条件、RadixCache 与驱逐规则 |
+| 56 | E | Chunked Prefill 为什么会改变尾部延迟？ | TTFT/TPOT/P99 三指标的竞争 |
+| 57 | E | 投机解码何时既保持分布又真正加速？ | 接受率、Correction、Draft Cost 的上界 |
+| 58 | E | Sampling 参数为何能影响训练侧 Logprob 语义？ | Temperature/Top-p/Stop 与分布定义 |
+| 59 | E | 训推 Logprob 对不上，如何先排除伪漂移？ | Token IDs、Mask、Policy、采样变换逐项对照 |
+| 60 | E | FP8 或量化会怎样改变采样与 Token 长度？ | 定量误差检查与非量化基线 |
+| 61 | E | 多机 PD 解耦的 KV 传输何时值得做？ | 传输量/带宽与排队时间的收支 |
+| 62 | E | 推理侧 TP/EP 组合怎样影响通信和并发？ | MoE 推理路由、专家缓存、GPU 占用 |
+| 63 | E | 吞吐增加为何可能让最慢用户更慢？ | 固定工作负载的 P50/P99、公平性与背压 |
+| 64 | E | 怎样做出不会自我欺骗的 Serving Benchmark？ | 输入输出长度、Warmup、重复实验和样本分布 |
+| 65 | F | Agent 调了工具，哪些 Token 才算模型的动作？ | Role/Tool Observation/Action Mask 对齐 |
+| 66 | F | 工具执行失败后，环境状态是什么？ | Tool Result、Timeout、Retry 与幂等语义 |
+| 67 | F | Sandbox 为什么会影响 RL 评估的可信度？ | 环境隔离、确定性、状态污染 |
+| 68 | F | Verifier 输出一个分数，能保证对应同一条轨迹吗？ | Trajectory ID、异步乱序评分与去重 |
+| 69 | F | 多轮任务只有终局奖励，怎样定义训练轨迹？ | Turn Boundary、Return 和训练 Token 范围 |
+| 70 | F | 做一个可测试的最小 Agent 交互环 | Agent–Tool–Verifier 的数据契约和失败注入 |
+| 71 | G | 为什么整批等齐不一定是算法要求？ | Group/Batch/Optimizer 的三种必要等待 |
+| 72 | G | 快请求完成后，下一条数据为什么仍不能启动？ | Admission、背压与在途预算 |
+| 73 | G | 什么叫有效训练 Group，何时才能接收？ | Reward Join、Group 成员、筛选与截止 |
+| 74 | G | 按接受率补投，为何可能产生大量剩余请求？ | Accepted/Inflight/Target 的估计误差 |
+| 75 | G | 已经达标，为何 GPU 仍在被 Rollout 占用？ | 停止准入 vs Inflight Drain |
+| 76 | G | 同池和分池架构怎么公平比较？ | 资源互斥、Overlap 机会和搬运成本 |
+| 77 | G | 权重发布后，哪些请求仍使用旧 Policy？ | Policy Version、原子切换与时间轴 |
+| 78 | G | Partial Rollout 暂停到底保存哪些状态？ | KV、Sampling RNG、位置、工具会话状态 |
+| 79 | G | 轨迹跨两版权重生成，还能计算什么 Ratio？ | Token/Trajectory Behavior 版本边界 |
+| 80 | G | Staleness 不能只用“晚了一步”来描述吗？ | 版本、Step、时间和训练目标四种定义 |
+| 81 | G | 旧样本重用到底会引入多大偏差或方差？ | IS Ratio/Support、裁剪与有效样本数 |
+| 82 | G | 为什么异步更忙，模型反而可能学得更差？ | 训练质量、选择偏差、旧策略分布联合验证 |
+| 83 | G | Sampler 重启后如何不重复消费同一条结果？ | Durable State、去重、提交位置 |
+| 84 | G | 异常退出后何时可以安全恢复训练？ | Checkpoint 与 Inflight/Accepted 的一致性 |
+| 85 | G | TQ 等队列在系统里应该拥有哪个事实？ | 所有权、字段版本、控制面和数据面分界 |
+| 86 | G | 在途请求太多，怎样量化排空成本？ | P95/P99 长尾与浪费 GPU-time |
+| 87 | G | 优化并发之前，怎样计算真正的 Step Throughput？ | 样本接收率、可训练 Token、GPU-hours |
+| 88 | G | 比较同步和异步，什么对照才算公平？ | 质量与成本双轴、Staleness 分层 |
+| 89 | H | Teacher 的全词表分布怎样给 Student 信号？ | Logits/KL/Temperature 与 Token Mask |
+| 90 | H | Forward KL 与 Reverse KL 为什么可能学出不同分布？ | 多峰 Toy 分布、Mode Cover/Seek 反例 |
+| 91 | H | OPD 与 GRPO 在同一目标里会不会互相干扰？ | 梯度方向、系数尺度与观察指标 |
+| 92 | H | Teacher Offload 和 RPC 的收益谁说了算？ | 显存节省、传输字节、吞吐与延迟 |
+| 93 | H | 如何判断某种异步/蒸馏论文的收益可复现？ | 作者报告 vs 本地测量、消融与实现差异 |
+| 94 | H | 在一条长轨迹里同时控制 Policy Version 和 KL 怎么做？ | 可追溯采样、Teacher 版本与权重更新 |
+| 95 | I | Reward 提高但任务指标下降，从哪一层定位？ | 数据/Verifier/Advantage/Policy/Serving 调试树 |
+| 96 | I | NCCL Hang、CUDA OOM 和长尾等待怎么区分？ | 事件关联 ID、Rank、Profiler 证据 |
+| 97 | I | 面对一个性能图，如何检验它有没有意义？ | 基线、方差、重复测量和容量规划 |
+| 98 | I | 把 Toy Learner 接进最小异步数据供给链 | 端到端测试：版本、Mask、恢复与拒收 |
+| 99 | I | 设计评审：只有 8 GPU，怎样选训练/推理布局？ | 显存、通信、吞吐、复杂度与备选方案 |
+| 100 | I | 用一套实验解释你自己的 RL Infra 设计 | 独立复现实验、故障注入与工程答辩 |
 
-## 纸面知识进入工程的时机
+## 选题背后的深度标准
 
-Day 01–09 先在极小概率模型中建立数学直觉，Day 10 做最小 Learner；Day 15–26 将分母、Autograd、数值与生命周期追踪回真实 Tensor；Day 27–56 把同一个训练环映射到 GPU、通信和 Serving，不能把 CPU Toy 的时间当作 LLM 性能；Day 57–85 加入工具、Sampler、Partial Rollout 与 Off-policy，必须说明为什么等待、何时更新版本、什么结果可以重复使用；Day 86–100 用故障和评审验证设计。每一阶段的实验可以选做，但后面的讲义应能够独立补齐需要的前置概念。
+- **10 分钟讲完的内容就不独立开课。** 例如字段命名、简单 API 导览、基本 Python 用法，在当天实验需要它时解释；不靠大量术语撑满讲义。
+- **重要机制至少能回答三个追问：** 公式/成本模型从哪来？改变哪一个假设会得到错误结果？用什么最小实验区分正确实现和错误实现？如果做不到，就不是「深挖」，只是概览。
+- **每个独立里程碑都带回数据。** 例如 Day10 要跑出一个真正改变参数的 Toy 更新，Day24 要能注入故障发现某个梯度错误，Day50 要能对一张多 GPU 配置给出通信量和恢复边界，Day88 要同时谈吞吐与训练质量，而非只画框图。
+- **学生不替课程证明课程写得对。** 题目、预测、反例和参考推导可以直接看；练习是自主验证，不做解锁。自动化也不能因为没作答而推迟下一节。
 
-## 交互课如何配
+## 论文只在关键决策点出现
 
-交互组件只服务于能计算差异的机制。Day 01 调 Policy 概率观察期望 Reward；Day 02 调 Baseline 比较方差；Day 03 改 Token Shift / Action Mask；Day 04 调 Ratio、Advantage 和 Clip；Day 05 改 Group Reward 与组完整性。后续可继续做 GAE 回溯、KV Cache 预算、调度时间线或 Staleness 实验。没有反事实可比较的主题不硬做小游戏。
+REINFORCE/Policy Gradient、GAE、PPO、DeepSeekMath/GRPO、DeepSeek-R1、DAPO、GSPO、FlashAttention、PagedAttention、HybridFlow/verl 以及具体异步训练工作，会在相应失效条件、设计选择和可核验代码一起出现。旧论文不因为年代早就废弃，新论文也不因为名称新就更正确。明确区分论文作者报告、公式推导、本项目通过的测试和真实环境测量。
 
-## 论文锚点与适用边界
+## 编辑边界
 
-- **经典算法**：[REINFORCE / Williams (1992)](https://link.springer.com/article/10.1007/BF00992696)、[GAE (2015)](https://arxiv.org/abs/1506.02438)、[PPO (2017)](https://arxiv.org/abs/1707.06347)。论文提供算法概念，具体实现必须通过代码/测试验证。
-- **LLM RL 目标**：[DeepSeekMath / GRPO (2024)](https://arxiv.org/abs/2402.03300)、[DeepSeek-R1 (2025)](https://arxiv.org/abs/2501.12948)、[DAPO (2025)](https://arxiv.org/abs/2503.14476)、[GSPO (2025)](https://arxiv.org/abs/2507.18071)。它们不是彼此同义的“GRPO 变体介绍日”；会按各自改了哪层目标/采样分布分别学习。
-- **框架与异步**：[HybridFlow/verl](https://arxiv.org/abs/2409.19256)、[AReaL 公开项目](https://github.com/areal-project/AReaL)、[DORA (2026，预印本)](https://arxiv.org/abs/2604.26256)。框架版本快速变化，文档只断言核对过的源码与公开声明；未复现的吞吐提升只能称“论文/项目报告”。
-- **推理与工程**：[FlashAttention](https://arxiv.org/abs/2205.14135)、[PagedAttention/vLLM](https://arxiv.org/abs/2309.06180)、[SGLang](https://arxiv.org/abs/2312.07104)。重点是 IO、KV 与资源调度，不是列软件功能表。
-
-**旧版课程处理：** 2026-10-27 之前 Day 01–04 以数据契约、显存、梯度累积、Policy Gradient 的顺序组织。它们是重要知识，但起步缺少目标函数/梯度估计的连续因果链。新版 Day 01–04 被替换为优化目标、Score Function、Token Logprob、PPO；原实验文件保留作为后续迁移素材（例如旧 Data Contract 可用于 Day 65，Memory Budget 可用于 Day 18，Gradient Accumulation 可用于 Day 16），不再让课号含义与内容不一致。
+用户本地维护站点、交互组件、构建和工程架构；定时任务只负责已排程课程及确有价值的独立教学代码/插图。**课程文字永远从学生当前要弄清的那个问题开始，不写「第几课会讲什么」或「本套设计为什么如此安排」**；这些只属于课表，不属于讲义正文。已有互动页面 Day01–05 的功能可用作验证工具，但交互标签和本课目标不一致时必须更新设计，不要误导学生。

@@ -1,15 +1,19 @@
-# Day 01 · 复算卡
+# Day 01 · 关掉讲义，算一次更新
 
-**不看讲义回答：** 为什么 SFT 能从已知答案直接更新，而 RL 需要考虑模型是否采样到了有 Reward 的动作？
+模型只有一个 Logit `z=0`，`p(A)=sigmoid(z)=0.5`，已采到动作 A，`R(A)=1`，学习率 0.4。
 
-二动作 Bandit，`π(A)=p=σ(z)`、`R(A)=1,R(B)=0`。
+先自己算，再对照：
 
 $$
-J=p,\quad \frac{\mathrm dJ}{\mathrm dz}=p(1-p).
+L=-\log p,\qquad \frac{\partial L}{\partial z}=-(1-p)=-0.5.
 $$
 
-固定 $p=0.25$：期望 Reward 0.25，精确梯度 0.1875；四次独立采样至少一次正确的概率为 $1-0.75^4\approx0.6836$，但 Pass@1 仍只有 0.25。**评估预算不同的 Pass@k 不能当作同一个指标。**
+$$
+z_{\rm new}=0.2,\qquad p_{\rm new}\approx0.549834.
+$$
 
-自己改变奖励为 $R(A)=2,R(B)=-1$。需要从公式得出 $J=3p-1$、$\mathrm dJ/\mathrm dz=3p(1-p)$，而不是把 Reward 只当作一个固定标签。
+把 Loss 的负号故意写错，正确动作概率会降到 **0.450166**。这比“训练能跑通”更能证明实现方向是否正确。
 
-[在线拨动 $p$，对照经验采样和理论值](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=1)。
+**这一课最重要的两个区分：** 已采到 A，不代表 A 的概率为 1；一次样本梯度为 0.5，不等于所有可能样本的期望梯度 $0.25$。
+
+如果你还不确定，先改 [Lab 01 中的 $p$ 和采样次数](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=1)；再运行讲义里的 SGD 片段。前者只模拟分布，后者真的改变一个参数。

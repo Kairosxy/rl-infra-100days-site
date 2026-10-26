@@ -1,7 +1,7 @@
-# Day 03 · 交互图：把预测位置对齐到真实 Action
+# Day 03 · 为什么 Token 必须按索引画，而不是画成几个箭头
 
-[Lab 03：Token Shift / Action Mask](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=3) 逐格显示 Prompt、Response 和 Padding，同时单独显示**预测者 Logit 的位置**与**被预测目标 Token 的位置**。
+[Lab 03：Token Shift 与 Action Mask](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=3) 固定一个可见的绝对 Token 索引轴，另用一行标出**预测者 Logit 的位置**、目标 Action 的位置与 Mask。
 
-点击“错误 Shift”后，预测者与目标同位，Tensor Shape 仍然成立；对照是否仍能解释为下一个 Token 的条件概率。更改 Prompt 长度后观察 Action Mask 变化。
+读图时先确认「Logits at $t-1$ → target Token at $t$」。切换“错误 Shift”后，即使目标 Tensor Shape 相同，预测者的位置已经改变，这才是需要注意的失败。
 
-静态表格更适合精确记录 [$B,L,V$] Tensor；交互图只展示 Token 位置，不假装运行了真实 LLM。
+这张位置图不包含真实 Tokenizer、非文本模态或多轮工具 Observation；如果这些情况进入训练，必须另外维护可训练 Action 的位置契约。不要用绿色高亮代替逻辑条件。

@@ -1,5 +1,7 @@
-# Day 04 · 交互图：PPO 梯度平台在哪里
+# Day 04 · 这条分段曲线真正说明什么
 
-[Lab 04：PPO Ratio / Clip 曲线](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=4) 绘出 **Clipped Surrogate 关于 Ratio 的分段目标**，标出 $1-\epsilon$ 和 $1+\epsilon$。拖动 Ratio，从 $A>0$ 切换到 $A<0$。
+在 [Lab 04：PPO Ratio/Clip](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=4) 中，先把 Advantage 设为 +2，拖动 Ratio 从 0.6 到 1.5；然后把 Advantage 设为 −2 再做一遍。
 
-**看图必须解释的判断：** 正 Advantage 在上界右侧进入平台；负 Advantage 在下界左侧进入平台。这张图描述的是一个样本、一个 Ratio 对目标值的局部贡献，**不是**完整 Transformer 更新轨迹，也不声称平台就保证全局 KL 小。
+图的横轴是**单条样本的 Ratio**，纵轴是 Clipped Surrogate（最大化目标）。它展示为什么好动作被提高得太多时出现右平台，坏动作被压低得太多时出现左平台。
+
+两条阈值线是 $1\pm\epsilon$，不是全策略概率分布之间的硬约束。图不包含完整词表 KL，也不能代替训练过程中对 Old/Current/Behavior 版本一致性的检查。

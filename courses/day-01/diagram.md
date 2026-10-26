@@ -1,7 +1,7 @@
-# Day 01 · 图解不画成框图
+# Day 01 · 交互与静态图的分工
 
-本课没有画大型 RL Pipeline：不知道要优化什么之前，记住 Rollout/Reward/Trainer 方框的顺序意义有限。
+**先不要画“Rollout → Verifier → Learner”三个大方框。** 这三个名词还不能解释一次更新，学生最需要看到的是：已观察到的动作、Logprob 梯度和参数更新前后的概率。
 
-打开 [Lab 01：采样概率与期望 Reward](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=1)。横向滑动 $p$，直接看解析式 $J=p$ 和有限采样的结果差异。先预测、再运行、再改变采样次数，形成对随机梯度噪声的直觉。
+已有 [Lab 01：采样概率与有限样本](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=1) 可以改变 $p$ 和样本数，帮助区分经验 Reward 与理论期望。它**不执行 Optimizer Step**，因此必须和 [讲义中的 PyTorch 代码](lesson.md) 配合使用。
 
-**图的限制：** 这里只有二动作、确定性 Reward、独立采样。它没有 LLM Token、Prompt 分布和权重更新；真实系统不能用这个 Toy 的采样时间衡量 GPU 性能。
+如果新增教学交互，建议保持同一个二动作例子，只显示四个数：`z`、`p(A)`、`dL/dz`、`p_new(A)`。允许学生切换 Reward、Loss 正负号和学习率；正号错误时用橘色高亮概率下降。结果按公式计算，不要用随机装饰动画代替真实数值。

@@ -1,96 +1,151 @@
-# Day 01 · 模型究竟在优化什么：从 SFT 到期望 Reward
+# Day 01 · 模型答对了一次，参数到底改了哪里？
 
-在 RL 里，我们不是把已经知道的正确答案继续喂给模型，而是让模型**自己采样一次，再根据结果好不好调整它以后采取动作的概率**。这句话听起来很简单，里面却藏着几件会影响实际训练的事情：评估使用的目标是否就是训练目标？采样概率低时能不能学到？Pass@k 提升是否能说明单次回答质量提高？
+假设一个模型只有两个可选答案。给它一道题「1+1=?」，动作 A 表示回答 2，动作 B 表示回答 3。现在它选择 A 的概率是 50%，恰好采样到 A，评分器给了 1 分。
 
-先不引入 PPO 和分布式框架。只用一个可以完全算清楚的二动作模型，把它们分开。
+下一次回答 2 的概率会增加多少？
 
-[打开本课可调参数实验 →](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=1)
+你可能觉得「答对了，提高 A 的概率」没有什么可讲。但这里有一个必须弄清的断点：**评分器只返回整数 1，梯度是从哪里来的？** 如果连这个问题都不能算出来，把同一动作换成几百个 Token，再分到几十张 GPU 上，只会让错误变得更难发现。
 
-## 固定一个环境：只有两个动作
+## 先不要训练：模型当前到底相信什么
 
-一个 Prompt 只能回答 A 或 B。Verifier 按规则返回：
-
-| 动作 | Reward | 说明 |
-|---|---:|---|
-| A | 1 | 正确 |
-| B | 0 | 错误 |
-
-Policy 给 A 的概率记为 $p$，给 B 的概率为 $1-p$。为了让这个概率由模型参数决定，先把模型压缩成一个 Logit $z$：
+用一个参数 $z$ 表示模型的倾向：
 
 $$
-p=\pi_\theta(A)=\sigma(z)=\frac{1}{1+e^{-z}},\qquad
-\pi_\theta(B)=1-p.
+p=\pi_z(A)=\sigma(z)=\frac{1}{1+\exp(-z)},\qquad
+\pi_z(B)=1-p.
 $$
 
-这两个动作构成一个最小 Bandit。它没有多步环境和 Credit Assignment，但有真正的**采样分布和期望优化目标**。
+开始时 $z=0$，所以两个动作各有 50% 的概率。注意模型并不是「选择了 A，所以 A 的概率是 100%」。**动作是一次随机采样的结果，概率是采样之前的分布。**
 
-模型的单次采样结果可能是 0 或 1；训练真正想提高的通常是对这个分布的**期望 Reward**：
+评分规则固定为：
+
+$$
+R(A)=1,\qquad R(B)=0.
+$$
+
+从所有可能的抽样结果看，模型平均每次能得多少分？
 
 $$
 J(z)=\mathbb E_{a\sim\pi_z}[R(a)]
 =pR(A)+(1-p)R(B)=p.
 $$
 
-如果 $p=0.25$，四次随机采样不保证恰好有一次正确，但期望每次正确率为 25%。
-
-重要的是优化参数 $z$，而不只是观察 $J$ 的大小：
+$J$ 是想提高的**期望回报**，不是这一次已经观察到的 1 分。当前 $J(0)=0.5$。由于 $p=\sigma(z)$，我们甚至知道如果可以直接计算理想梯度：
 
 $$
-\frac{\mathrm dJ}{\mathrm dz}
-=\frac{\mathrm dp}{\mathrm dz}
-=p(1-p).
+\frac{\mathrm dJ}{\mathrm dz}=p(1-p)=0.25.
 $$
 
-当 $p=0.25$ 时，梯度为 $0.25\times0.75=0.1875$。如果对 $J$ 做梯度上升，$z$ 会增大，A 的概率会上升。至此，我们已经知道理想情况下训练想要的是哪个方向。
+但真实 RL 不可能枚举完整语言空间。训练时拿到的是本次采到的动作 A 和对应评分。接下来需要把这一个观察结果变成可以反传的 Loss。
 
-## SFT 的梯度为什么和它看起来相像，却不是同一个训练问题
+## 1 分本身不可微，动作的 Logprob 可以
 
-假设教师数据直接告诉我们标准答案 A。普通 SFT 的单条 Cross Entropy 是：
-
-$$
-L_{\mathrm{SFT}}=-\log p,\qquad
-\frac{\mathrm dL_{\mathrm{SFT}}}{\mathrm dz}=p-1.
-$$
-
-在 $p=0.25$ 时，SFT 的梯度为 $-0.75$；梯度下降会增加 $z$。它和前面的 RL 梯度方向一致，这是因为环境刚好只有两个动作，A 永远得 1、B 永远得 0。
-
-但是**训练信号的来源不同**：SFT 已经有答案 A，哪怕模型目前几乎不会采样 A，仍然能直接训练它。RL 必须面对「从当前策略抽样，得到什么反馈」这个问题。对于复杂题目、工具调用、长序列，完整的最佳答案可能不可得，而 Verifier 只能评价完成结果。此时不能把采样、评分与监督标签混作一回事。
-
-这个简化例子还能揭示一个训练困难。
-
-如果 $p=0.01$，当前模型有 99% 的概率采到 B，而 $R(B)=0$。从某一条样本出发、使用未经 Baseline 修正的 REINFORCE 估计器时，抽到 B 的那次更新可以是零。少见的正确动作依然可能提供很大的单样本更新，但大多数回合没有有效的奖励信号。**理想的期望梯度非零，不代表有限次采样容易得到稳定梯度。**
-
-下节课会推导为什么这个估计器的期望仍然正确，为什么 Baseline 可以改变方差而不改变期望，以及什么条件会让它产生偏差。
-
-## 我们到底在测 Pass@1 还是 Pass@k？
-
-还是 $p=0.25$。如果四次采样相互独立，至少有一次回答 A 的概率为：
+A 已经被采样成一个离散动作，求导不能穿过「掷骰子得到了 A」这个操作。换个方向：既然这个动作得了 1 分，我们提高它发生的**对数概率**：
 
 $$
-\mathrm{Pass@4}=1-(1-p)^4
-=1-0.75^4\approx0.6836.
+L(z)=-R(A)\log\pi_z(A)=-\log p.
 $$
 
-而单次采样的正确率只有 $\mathrm{Pass@1}=p=0.25$。
+对于 Sigmoid：
 
-一个模型可能依靠**多采几次**得到高 Pass@k，但并没有让单次回答更可靠。比较 RL 方法时必须固定评估预算、采样参数和统计口径，否则把「更多尝试次数」带来的改进误认为「策略学好了」。
+$$
+\frac{\partial\log p}{\partial z}=1-p,\qquad
+\frac{\partial L}{\partial z}=-(1-p).
+$$
 
-在真实 Reasoning LLM 中，长推理会让 Pass@k、Verifier 正确性和成本的关系更复杂。DeepSeek-R1 的公开工作展示了用 Verifiable Reward 训练推理模型的路线；这不能推出任何一个 Toy Verifier 都适合训练，尤其不能忽视 Reward Hacking 与评估集泄漏。
+代入 $p=0.5$：
 
-## 把「期望」和「你实际采到了什么」放在一起
+$$
+L=-\log0.5\approx0.693147,\qquad
+\frac{\partial L}{\partial z}=-0.5.
+$$
 
-打开 [互动 Lab 01](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=1)，固定 $p=0.25$，先猜采样 8 次会获得多少次 Reward=1，再点击运行。你可以多次换 Seed，比较有限次样本均值和真正的期望 $J=0.25$。
+这不是刚才的理想梯度 $0.25$。**不要急着认为哪个算错了：$-0.5$ 来自一次具体采样；$0.25$ 是对所有采样结果求期望后的梯度。** 要比较二者，得考虑抽到 B 的情况。
 
-然后把采样次数增加到 100 或 500 次：估计通常更稳定，但不保证每次结果单调更接近真实值。**这个实验没有模型训练，也没有 GPU**；它展示的是采样噪声，让后续的 Policy Gradient 和 Advantage 估计有具体参照。
+若采样到 B，$R(B)=0$，上述最基础的样本 Loss 为 0，对 $z$ 的梯度也为 0。两种情况以各 50% 的概率出现，所以单样本**梯度下降方向的期望**是：
 
-最后做一个反例：将 $p$ 改成 0.02，采样 10 次时连续看不到 Reward=1 并不代表期望 Reward 是零。这正是稀疏奖励训练需要解决的信号稀缺问题。
+$$
+\mathbb E[-\nabla_zL]
+=0.5\times0.5+0.5\times0
+=0.25
+=\frac{\mathrm dJ}{\mathrm dz}.
+$$
 
-## 用已知工作检验这个思路是否有用
+这就是最小的 Score Function/REINFORCE 估计器在本例中起作用的原因：不是评分器提供了导数，而是通过采样动作的 $\log\pi_z(a)$ 找到了对参数的可微路径。推导成立的条件包括：样本按用于估计的策略分布采集，以及 Reward 规则不直接随这个参数求导。
 
-- [REINFORCE / Williams (1992)](https://link.springer.com/article/10.1007/BF00992696)：下一课将用 Score Function 把「期望导数」变成可采样估计的形式。
-- [DeepSeekMath (2024)](https://arxiv.org/abs/2402.03300)：引出对同一个问题多次采样、再按相对结果更新的 GRPO；等到 Day 05 才分析其组内目标。
-- [DeepSeek-R1 (2025)](https://arxiv.org/abs/2501.12948)：Verifiable Reward 用于复杂推理的代表性工作。本课只是解释其训练信号的数学原型，没有复现实验结果。
+## 真正执行一次 SGD，概率变成多少
 
-**检查自己是否真的理解：** 如果你把 Reward 规则换成 $R(A)=2,R(B)=-1$，新的 $J$ 和 $\mathrm dJ/\mathrm dz$ 分别是什么？再想想：只依赖 Verifier 分数优化时，为什么还需要关心评分规则是否真的代表最终能力？
+固定已经采样到 A，学习率 $\eta=0.4$：
 
-本课的代码与显存工程细节刻意推迟到后面。先确立优化目标，再谈如何估计、实现和加速它。
+$$
+z_{\mathrm{new}}
+=z-\eta\frac{\partial L}{\partial z}
+=0-0.4(-0.5)=0.2.
+$$
+
+更新之后：
+
+$$
+\pi_{\mathrm{new}}(A)
+=\sigma(0.2)\approx\boxed{0.549834}.
+$$
+
+因此，**一次采到正确动作并按这条 Loss 更新，A 的概率从 50% 增加到了约 54.98%**。不是增加到 100%，也不是增加 40 个百分点。
+
+现在换个问题：如果同一条记录中，开发者把 `loss=-reward*log_prob` 写成 `loss=reward*log_prob`，程序会怎样？
+
+梯度符号变成 $+0.5$，SGD 把 $z$ 更新到 $-0.2$，正确动作的概率降到 $\sigma(-0.2)\approx0.450166$。**Loss 能反传、Optimizer 能 Step、没有 NaN，并不意味着方向是对的。**
+
+如果你想真正检查模型是否在“奖励正确动作”，只看 Reward Mean 或 Loss 是否下降都不够；最小证据是：冻结输入与动作，更新前后比较**该动作在同一条件下的 Logprob**，并核对梯度符号。
+
+## 五行 PyTorch，把公式落到参数上
+
+下面代码在 CPU 上即可运行；无 GPU、无外部模型、无随机采样噪声。为了把变化看清，我们**强制采用本次已知动作 A**：
+
+~~~python
+import torch
+
+z = torch.tensor(0.0, requires_grad=True)
+optimizer = torch.optim.SGD([z], lr=0.4)
+
+before = torch.sigmoid(z).item()
+log_prob_a = torch.nn.functional.logsigmoid(z)
+reward = torch.tensor(1.0)
+
+loss = -reward * log_prob_a
+optimizer.zero_grad()
+loss.backward()
+print("gradient:", z.grad.item())  # -0.5
+optimizer.step()
+
+after = torch.sigmoid(z).item()
+print("probability:", before, after)  # 0.5, 约 0.549834
+assert z.grad.item() < 0
+assert after > before
+~~~
+
+每一行对应上面的式子：`z` 是参数，`log_prob_a` 是采到动作 A 的条件 Logprob，`reward` 是不可微的观察值，`loss.backward()` 的梯度只通过 Logprob 回到 `z`，`optimizer.step()` 改变参数。
+
+真实大模型中，`z` 会变成大量模型参数，采样动作会是一串 Token；但一次更新必须满足的条件没变：**Reward 对应的是哪个动作？Logprob 来自哪个策略？Mask 选择了哪些实际生成的动作？梯度能否回到 Current 参数？**
+
+不需要此时背完所有字段。只要看出这条链上任何一环连错，最终都可能出现「训练在进行，优化目标却不对」。
+
+## 你可以亲自改变三个条件
+
+打开 [交互实验：策略概率与实际采样](https://kairosxy.github.io/rl-infra-100days-site/labs/?day=1)。它只模拟采样分布，不会真的更新模型参数；上面的 PyTorch 片段负责演示更新。
+
+**第一个改动：** 将初始概率 $p$ 从 0.5 改到 0.02。采样 8 次时，一次正确动作都没出现并不奇怪。系统记录「这轮全错」不能直接推出理论期望梯度为零。
+
+**第二个改动：** 把 Reward(A) 从 1 改成 2，Reward(B) 从 0 改成 −1。先写出新的 $J=3p-1$，再求 $\mathrm dJ/\mathrm dz=3p(1-p)$。如果奖励规则错了，优化器仍可能非常有效地学会错误行为。
+
+**第三个改动：** 在上面的代码里去掉负号，检查 Assertion 哪一个会失败。这个负例比「训练 Loss 数值大约正常」更有诊断价值。
+
+这节课研究的是**一次动作得到反馈后发生的参数更新**。它没有多轮状态、价值函数、策略重用、PPO Clip，也没有 GPU 加速。把这条最短路径走通，已经足以判断许多复杂 RL 训练代码是不是在朝正确方向更新。
+
+## 进一步核对
+
+- [OpenAI Spinning Up：Policy Gradient](https://spinningup.openai.com/en/latest/spinningup/rl_intro3.html)：采样轨迹、Log-Derivative 与更新目标的推导。此处将它缩减为可枚举的二动作实例。
+- [REINFORCE / Williams (1992)](https://link.springer.com/article/10.1007/BF00992696)：基于采样动作及其概率估计梯度的经典工作。
+- [PyTorch `logsigmoid`](https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.logsigmoid.html) 与 [`SGD`](https://docs.pytorch.org/docs/stable/generated/torch.optim.SGD.html)：检查代码运算的确切定义。
+
+**你现在能验证的结论：** 从 $z=0$、采样 A、$R(A)=1$ 出发，正确更新后 $p=0.549834$；反向写错负号时 $p=0.450166$。这两个数来自公式与可执行代码，不是大模型训练的测量结果。
