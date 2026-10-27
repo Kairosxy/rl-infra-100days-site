@@ -87,10 +87,10 @@
     host.append(hint);
   }
   const inlineLabByTopic={
-    "tp-matrix-communication":[["矩阵切分与通信","labs/parallel.html"]],
-    "pp-pipeline-bubble":[["流水线填充与空泡","labs/parallel.html"]],
-    "ep-token-routing":[["Expert 路由与负载","labs/parallel.html"]],
-    "parallel-topology":[["多维并行 GPU 分组","labs/parallel.html"]],
+    "tp-matrix-communication":[["矩阵切分与通信","labs/parallel.html#tp"]],
+    "pp-pipeline-bubble":[["流水线填充与空泡","labs/parallel.html#pp"]],
+    "ep-token-routing":[["Expert 路由与负载","labs/parallel.html#ep"]],
+    "parallel-topology":[["多维并行 GPU 分组","labs/parallel.html#topo"]],
     "rl-parallel-planning":[["训练与推理显存预算","labs/rl-memory.html"]],
     "training-sharding":[["训练与推理显存预算","labs/rl-memory.html"]],
     "serving-parallelism":[["TP 计算与通信成本","labs/parallel-performance.html"]]
@@ -111,7 +111,7 @@
       head.append(link);wrap.append(head);
       const frame=el("iframe","inline-lab-frame");
       frame.title=label;frame.loading="lazy";frame.src=url;
-      frame.setAttribute("sandbox","allow-scripts allow-same-origin");
+      frame.setAttribute("sandbox","allow-scripts");
       wrap.append(frame);host.append(wrap);
     }
   }
@@ -191,7 +191,15 @@
     $("detail-title").textContent=page.title;
     $("detail-summary").textContent=page.summary;
     $("article").innerHTML=page.html || "<p>暂无正文，请查看关联内容。</p>";
-    renderInlineLabs(page);\n    const recall=$("recall");recall.replaceChildren();
+    renderInlineLabs(page);
+    // Keep the experiment inside the article flow rather than as a separate tool page.
+    const inline=$("inline-labs");
+    if (!inline.hidden) {
+      const anchor=$("article").querySelector("h2");
+      if (anchor) anchor.before(inline);
+      else $("article").append(inline);
+    }
+    const recall=$("recall");recall.replaceChildren();
     recall.hidden=!(type==="topic" && page.recall?.question);
     if (!recall.hidden) {
       recall.append(el("p","recall-label","想一想 · 不用写答案"));
