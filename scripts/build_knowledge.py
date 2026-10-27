@@ -13,7 +13,7 @@ import shutil
 from pathlib import Path
 
 from markdown_render import render_markdown
-from site_nav import NAV_CSS, nav_markup
+from site_nav import NAV_CSS
 
 GROUPS = ("topics", "cases", "implementations")
 RELATIONS = {
@@ -86,17 +86,15 @@ def generate_knowledge(root: Path, output: Path) -> int:
     data = (data.replace("<", r"\u003c").replace(">", r"\u003e")
                 .replace("&", r"\u0026").replace("\u2028", r"\u2028")
                 .replace("\u2029", r"\u2029"))
-    extra = ""
     for slot, value in {
-        "{{SITE_NAV}}": nav_markup("knowledge", extra),
-        "{{KNOWLEDGE_STYLE}}": css + "\n" + NAV_CSS,
+        "{{KNOWLEDGE_STYLE}}": css,
         "{{KNOWLEDGE_DATA}}": data,
         "{{KNOWLEDGE_JS}}": js,
     }.items():
         if slot not in html:
             raise ValueError(f"Missing template slot {slot}")
         html = html.replace(slot, value)
-    output.parent.mkdir(parents=True, exist_ok=True)
+    # Knowledge owns its navigation; never inject the legacy shared header.\n    html = html.replace('<div class="legacy-nav" hidden>{{SITE_NAV}}</div>', "")\n    output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(html, encoding="utf-8")
     # Interactive labs are a supporting page of the knowledge site.
     labs_source = root / "labs"
