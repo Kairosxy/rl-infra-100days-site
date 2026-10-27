@@ -16,7 +16,7 @@ flowchart LR
 
 ## 统一例子：2 节点 × 8 GPU
 
-假设 Learner 使用 TP=2、PP=1、EP=4、DP=2，乘积 16；Rollout 使用 TP=4、DP=4，乘积也为 16。**这两个算式只是逻辑并行维度的示意**：真实 Megatron 中 EP 与 DP/TP 的组合关系、Expert-DP Group、MoE 层与 Dense 层分组不一定能简单将所有 Degree 相乘，必须根据实际 Parallel Group 构造验证。尤其 EP 常重用某些维度，不应直接当成独立的第四个乘数。
+假设 Learner 的 Dense 层使用 TP=2、PP=2、DP=4，满足 TP×PP×DP=16；MoE 层再配置 EP=4 时，需要从现有 Rank 中构建 Expert Parallel Group，并相应调整 Expert Data Parallel Group，**不是再乘 4**。Rollout 可使用 TP=4、DP=4，共 16 GPU。两个 Engine 的分组、参数布局与通信模式并不相同；真实组合是否支持必须按目标 Megatron/SGLang 版本及 Parallel Group 初始化核验。
 
 ## 第一步：分别建立容量约束
 
