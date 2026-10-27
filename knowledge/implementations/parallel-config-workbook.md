@@ -1,6 +1,6 @@
 # 并行配置工作簿：给定 GPU、模型和负载，如何选 TP/PP/EP/CP/DP？
 
-## 不从“经验推荐 TP=8”开始
+[打开 TP 性能推演实验](../../labs/parallel-performance.html)：调整 Token Batch、TP×DP、算子效率和 NCCL 假设，比较单批延迟与固定 GPU 的理想处理能力。该实验是教学成本模型，不是硬件 Benchmark。\n\n## 不从“经验推荐 TP=8”开始
 
 ```mermaid
 flowchart TD
