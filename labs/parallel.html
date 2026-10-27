@@ -54,6 +54,6 @@ let nodes='';for(let n=0;n<2;n++){nodes+='<h3 class="mini">Node '+n+' · GPU '+n
 $('viz').innerHTML=nodes;$('caption').textContent='TP Group 在此映射下是连续 Rank；PP/DP Group 交叉连接这些颜色块。TP×PP×DP 的乘积只适用于这里定义的 Dense 维度。';
 $('math').innerHTML='<p class="formula">DP = 16 / (TP × PP)</p><p>EP、CP 在真实框架中有额外组划分、整除和布局约束，不应在此基础上随意相乘。若 TP Group 跨节点，Collective 通常需要额外考虑网络延迟。</p>';}
 function render(){document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===tab)));if(tab==='tp')renderTP();else if(tab==='pp')renderPP();else if(tab==='ep')renderEP();else renderTopo();$('controls').querySelectorAll('select,input').forEach(e=>e.addEventListener('input',()=>{state[e.id]=e.type==='range'?Number(e.value):(['work'].includes(e.id)?e.value:Number(e.value));if(tab==='topo'&&state.topoTP*state.topoPP>16){if(e.id==='topoTP')state.topoPP=16/state.topoTP;else state.topoTP=16/state.topoPP;}render();}));}
-document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.tab;render();}));render();
+document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.tab;history.replaceState(null,'','#'+tab);render();}));render();
 })();
 </script></body></html>
