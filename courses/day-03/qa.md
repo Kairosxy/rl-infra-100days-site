@@ -1,17 +1,24 @@
-# Day 03 · 两个能检验理解的问题
+# Day 03 · 一眼看出 Token Shift 错没错
 
-## 题 1：为什么一个 Response 只拿到一个分数，却有两个 Token 的梯度？
+一条序列：
 
-已采样 Response 包含两个动作，概率依次为 0.8、0.7，终局 Reward=1。写出这条 Response 的联合概率、对数概率，以及基础 REINFORCE 的 Token Sum Loss。指出梯度实际穿过哪里。
+```text
+位置       0       1       2     3      4
+Token     BOS     问题      y1    y2     PAD
+```
 
-**答案依据：** 联合概率 0.56，Logprob≈−0.579818，Loss≈0.579818；Reward 是梯度系数，导数来自两个条件 Logprob 的计算图。不能声称它证明两个 Token 的“真实贡献”相同。
+Prompt 占前两个位置，Response 是 `y1,y2`。
 
-**追问：** 若环境还提供了中间 Reward，或使用每一步的 Return，这条 Loss 会怎样改变？
+**想一想：** 预测 `y1` 的 Logits，来自位置 **1** 还是位置 **2**？
 
-## 题 2：为什么一个 Token Shift 错误不一定触发 Shape 报错？
+**答案：位置 1。** 因果语言模型的 `logits[t]` 预测的是下一位置的 Token。因此预测 `y1,y2` 的 Logits 来自 **1、2**，而目标 Token 位于 **2、3**。
 
-给定完整 `input_ids=[BOS,问题,y1,y2,PAD]`，Prompt 长度 2、有效长度 4。写出正确 Action 目标和预测者的位置；再构造错一位的预测者切片。说明如何用一个负例而非平均 Loss 检查这个错误。
+可以这样向同事说明：
 
-**答案依据：** 目标位置 2、3，预测者位置 1、2；Mask 在目标位置 1..4 上为 [0,1,1,0]。错误切片拿 2、3 预测 2、3，Shape 不变但概率语义错误。
+> Teacher Forcing 不会重新采样答案，而是用当前模型计算已生成 Token 的条件 Logprob。目标 Token 和预测它的 Logits 要错开一位，最后只对真实 Action 位置计算 Loss。
 
-**追问：** 两条 Response 长度 2 和 4，全部有效 Token 的单项 Loss 都为 1。比较全局 Token Mean 与逐 Sequence Token Mean 的每 Token 权重。
+**再做一个判断：** 如果误把 PAD 的 Mask 设为 1，Shape 会不会报错？
+
+通常不会。Loss 可能正常下降，但多优化了一个不属于响应的目标位置。本例在目标位置 1–4 上的 Action Mask 应为 **[0,1,1,0]**。
+
+想核对 Tensor 切片：[讲义里的 Shift/Gather 代码](lesson.md)。
