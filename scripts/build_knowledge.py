@@ -53,6 +53,27 @@ def knowledge_payload(root: Path) -> dict:
     for item in payload["topics"]:
         if item.get("chapter") not in chapter_ids:
             raise ValueError(f"Unknown chapter for topic {item['id']}")
+    topics_by_chapter = {
+        chapter_id: {item["id"] for item in payload["topics"] if item["chapter"] == chapter_id}
+        for chapter_id in chapter_ids
+    }
+    for chapter in payload["chapters"]:
+        seen_topics = set()
+        section_ids = set()
+        for section in chapter.get("sections", []):
+            section_id = section.get("id")
+            if not section_id or section_id in section_ids or not section.get("title"):
+                raise ValueError(f"Invalid section in chapter {chapter['id']}")
+            section_ids.add(section_id)
+            for topic_id in section.get("topics", []):
+                if topic_id not in topics_by_chapter[chapter["id"]]:
+                    raise ValueError(f"Section references unknown topic: {chapter['id']}/{topic_id}")
+                if topic_id in seen_topics:
+                    raise ValueError(f"Topic appears in multiple sections: {topic_id}")
+                seen_topics.add(topic_id)
+        if seen_topics != topics_by_chapter[chapter["id"]]:
+            missing = sorted(topics_by_chapter[chapter["id"]] - seen_topics)
+            raise ValueError(f"Unclassified topics in {chapter['id']}: {missing}")
 
     for group, relations in RELATIONS.items():
         for item in payload[group]:
