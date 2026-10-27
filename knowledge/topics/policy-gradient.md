@@ -32,4 +32,4 @@ $$
 
 最小验证是固定 A、$z=0$，确认更新后 $p>0.5$。把 Loss 的负号故意写反，应得到 $p\approx0.450166$。能跑 Backward 但方向不对，是一种最基础的训练正确性故障。
 
-可读材料：[Spinning Up 的 Policy Gradient 推导](https://spinningup.openai.com/en/latest/spinningup/rl_intro3.html)；[PPO 原论文](https://arxiv.org/abs/1707.06347)。历史完整教学稿保存在 [Day 01](https://github.com/Kairosxy/rl-infra-100days-site/blob/main/courses/day-01/lesson.md)。
+可读材料：[Spinning Up 的 Policy Gradient 推导](https://spinningup.openai.com/en/latest/spinningup/rl_intro3.html)；[PPO 原论文](https://arxiv.org/abs/1707.06347)。

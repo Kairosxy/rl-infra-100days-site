@@ -25,10 +25,15 @@ class PublicBoundaryTest(unittest.TestCase):
             if path.is_file() and (".git" not in path.parts):
                 self.assertNotIn(path.name.lower(), PRIVATE_ANSWER_FILENAMES, path.as_posix())
 
-    def test_course_site_never_submits_answers_to_public_issues(self):
-        text = (ROOT / "site" / "app.js").read_text(encoding="utf-8")
+    def test_knowledge_reader_has_no_write_endpoints(self):
+        text = (ROOT / "knowledge" / "site" / "app.js").read_text(encoding="utf-8")
         self.assertNotIn("/issues/new", text)
-        self.assertIn("downloadAnswers", text)
+        self.assertNotIn("fetch(", text)
+        self.assertNotIn("XMLHttpRequest", text)
+
+    def test_legacy_course_reader_is_gone(self):
+        for relative in ("courses", "site", "scripts/build_site.py"):
+            self.assertFalse((ROOT / relative).exists(), relative)
 
     def test_quiz_only_stores_progress_in_browser(self):
         text = (ROOT / "quiz" / "app.js").read_text(encoding="utf-8")

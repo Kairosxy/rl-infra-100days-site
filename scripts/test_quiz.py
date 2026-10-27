@@ -35,13 +35,13 @@ class QuestionBankTest(unittest.TestCase):
 
     def test_every_related_course_number_is_valid(self):
         questions = read_bank(ROOT)["questions"]
-        self.assertTrue(all(1 <= q["course_day"] <= 100 for q in questions))
+        self.assertTrue(all(q.get("topic") for q in questions))
 
 
 class PublicRepositoryPrivacyTest(unittest.TestCase):
     def test_unpublished_personal_files_are_not_committed(self):
         for path in (
-            "progress.md", "portfolio", "environments", "courses/day-01/answers.md",
+            "progress.md", "portfolio", "environments",
             ".github/workflows/course-answer.yml", "scripts/issue_to_answer.py", ".env"
         ):
             self.assertFalse((ROOT / path).exists(), path)
@@ -52,8 +52,8 @@ class PublicRepositoryPrivacyTest(unittest.TestCase):
         self.assertNotIn("/issues/new", js)
         self.assertNotIn("fetch(", js)
 
-    def test_course_page_has_no_issue_upload_logic(self):
-        js = (ROOT / "site" / "app.js").read_text(encoding="utf-8")
+    def test_knowledge_reader_has_no_issue_upload_logic(self):
+        js = (ROOT / "knowledge" / "site" / "app.js").read_text(encoding="utf-8")
         self.assertNotIn("/issues/new", js)
 
 

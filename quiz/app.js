@@ -5,6 +5,7 @@
   const payload = JSON.parse(document.getElementById("quiz-data").textContent);
   if (payload.schema !== "rl-infra-question-bank-v1") throw Error("Invalid question bank");
   const questions = payload.questions;
+  const topicTitle = new Map((payload.topics || []).map(t => [t.id, t.title]));
   const lookup = new Map(questions.map(q => [q.id, q]));
   const KEY = "rl-infra-100days-questionbank-v1";
   const domainNames = {
@@ -208,9 +209,12 @@
     byId("position").textContent = cursor + 1 + " / " + queue.length;
     byId("count").textContent = byId("answer").value.trim().length + " 字";
     byId("saved").textContent = r.attempts ? "已自评 " + r.attempts + " 次" : "草稿仅存在本机";
-    byId("course-link").hidden = false;
-    byId("course-link").href = "../#day=" + q.course_day + "&view=lesson";
-    byId("course-link").textContent = "关联 Day " + two(q.course_day) + " ↗";
+    const topic = q.topic;
+    byId("course-link").hidden = !topic;
+    if (topic) {
+      byId("course-link").href = "../#topic=" + topic;
+      byId("course-link").textContent = "相关主题：" + (topicTitle.get(topic) || topic) + " ↗";
+    }
     history.replaceState(null, "", "#q=" + q.id);
     updateStats();
   }

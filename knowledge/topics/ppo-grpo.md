@@ -37,4 +37,3 @@ $$
 
 工程上，可以对同一批固定 Token、Reward 和 Old/Current Logprob 实现两个 Reduction，对比每个 Token 的梯度；比“跑一次大模型看 Reward 是否上涨”更直接。
 
-历史深入稿：[PPO Ratio](https://github.com/Kairosxy/rl-infra-100days-site/blob/main/courses/day-04/lesson.md) · [Group Advantage](https://github.com/Kairosxy/rl-infra-100days-site/blob/main/courses/day-05/lesson.md)。
