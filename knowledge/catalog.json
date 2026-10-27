@@ -397,6 +397,100 @@
       ],
       "cases": [],
       "implementations": []
+    },
+    {
+      "id": "distributed-collectives",
+      "title": "NCCL 与 Collective：GPU 为什么在等？",
+      "chapter": "parallel",
+      "summary": "Process Group、All-Reduce、All-Gather、Reduce-Scatter 与通信拓扑。",
+      "recall": {
+        "question": "All-Reduce 和 Reduce-Scatter 的输出布局一样吗？",
+        "answer": "不同。All-Reduce 每卡保留完整归约结果；Reduce-Scatter 每卡保留归约后的分片。"
+      },
+      "keywords": [
+        "nccl",
+        "collective",
+        "allreduce",
+        "allgather",
+        "distributed"
+      ],
+      "cases": [],
+      "implementations": []
+    },
+    {
+      "id": "cp-sp-attention",
+      "title": "CP / SP：长上下文的序列怎么切？",
+      "chapter": "parallel",
+      "summary": "区别 Sequence Parallel 和 Context Parallel，理解 KV 交换与因果 Attention。",
+      "recall": {
+        "question": "GQA 的 KV 大小可以用 Query Head 数计算吗？",
+        "answer": "不能。KV 大小应使用实际 KV Head 数，并核对层数、dtype 和序列长度。"
+      },
+      "keywords": [
+        "cp",
+        "sp",
+        "context parallel",
+        "sequence parallel",
+        "attention"
+      ],
+      "cases": [],
+      "implementations": []
+    },
+    {
+      "id": "training-sharding",
+      "title": "FSDP2 / ZeRO：分片的是状态还是计算？",
+      "chapter": "parallel",
+      "summary": "参数生命周期、优化器分片、激活与峰值显存。",
+      "recall": {
+        "question": "参数分片到八卡，峰值显存也会降为八分之一吗？",
+        "answer": "不一定。Activation、All-Gather 临时缓冲和通信会造成峰值。"
+      },
+      "keywords": [
+        "fsdp2",
+        "zero",
+        "sharding",
+        "megatron"
+      ],
+      "cases": [],
+      "implementations": []
+    },
+    {
+      "id": "serving-parallelism",
+      "title": "推理并行：为什么不能照搬训练 TP？",
+      "chapter": "serving",
+      "summary": "TP/DP/EP/PP、KV Cache、Prefill/Decode 和服务延迟。",
+      "recall": {
+        "question": "训练最优 TP 一定是推理最优 TP 吗？",
+        "answer": "不一定。Decode 的小 Batch、KV 容量和 Collective 延迟改变最优点。"
+      },
+      "keywords": [
+        "sglang",
+        "vllm",
+        "serving",
+        "prefill",
+        "decode"
+      ],
+      "cases": [],
+      "implementations": []
+    },
+    {
+      "id": "rl-parallel-planning",
+      "title": "RL 训推并行：Learner 与 Rollout 怎么配 GPU？",
+      "chapter": "parallel",
+      "summary": "多维并行、权重重分片、版本同步与关键路径。",
+      "recall": {
+        "question": "Learner 与 Rollout 的 TP 不同，能直接拷贝权重分片吗？",
+        "answer": "不能直接拷贝。需要按两侧参数布局重分片，并核对版本与权重一致性。"
+      },
+      "keywords": [
+        "verl",
+        "rl",
+        "rollout",
+        "learner",
+        "parallel"
+      ],
+      "cases": [],
+      "implementations": []
     }
   ],
   "cases": [
