@@ -49,7 +49,73 @@
     }
     return targets.map(p=>indexed.get(p.type+":"+p.id)).filter(Boolean);
   }
-  function renderChapters() {
+
+  // Global map is derived from the same catalog as the article reader.
+  // Question nodes are cross-references, not independent navigation silos.
+  function renderMap() {
+    const host=$("knowledge-map");
+    if (!host) return;
+    host.replaceChildren();
+    const heading=el("div","map-heading");
+    heading.append(el("span","map-eyebrow","LEARNING MAP"));
+    heading.append(el("span","map-caption","主题 → 问题 → 工程实现"));
+    host.append(heading);
+    const grid=el("div","map-grid");
+    for (const c of raw.chapters) {
+      const topics=raw.topics.filter(t=>t.chapter===c.id);
+      const cases=new Set(),impl=new Set();
+      topics.forEach(t=>{
+        (t.cases||[]).forEach(x=>cases.add(x));
+        (t.implementations||[]).forEach(x=>impl.add(x));
+      });
+      const card=el("a","map-card");
+      card.href="#chapter="+encodeURIComponent(c.id);
+      const eyebrow=el("div","map-index",String(grid.children.length+1).padStart(2,"0"));
+      const title=el("h2","",c.title);
+      const desc=el("p","",c.description);
+      const stats=el("div","map-stats",topics.length+" 篇知识 · "+cases.size+" 个问题 · "+impl.size+" 个实现");
+      card.append(eyebrow,title,desc,stats);
+      if (topics.length) {
+        const tags=el("div","map-tags");
+        topics.slice(0,3).forEach(t=>tags.append(el("span","",t.title)));
+        card.append(tags);
+      }
+      grid.append(card);
+    }
+    host.append(grid);
+    const hint=el("p","map-hint","进入章节后阅读主线；问题和框架实现会在每篇文档中作为关联材料出现。");
+    host.append(hint);
+  }
+  const inlineLabByTopic={
+    "tp-matrix-communication":[["矩阵切分与通信","labs/parallel.html"]],
+    "pp-pipeline-bubble":[["流水线填充与空泡","labs/parallel.html"]],
+    "ep-token-routing":[["Expert 路由与负载","labs/parallel.html"]],
+    "parallel-topology":[["多维并行 GPU 分组","labs/parallel.html"]],
+    "rl-parallel-planning":[["训练与推理显存预算","labs/rl-memory.html"]],
+    "training-sharding":[["训练与推理显存预算","labs/rl-memory.html"]],
+    "serving-parallelism":[["TP 计算与通信成本","labs/parallel-performance.html"]]
+  };
+  function renderInlineLabs(page) {
+    const host=$("inline-labs");host.replaceChildren();
+    const labs=page.type==="topic"?(inlineLabByTopic[page.id]||[]):[];
+    host.hidden=!labs.length;
+    if (!labs.length)return;
+    const title=el("h2","","在文档中动手验证");
+    const intro=el("p","inline-lab-intro","这里的实验是正文的一部分。调整参数，观察机制，再回到上下文继续阅读。");
+    host.append(title,intro);
+    for (const [label,url] of labs) {
+      const wrap=el("div","inline-lab-card");
+      const head=el("div","inline-lab-head");
+      head.append(el("strong","",label));
+      const link=el("a","","单独打开 ↗");link.href=url;link.target="_blank";link.rel="noopener noreferrer";
+      head.append(link);wrap.append(head);
+      const frame=el("iframe","inline-lab-frame");
+      frame.title=label;frame.loading="lazy";frame.src=url;
+      frame.setAttribute("sandbox","allow-scripts allow-same-origin");
+      wrap.append(frame);host.append(wrap);
+    }
+  }
+\n  function renderChapters() {
     const nav = $("chapter-list");
     nav.replaceChildren();
     for (const c of raw.chapters) {
@@ -99,12 +165,12 @@
       $("landing").querySelector(".intro").textContent="输入关键词即可查找基础解释、案例和框架实现。";
       $("landing").querySelector(".overline").textContent="SEARCH";
     } else {
-      $("landing").querySelector("h1").textContent="从原理到工程决策";
+      $("landing").querySelector("h1").textContent="一张图看清 RL Infra";
       $("landing").querySelector(".intro").textContent=
-        "理解核心机制，找到实际问题的原因，再看主流框架如何实现。内容按知识关联组织，随时可以从任何一处进入。";
+        "先看全局，再进入知识主线。每个主题都连接工程问题、框架实现与可操作的机制演示。";
       $("landing").querySelector(".overline").textContent="RL / TRAINING SYSTEMS";
     }
-    $("results-label").textContent=matches.length+" 篇";
+    const map=$("knowledge-map");if(map) map.hidden=Boolean(chapter||search||filter!=="all");\n    $("results-label").textContent=matches.length+" 篇";
     if (!matches.length) list.append(el("p","no-results","没有匹配内容。试试更短的关键词。"));
     for (const page of matches) {
       const a=el("a","item");a.href=href(page.type,page.id);
@@ -125,7 +191,7 @@
     $("detail-title").textContent=page.title;
     $("detail-summary").textContent=page.summary;
     $("article").innerHTML=page.html || "<p>暂无正文，请查看关联内容。</p>";
-    const recall=$("recall");recall.replaceChildren();
+    renderInlineLabs(page);\n    const recall=$("recall");recall.replaceChildren();
     recall.hidden=!(type==="topic" && page.recall?.question);
     if (!recall.hidden) {
       recall.append(el("p","recall-label","想一想 · 不用写答案"));
@@ -176,7 +242,7 @@
     }
     window.scrollTo({top:0,behavior:"instant"});
   }
-  renderChapters();
+  renderChapters();\n  renderMap();
   $("search").addEventListener("input",function(){
     search=this.value.trim();
     if (chapter) { chapter=""; history.replaceState(null,"",location.pathname); }
