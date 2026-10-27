@@ -14,6 +14,12 @@ flowchart TD
 
 **锚点**：2 节点 × 8 GPU，Dense 模型 7B 参数、BF16，训练使用 Adam，推理请求最长 65536 Token。以下是筛选逻辑，不是已验证的推荐配置。
 
+## 性能比较必须先固定基线
+
+并行度增大通常**降低每 GPU 的计算工作量**，但不保证降低端到端时间；新增 Collective、Pipeline Bubble、Token Routing、KV 交换可能使总耗时上升。固定总 GPU 和负载时，优先比较 `TP1×DP8` 与 `TP2×DP4` 等组合的整集群吞吐；固定单请求时才比较 TP Degree 对延迟的影响。模型无法单卡容纳时，TP1 不是有效候选。记录每 GPU 有效 Token/s、整集群 Token/s、TTFT/TPOT P99、GPU-hours/有效训练 Token，不把“理论计算 FLOPs 除以 TP”写成“理论加速比”。
+
+**最小成本模型**：`T ≈ T_compute/p_eff + T_collective + T_bubble + T_routing + T_sync`；其中 `p_eff` 反映并行后的 Kernel 效率，部分开销可重叠，实际要用 Critical Path Trace 代替简单求和。举例单卡 20 ms 的大 GEMM，TP4 计算 5 ms + 通信 3 ms 可以变成 8 ms；小 Decode 单卡 2 ms，TP4 计算 0.5 ms + 通信 2.5 ms 则变成 3 ms。这些是教学假设，非测量结果。
+
 ## 先算容量
 
 训练 BF16 参数约 14 GB（十进制）；BF16 梯度约 14 GB；FP32 Adam 两个 Moment 约 56 GB；若还保留 FP32 Master Weight，另约 28 GB。合计分别约 84 GB 或 112 GB 的全模型状态（不含 Activation、通信与缓存）。若用 8 Rank 均匀切分全部状态，理论常驻状态约 10.5 GB 或 14 GB/卡；**FSDP 的 All-Gather 峰值仍需要另外估算**。
