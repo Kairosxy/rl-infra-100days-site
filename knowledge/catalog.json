@@ -340,6 +340,63 @@
       ],
       "cases": [],
       "implementations": []
+    },
+    {
+      "id": "tp-matrix-communication",
+      "title": "TP：为什么切开矩阵还要通信？",
+      "chapter": "parallel",
+      "summary": "用 4 GPU 的 MLP 看列并行、行并行、显存和 Collective。",
+      "recall": {
+        "question": "TP=4 是否意味着 GEMM 加速四倍？",
+        "answer": "不一定。通信、启动延迟与算子效率都会改变关键路径。",
+        "spoken": "先核对局部计算减少量和 Collective 增加量。"
+      },
+      "keywords": [
+        "tp",
+        "tensor parallel",
+        "all reduce",
+        "megatron"
+      ],
+      "cases": [],
+      "implementations": []
+    },
+    {
+      "id": "pp-pipeline-bubble",
+      "title": "PP：为什么流水线仍有 GPU 空闲？",
+      "chapter": "parallel",
+      "summary": "用 Stage × Micro-batch 时间线理解 Bubble、P2P 与 1F1B。",
+      "recall": {
+        "question": "Stage 平均分层后还有 Bubble 吗？",
+        "answer": "有。流水线填充与排空会导致空闲，Stage 不均衡还会增加等待。",
+        "spoken": "用 Micro-batch 时间线定位 Bubble 和最慢 Stage。"
+      },
+      "keywords": [
+        "pp",
+        "pipeline",
+        "microbatch",
+        "bubble"
+      ],
+      "cases": [],
+      "implementations": []
+    },
+    {
+      "id": "ep-token-routing",
+      "title": "EP：为什么 MoE 会卡在 All-to-All？",
+      "chapter": "parallel",
+      "summary": "从 Token 路由和 Expert 负载偏斜定位长尾。",
+      "recall": {
+        "question": "Expert 数量均分就代表 Token 负载均衡吗？",
+        "answer": "不代表。Token 路由由 Router 决定，热点 Expert 可能成为长尾。",
+        "spoken": "看每个 Expert 的 Token 分布，而不是只数 Expert。"
+      },
+      "keywords": [
+        "ep",
+        "moe",
+        "all to all",
+        "routing"
+      ],
+      "cases": [],
+      "implementations": []
     }
   ],
   "cases": [
