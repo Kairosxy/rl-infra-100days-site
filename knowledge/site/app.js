@@ -190,7 +190,7 @@
     $("detail-context").textContent=types[type].label+" / "+sectionName(page);
     $("detail-title").textContent=page.title;
     $("detail-summary").textContent=page.summary;
-    $("article").innerHTML=page.html || "<p>暂无正文，请查看关联内容。</p>";
+    const inlineHost=$("inline-labs");\n    if (inlineHost.parentElement===$("article")) $("detail").insertBefore(inlineHost,$("article"));\n    $("article").innerHTML=page.html || "<p>暂无正文，请查看关联内容。</p>";
     renderInlineLabs(page);
     // Keep the experiment inside the article flow rather than as a separate tool page.
     const inline=$("inline-labs");
