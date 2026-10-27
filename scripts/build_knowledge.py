@@ -77,8 +77,7 @@ def generate_knowledge(root: Path, output: Path) -> int:
     data = (data.replace("<", r"\u003c").replace(">", r"\u003e")
                 .replace("&", r"\u0026").replace("\u2028", r"\u2028")
                 .replace("\u2029", r"\u2029"))
-    extra = ('<button id="menu-toggle" class="menu-toggle" aria-expanded="false" '
-             'aria-controls="side" type="button">目录</button>')
+    extra = ""
     for slot, value in {
         "{{SITE_NAV}}": nav_markup("knowledge", extra),
         "{{KNOWLEDGE_STYLE}}": css + "\n" + NAV_CSS,
