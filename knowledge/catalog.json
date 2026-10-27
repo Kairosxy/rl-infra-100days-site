@@ -191,7 +191,8 @@
       "implementations": [
         "verl-hybridflow",
         "te-megatron-fp8",
-        "fsdp2-sharding"
+        "fsdp2-sharding",
+        "megatron-parallel-groups"
       ]
     },
     {
@@ -358,7 +359,9 @@
         "megatron"
       ],
       "cases": [],
-      "implementations": []
+      "implementations": [
+        "megatron-parallel-groups"
+      ]
     },
     {
       "id": "pp-pipeline-bubble",
@@ -377,7 +380,9 @@
         "bubble"
       ],
       "cases": [],
-      "implementations": []
+      "implementations": [
+        "megatron-parallel-groups"
+      ]
     },
     {
       "id": "ep-token-routing",
@@ -396,7 +401,10 @@
         "routing"
       ],
       "cases": [],
-      "implementations": []
+      "implementations": [
+        "megatron-parallel-groups",
+        "sglang-vllm-parallel"
+      ]
     },
     {
       "id": "distributed-collectives",
@@ -415,7 +423,9 @@
         "distributed"
       ],
       "cases": [],
-      "implementations": []
+      "implementations": [
+        "parallel-config-workbook"
+      ]
     },
     {
       "id": "cp-sp-attention",
@@ -434,7 +444,9 @@
         "attention"
       ],
       "cases": [],
-      "implementations": []
+      "implementations": [
+        "megatron-parallel-groups"
+      ]
     },
     {
       "id": "training-sharding",
@@ -452,7 +464,9 @@
         "megatron"
       ],
       "cases": [],
-      "implementations": []
+      "implementations": [
+        "parallel-config-workbook"
+      ]
     },
     {
       "id": "serving-parallelism",
@@ -471,7 +485,9 @@
         "decode"
       ],
       "cases": [],
-      "implementations": []
+      "implementations": [
+        "sglang-vllm-parallel"
+      ]
     },
     {
       "id": "rl-parallel-planning",
@@ -490,7 +506,10 @@
         "parallel"
       ],
       "cases": [],
-      "implementations": []
+      "implementations": [
+        "sglang-vllm-parallel",
+        "parallel-config-workbook"
+      ]
     }
   ],
   "cases": [
@@ -673,6 +692,62 @@
       ],
       "cases": [
         "kv-oom"
+      ]
+    },
+    {
+      "id": "megatron-parallel-groups",
+      "title": "Megatron 多维并行：16 GPU 怎样构造 Group？",
+      "framework": "Megatron Core",
+      "summary": "TP/PP/DP/EP/CP 的 Rank 映射、通信与源码阅读入口。",
+      "topics": [
+        "parallel-topology",
+        "tp-matrix-communication",
+        "pp-pipeline-bubble",
+        "ep-token-routing",
+        "cp-sp-attention"
+      ],
+      "cases": [],
+      "keywords": [
+        "megatron-parallel-groups",
+        "parallel",
+        "gpu",
+        "topology"
+      ]
+    },
+    {
+      "id": "sglang-vllm-parallel",
+      "title": "SGLang / vLLM：推理并行与 KV 调度",
+      "framework": "SGLang · vLLM",
+      "summary": "训练与推理 TP 的差异、TP×DP、EP、KV 和 TTFT/TPOT。",
+      "topics": [
+        "serving-parallelism",
+        "ep-token-routing",
+        "rl-parallel-planning"
+      ],
+      "cases": [],
+      "keywords": [
+        "sglang-vllm-parallel",
+        "parallel",
+        "gpu",
+        "topology"
+      ]
+    },
+    {
+      "id": "parallel-config-workbook",
+      "title": "多机多卡并行配置工作簿",
+      "framework": "Megatron · SGLang · vLLM",
+      "summary": "从模型状态、GPU 拓扑、通信和性能指标筛选候选配置。",
+      "topics": [
+        "training-sharding",
+        "rl-parallel-planning",
+        "distributed-collectives"
+      ],
+      "cases": [],
+      "keywords": [
+        "parallel-config-workbook",
+        "parallel",
+        "gpu",
+        "topology"
       ]
     }
   ],
