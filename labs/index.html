@@ -10,10 +10,7 @@
 </head>
 <body>
   <a class="skip" href="#lab-title">跳到实验</a>
-  <header class="header">
-    <a class="brand" href="../"><span class="logo">RL<span>↗</span></span><span><strong>RL Infra / Labs</strong><small>把假设变成看得见的差异</small></span></a>
-    <nav aria-label="页头导航"><a href="../">课程</a><a href="../quiz/">面试题</a><a href="https://github.com/Kairosxy/rl-infra-100days-site" target="_blank" rel="noopener">源码 ↗</a></nav>
-  </header>
+  {{SITE_NAV}}
 
   <div class="layout">
     <aside class="nav-column" aria-label="实验目录">
@@ -65,7 +62,7 @@
             <p id="bandit-pass" class="insight"></p>
           </div>
         </div>
-        <p class="takeaway">先解释：当 p=0.02、只采样 8 次时，连续没有 Reward=1 是否表示策略完全学不到？再看 <a href="../#day=1&view=lesson">Day 01 讲义</a>。</p>
+        <p class="takeaway">先解释：当 p=0.02、只采样 8 次时，连续没有 Reward=1 是否表示策略完全学不到？再看 <a href="../#topic=policy-gradient">Policy Gradient</a>。</p>
       </section>
 
       <section id="lab-2" class="lab" hidden aria-label="Baseline 与梯度方差实验">
@@ -92,7 +89,7 @@
             <div class="formula">g(A) = (1−b)(1−p)，g(B) = −b(−p)<br>E[g] = p · g(A) + (1−p) · g(B)</div>
           </div>
         </div>
-        <p class="takeaway">这不是学到「平均 Reward 就是最优 Baseline」，而是学到：Baseline 不随 Action 改变时保留期望梯度，方差却由 Reward 与 Score 的联合分布决定。继续阅读 <a href="../#day=2&view=lesson">Day 02</a>。</p>
+        <p class="takeaway">这不是学到「平均 Reward 就是最优 Baseline」，而是学到：Baseline 不随 Action 改变时保留期望梯度，方差却由 Reward 与 Score 的联合分布决定。继续阅读 <a href="../#topic=policy-gradient">Policy Gradient</a>。</p>
       </section>
 
       <section id="lab-3" class="lab" hidden aria-label="Token 对齐实验">
@@ -112,7 +109,7 @@
             <div class="formula">正确：logits[t−1] → target token[t]<br>Action Mask：prompt_length ≤ t &lt; valid_length</div>
           </div>
         </div>
-        <p class="takeaway">Shift 错误不会触发数组 Shape 检查；它让模型优化另一个条件概率。试着写出 <a href="../#day=3&view=lesson">Day 03</a> 的正确 Gather 切片。</p>
+        <p class="takeaway">Shift 错误不会触发数组 Shape 检查；它让模型优化另一个条件概率。试着写出 <a href="../#topic=logprob-contract">Logprob 契约</a> 的正确 Gather 切片。</p>
       </section>
 
       <section id="lab-4" class="lab" hidden aria-label="PPO Clip 实验">
@@ -140,7 +137,7 @@
             <div class="formula">Jclip = min(r · A, clip(r, 1−ε, 1+ε) · A)</div>
           </div>
         </div>
-        <p class="takeaway">局部平台不等于全策略 KL 有硬边界。看完图以后，回到 <a href="../#day=4&view=lesson">Day 04</a> 的两动作 KL 反例。</p>
+        <p class="takeaway">局部平台不等于全策略 KL 有硬边界。看完图以后，回到 <a href="../#case=ppo-clip-kl">PPO Clip 案例</a> 的两动作 KL 反例。</p>
       </section>
 
       <section id="lab-5" class="lab" hidden aria-label="GRPO Group Advantage 实验">
@@ -171,11 +168,11 @@
             <div class="formula">Aᵢ = (rᵢ − mean(r)) / (std(r) + ε)</div>
           </div>
         </div>
-        <p class="takeaway">四样本 Group 不完整时，临时统计并不是原目标的提前结果。对应的调度与采样偏差问题会在 <a href="../#day=5&view=lesson">Day 05</a> 和后续 Async DataSampler 里反复出现。</p>
+        <p class="takeaway">四样本 Group 不完整时，临时统计并不是原目标的提前结果。对应的调度与采样偏差问题会在 <a href="../#topic=ppo-grpo">PPO / GRPO</a> 和异步数据供给里反复出现。</p>
       </section>
 
       <div class="footer-row">
-        <a id="back-to-lesson" class="lesson-link" href="../#day=1&view=lesson">← 返回本课讲义</a>
+        <a id="back-to-lesson" class="lesson-link" href="../#topic=policy-gradient">← 相关主题：Policy Gradient</a>
         <a href="../quiz/">进入 224 道题库 →</a>
       </div>
     </main>

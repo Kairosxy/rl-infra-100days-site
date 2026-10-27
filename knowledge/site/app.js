@@ -1,6 +1,5 @@
 "use strict";
 /* The public knowledge reader has no network writes and stores no user data.
- * The old Day-based reader and browser-local answers remain in legacy.html.
  */
 (function () {
   const raw = JSON.parse(document.getElementById("knowledge-data").textContent);
@@ -34,7 +33,7 @@
   function sectionName(page) {
     return page.type==="topic"
       ? (chapters.get(page.chapter)?.title || "基础知识")
-      : (page.type==="case" ? "工程问题" : page.framework);
+      : (page.type==="case" ? "现象与排查" : page.framework);
   }
   function relatedItems(page) {
     const targets = [];
@@ -68,13 +67,23 @@
     document.querySelectorAll("[data-nav]").forEach(a=>
       a.setAttribute("aria-current",String(a.dataset.nav===filter)));
   }
+  const plainCache=new Map();
+  function plainText(html) {
+    if (plainCache.has(html)) return plainCache.get(html);
+    const box=document.createElement("div");
+    box.innerHTML=html;
+    const text=(box.textContent||"").replace(/\s+/g," ");
+    plainCache.set(html,text);
+    return text;
+  }
   function match(page) {
     if (filter!=="all" && page.type!==filter) return false;
     if (chapter && (page.type!=="topic" || page.chapter!==chapter)) return false;
     const words=search.toLocaleLowerCase().normalize("NFKC").trim().split(/\s+/).filter(Boolean);
     if (!words.length) return true;
-    const corpus=[page.title,page.summary,page.framework||"",page.keywords?.join(" ")||""]
-      .join(" ").normalize("NFKC").toLocaleLowerCase();
+    const corpus=[page.title,page.summary,page.framework||"",
+      (page.keywords||[]).join(" "),plainText(page.html||"")].join(" ")
+      .normalize("NFKC").toLocaleLowerCase();
     return words.every(w=>corpus.includes(w));
   }
   function renderListing() {
@@ -149,11 +158,6 @@
   }
   function render() {
     const p=params();
-    // Preserve public links to previously released day-based material.
-    if (p.has("day") && /^\d+$/.test(p.get("day")||"")) {
-      location.replace("legacy.html"+location.hash);
-      return;
-    }
     closeMenu();
     let type=null,id=null;
     for (const candidate of Object.keys(types)) {
@@ -189,14 +193,17 @@
     if (!location.hash) renderListing();
   }));
   $("back").addEventListener("click",navigateHome);
-  $("home-link").addEventListener("click",()=>{
+  document.querySelector(".site-nav-brand").addEventListener("click",()=>{
     search="";$("search").value="";filter="all";chapter="";
   });
   $("menu-toggle").addEventListener("click",()=>{
     const open=$("side").classList.toggle("show");
     $("menu-toggle").setAttribute("aria-expanded",String(open));
   });
-  $("chapter-list").addEventListener("click",closeMenu);
+  $("chapter-list").addEventListener("click",()=>{
+    closeMenu();
+    if (!$("detail").hidden) { filter="all"; }
+  });
   document.addEventListener("keydown",e=>{
     if (e.key==="/" && !["INPUT","TEXTAREA"].includes(document.activeElement?.tagName)
        && !e.altKey && !e.ctrlKey && !e.metaKey) {

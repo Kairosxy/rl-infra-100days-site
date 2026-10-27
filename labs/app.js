@@ -18,6 +18,14 @@
     [5, ["GRPO / GROUP ADVANTAGE", "GRPO 的 Group 何时真正有学习信号？",
       "改掉一条 Reward，观察均值、标准差、Advantage 和完整组契约的变化。"]]
   ]);
+  // Each interactive lab back-links to the knowledge topic it belongs to.
+  const TOPIC_FOR_LAB = new Map([
+    [1, {id:"policy-gradient", title:"Policy Gradient"}],
+    [2, {id:"policy-gradient", title:"Policy Gradient"}],
+    [3, {id:"logprob-contract", title:"Logprob 契约"}],
+    [4, {id:"ppo-grpo", title:"PPO / GRPO"}],
+    [5, {id:"ppo-grpo", title:"PPO / GRPO"}]
+  ]);
   const dayFromUrl = Number(new URLSearchParams(window.location.search).get("day"));
   let currentDay = labs.has(dayFromUrl) ? dayFromUrl : 1;
 
@@ -53,8 +61,9 @@
         set("lab-description", information[2]);
       }
     }
-    $("back-to-lesson").href = "../#day=" + day + "&view=lesson";
-    $("back-to-lesson").textContent = "← 返回 Day " + String(day).padStart(2, "0") + " 讲义";
+    const topic = TOPIC_FOR_LAB.get(day);
+    $("back-to-lesson").href = "../#topic=" + topic.id;
+    $("back-to-lesson").textContent = "← 相关主题：" + topic.title;
     document.title = "Lab " + day + " · " + labs.get(day)[1] + " | RL Infra";
     if (updateUrl) {
       const url = new URL(window.location.href);

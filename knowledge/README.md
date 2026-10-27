@@ -18,18 +18,17 @@
 
 ## 历史链接与隐私
 
-旧 ``#day=N&view=lesson`` 链接在知识首页自动重定向到 `legacy.html#day=N&view=lesson`，旧版阅读/本机回答功能保留；224 道原始面试题与本机复习进度保留在 `quiz/`，不自动迁移到公开服务器或重置。本知识库只发布公开的 Markdown 和来源；不要提交私人技术资料、项目性能、密钥或答题记录。
+224 道复习题和本机复习进度保留在 `quiz/`，不自动迁移到公开服务器或重置。本知识库只发布公开的 Markdown 和来源；不要提交私人技术资料、项目性能、密钥或答题记录。
 
 ## 检查
 
 在仓库根目录：
 
 ~~~bash
-python scripts/build_site.py --output dist/legacy.html
 python scripts/build_knowledge.py --output dist/index.html
 python scripts/build_quiz.py --output dist/quiz/index.html
 python -m unittest discover -s scripts -p 'test_*.py' -v
 node --check knowledge/site/app.js
 ~~~
 
-新知识库首页是 `dist/index.html`，旧课是 `dist/legacy.html`。
+知识库首页是 `dist/index.html`，交互实验复制到 `dist/labs/`。

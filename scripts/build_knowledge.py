@@ -9,9 +9,11 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shutil
 from pathlib import Path
 
-from build_site import render_lesson_markdown
+from markdown_render import render_markdown
+from site_nav import NAV_CSS, nav_markup
 
 GROUPS = ("topics", "cases", "implementations")
 RELATIONS = {
@@ -43,7 +45,7 @@ def knowledge_payload(root: Path) -> dict:
                 raise FileNotFoundError(source)
             if not item.get("title") or not item.get("summary"):
                 raise ValueError(f"Missing description: {source}")
-            item["html"] = render_lesson_markdown(source, root)
+            item["html"] = render_markdown(source, root)
 
     chapter_ids = [item["id"] for item in payload.get("chapters", [])]
     if not chapter_ids or len(set(chapter_ids)) != len(chapter_ids):
@@ -75,8 +77,11 @@ def generate_knowledge(root: Path, output: Path) -> int:
     data = (data.replace("<", r"\u003c").replace(">", r"\u003e")
                 .replace("&", r"\u0026").replace("\u2028", r"\u2028")
                 .replace("\u2029", r"\u2029"))
+    extra = ('<button id="menu-toggle" class="menu-toggle" aria-expanded="false" '
+             'aria-controls="side" type="button">目录</button>')
     for slot, value in {
-        "{{KNOWLEDGE_STYLE}}": css,
+        "{{SITE_NAV}}": nav_markup("knowledge", extra),
+        "{{KNOWLEDGE_STYLE}}": css + "\n" + NAV_CSS,
         "{{KNOWLEDGE_DATA}}": data,
         "{{KNOWLEDGE_JS}}": js,
     }.items():
@@ -85,6 +90,23 @@ def generate_knowledge(root: Path, output: Path) -> int:
         html = html.replace(slot, value)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(html, encoding="utf-8")
+    # Interactive labs are a supporting page of the knowledge site.
+    labs_source = root / "labs"
+    if labs_source.is_dir():
+        labs_target = output.parent / "labs"
+        labs_target.mkdir(parents=True, exist_ok=True)
+        for asset in ("index.html", "style.css", "app.js"):
+            source_file = labs_source / asset
+            if not source_file.is_file():
+                raise FileNotFoundError(source_file)
+            shutil.copy2(source_file, labs_target / asset)
+        page = labs_target / "index.html"
+        page.write_text(
+            page.read_text(encoding="utf-8").replace("{{SITE_NAV}}", nav_markup("labs")),
+            encoding="utf-8",
+        )
+        sheet = labs_target / "style.css"
+        sheet.write_text(sheet.read_text(encoding="utf-8") + "\n" + NAV_CSS, encoding="utf-8")
     return sum(len(catalog[group]) for group in GROUPS)
 
 

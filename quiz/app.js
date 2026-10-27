@@ -5,6 +5,7 @@
   const payload = JSON.parse(document.getElementById("quiz-data").textContent);
   if (payload.schema !== "rl-infra-question-bank-v1") throw Error("Invalid question bank");
   const questions = payload.questions;
+  const topicTitle = new Map((payload.topics || []).map(t => [t.id, t.title]));
   const lookup = new Map(questions.map(q => [q.id, q]));
   const KEY = "rl-infra-100days-questionbank-v1";
   const domainNames = {
@@ -21,9 +22,11 @@
   };
   const byId = id => document.getElementById(id);
   const two = n => String(n).padStart(2, "0");
+  const LAYERS = [["c1", "结论"], ["c2", "前提"], ["c3", "数值"], ["c4", "落地"]];
+  const layerField = id => document.getElementById("answer-" + id);
 
   function blank() {
-    return { answer: "", note: "", rating: "", attempts: 0,
+    return { answer: "", layers: {}, note: "", rating: "", attempts: 0,
       streak: 0, due: null, bookmarked: false, history: [] };
   }
   function loadProgress() {
@@ -63,7 +66,14 @@
   function saveFields() {
     if (current === null) return;
     const record = writable(current);
-    record.answer = byId("answer").value;
+    const layers = {};
+    for (const [key] of LAYERS) layers[key] = layerField(key).value;
+    record.layers = layers;
+    // `answer` stays the joined text so exports and older records read the same.
+    record.answer = LAYERS
+      .map(([key, name]) => [name, layers[key].trim()])
+      .filter(([, text]) => text)
+      .map(([name, text]) => name + "：" + text).join("\n");
     record.note = byId("notes").value;
     saveState();
   }
@@ -75,7 +85,13 @@
   function autosave() {
     if (timer !== null) clearTimeout(timer);
     timer = setTimeout(() => { timer = null; saveFields(); }, 250);
-    byId("count").textContent = byId("answer").value.trim().length + " 字";
+    updateDraftCounters();
+  }
+  function updateDraftCounters() {
+    const lengths = LAYERS.map(([key]) => layerField(key).value.trim().length);
+    byId("count").textContent = lengths.reduce((a, b) => a + b, 0) + " 字";
+    byId("layer-progress").textContent =
+      "已写 " + lengths.filter(Boolean).length + " / " + LAYERS.length + " 层";
   }
   function updateStats() {
     let attempted = 0, mastered = 0, dueCount = 0, stars = 0;
@@ -176,9 +192,9 @@
       byId("chapter-tag").textContent = "空结果";
       byId("level-tag").textContent = "";
       byId("alternative-title").hidden = true;
-      byId("answer").value = "";
+      for (const [key] of LAYERS) layerField(key).value = "";
       byId("notes").value = "";
-      byId("answer").disabled = true;
+      for (const [key] of LAYERS) layerField(key).disabled = true;
       byId("notes").disabled = true;
       for (const id of ["show", "star", "prev", "next", "copy"]) byId(id).disabled = true;
       byId("course-link").hidden = true;
@@ -190,7 +206,7 @@
     current = queue[cursor];
     const q = lookup.get(current), r = read(current);
     for (const id of ["show", "star", "copy"]) byId(id).disabled = false;
-    byId("answer").disabled = false;
+    for (const [key] of LAYERS) layerField(key).disabled = false;
     byId("notes").disabled = false;
     byId("qid").textContent = q.code;
     byId("chapter-tag").textContent = q.chapter;
@@ -199,18 +215,26 @@
     const different = normalize(q.doc_title) !== normalize(q.question);
     byId("alternative-title").hidden = !different;
     byId("alternative-title").textContent = different ? "另一份手册的问法：" + q.question : "";
-    byId("answer").value = r.answer || "";
+    // Older records only stored one text field; show it in the first layer.
+    const stored = r.layers && typeof r.layers === "object" ? r.layers : {};
+    for (const [key] of LAYERS) {
+      const value = stored[key];
+      layerField(key).value = typeof value === "string" ? value : (key === "c1" ? (r.answer || "") : "");
+    }
     byId("notes").value = r.note || "";
     byId("star").textContent = r.bookmarked ? "★ 已收藏" : "☆ 收藏";
     byId("star").setAttribute("aria-pressed", r.bookmarked ? "true" : "false");
     byId("prev").disabled = cursor === 0;
     byId("next").disabled = cursor + 1 === queue.length;
     byId("position").textContent = cursor + 1 + " / " + queue.length;
-    byId("count").textContent = byId("answer").value.trim().length + " 字";
+    updateDraftCounters();
     byId("saved").textContent = r.attempts ? "已自评 " + r.attempts + " 次" : "草稿仅存在本机";
-    byId("course-link").hidden = false;
-    byId("course-link").href = "../#day=" + q.course_day + "&view=lesson";
-    byId("course-link").textContent = "关联 Day " + two(q.course_day) + " ↗";
+    const topic = q.topic;
+    byId("course-link").hidden = !topic;
+    if (topic) {
+      byId("course-link").href = "../#topic=" + topic;
+      byId("course-link").textContent = "相关主题：" + (topicTitle.get(topic) || topic) + " ↗";
+    }
     history.replaceState(null, "", "#q=" + q.id);
     updateStats();
   }
@@ -285,6 +309,11 @@
       if (!lookup.has(Number(id)) || !r || typeof r !== "object") continue;
       const out = blank();
       out.answer = String(r.answer || "").slice(0, 60000);
+      out.layers = {};
+      for (const [key] of LAYERS) {
+        const value = r.layers?.[key];
+        if (typeof value === "string") out.layers[key] = value.slice(0, 20000);
+      }
       out.note = String(r.note || "").slice(0, 15000);
       out.rating = Object.hasOwn({again:1,hard:1,good:1,easy:1},r.rating) ? r.rating : "";
       out.attempts = Math.max(0, Math.min(10000,Number(r.attempts)||0));
@@ -312,7 +341,8 @@
     document.querySelectorAll("[data-mode]").forEach(el => {
       el.addEventListener("click", () => buildQueue(el.dataset.mode));
     });
-    for (const id of ["answer","notes"]) byId(id).addEventListener("input", autosave);
+    for (const [key] of LAYERS) layerField(key).addEventListener("input", autosave);
+    byId("notes").addEventListener("input", autosave);
     byId("show").addEventListener("click", () => {
       if (!current) return;
       visible = !visible;

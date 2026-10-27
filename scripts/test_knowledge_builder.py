@@ -25,7 +25,7 @@ class KnowledgeReaderTest(unittest.TestCase):
                 self.assertIn("<p>",item["html"])
                 self.assertGreater(len(item["html"]),300)
 
-    def test_root_reader_and_archived_day_links_are_both_available(self):
+    def test_root_reader_serves_the_knowledge_graph(self):
         with tempfile.TemporaryDirectory() as folder:
             output=Path(folder)/"index.html"
             count=generate_knowledge(ROOT,output)
@@ -35,8 +35,7 @@ class KnowledgeReaderTest(unittest.TestCase):
             self.assertNotIn("{{KNOWLEDGE_JS}}",html)
             self.assertIn("基础知识",html)
             self.assertIn("FP8",html)
-            self.assertIn("legacy.html",html)
-            self.assertIn('location.replace("legacy.html"+location.hash)',html)
+            self.assertNotIn("legacy.html",html)
             self.assertNotIn('id="answer-q1"',html)
             self.assertNotIn('RL_INFRA_ANSWER_V1',html)
             self.assertNotIn("我的作答",html)

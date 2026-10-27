@@ -9,6 +9,8 @@ import argparse
 import json
 from pathlib import Path
 
+from site_nav import NAV_CSS, nav_markup
+
 TOTAL_QUESTIONS = 224
 
 
@@ -32,13 +34,21 @@ def build(root: Path, output: Path) -> int:
     template = (root / "quiz" / "template.html").read_text(encoding="utf-8")
     css = (root / "quiz" / "style.css").read_text(encoding="utf-8")
     js = (root / "quiz" / "app.js").read_text(encoding="utf-8")
-    data = json.dumps(read_bank(root), ensure_ascii=False, separators=(",", ":"))
+    bank = read_bank(root)
+    catalog = json.loads((root / "knowledge" / "catalog.json").read_text(encoding="utf-8"))
+    known = {item["id"] for item in catalog["topics"]}
+    for question in bank["questions"]:
+        if question.get("topic") not in known:
+            raise ValueError(f"Unknown topic for {question['code']}: {question.get('topic')}")
+    bank["topics"] = [{"id": item["id"], "title": item["title"]} for item in catalog["topics"]]
+    data = json.dumps(bank, ensure_ascii=False, separators=(",", ":"))
     # Avoid an accidental closing script tag in the embedded JSON.
     data = (data.replace("<", r"\u003c").replace(">", r"\u003e")
                 .replace("&", r"\u0026").replace("\u2028", r"\u2028")
                 .replace("\u2029", r"\u2029"))
     replacements = {
-        "{{QUIZ_STYLE}}": css, "{{QUIZ_DATA}}": data, "{{QUIZ_SCRIPT}}": js
+        "{{SITE_NAV}}": nav_markup("quiz"),
+        "{{QUIZ_STYLE}}": css + "\n" + NAV_CSS, "{{QUIZ_DATA}}": data, "{{QUIZ_SCRIPT}}": js
     }
     for key, value in replacements.items():
         if key not in template:
