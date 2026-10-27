@@ -4,47 +4,163 @@
     {
       "id": "rl",
       "title": "RL 优化",
-      "description": "从采样分布到一次可信的参数更新"
+      "description": "从采样分布到一次可信的参数更新",
+      "sections": [
+        {
+          "id": "rl-1",
+          "title": "策略优化",
+          "topics": [
+            "policy-gradient",
+            "ppo-grpo"
+          ]
+        }
+      ]
     },
     {
       "id": "learner",
       "title": "Learner 与数值",
-      "description": "Loss、梯度、低精度和训推一致性"
+      "description": "Loss、梯度、低精度和训推一致性",
+      "sections": [
+        {
+          "id": "learner-1",
+          "title": "梯度与目标",
+          "topics": [
+            "logprob-contract"
+          ]
+        },
+        {
+          "id": "learner-2",
+          "title": "低精度与 MoE",
+          "topics": [
+            "fp8-numerics",
+            "moe-router"
+          ]
+        }
+      ]
     },
     {
       "id": "parallel",
       "title": "并行训练",
-      "description": "如何分配显存、计算与跨卡通信"
+      "description": "如何分配显存、计算与跨卡通信",
+      "sections": [
+        {
+          "id": "parallel-1",
+          "title": "并行基础",
+          "topics": [
+            "distributed-collectives",
+            "parallel-topology"
+          ]
+        },
+        {
+          "id": "parallel-2",
+          "title": "张量与流水线",
+          "topics": [
+            "tp-matrix-communication",
+            "pp-pipeline-bubble"
+          ]
+        },
+        {
+          "id": "parallel-3",
+          "title": "专家与长序列",
+          "topics": [
+            "ep-token-routing",
+            "cp-sp-attention"
+          ]
+        },
+        {
+          "id": "parallel-4",
+          "title": "参数分片与 RL 配置",
+          "topics": [
+            "training-sharding",
+            "rl-parallel-planning"
+          ]
+        }
+      ]
     },
     {
       "id": "serving",
       "title": "Serving 与 KV",
-      "description": "请求调度、缓存和长尾"
+      "description": "请求调度、缓存和长尾",
+      "sections": [
+        {
+          "id": "serving-1",
+          "title": "KV 与调度",
+          "topics": [
+            "kv-scheduling",
+            "serving-parallelism"
+          ]
+        }
+      ]
     },
     {
       "id": "agent",
       "title": "Agent 轨迹",
-      "description": "行为、观察、工具与奖励边界"
+      "description": "行为、观察、工具与奖励边界",
+      "sections": [
+        {
+          "id": "agent-1",
+          "title": "Agent 行为",
+          "topics": [
+            "agent-action"
+          ]
+        }
+      ]
     },
     {
       "id": "async",
       "title": "异步训练",
-      "description": "数据供给、版本和恢复语义"
+      "description": "数据供给、版本和恢复语义",
+      "sections": [
+        {
+          "id": "async-1",
+          "title": "数据与版本",
+          "topics": [
+            "async-rollout"
+          ]
+        }
+      ]
     },
     {
       "id": "distill",
       "title": "蒸馏与混合优化",
-      "description": "Teacher/Student、KL 与 RL 信号"
+      "description": "Teacher/Student、KL 与 RL 信号",
+      "sections": [
+        {
+          "id": "distill-1",
+          "title": "蒸馏目标",
+          "topics": [
+            "opd-kl"
+          ]
+        }
+      ]
     },
     {
       "id": "diagnosis",
       "title": "性能与排障",
-      "description": "先找证据，再动配置"
+      "description": "先找证据，再动配置",
+      "sections": [
+        {
+          "id": "diagnosis-1",
+          "title": "吞吐与排障",
+          "topics": [
+            "rl-throughput"
+          ]
+        }
+      ]
     },
     {
       "id": "research",
       "title": "研究与设计",
-      "description": "论文、工程方案和可复现实验"
+      "description": "论文、工程方案和可复现实验",
+      "sections": [
+        {
+          "id": "research-1",
+          "title": "研究方法",
+          "topics": [
+            "evidence-standards"
+          ]
+        }
+      ]
     }
   ],
   "topics": [
