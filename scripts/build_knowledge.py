@@ -116,7 +116,8 @@ def generate_knowledge(root: Path, output: Path) -> int:
             raise ValueError(f"Missing template slot {slot}")
         html = html.replace(slot, value)
     # Knowledge owns its navigation; never inject the legacy shared header.
-    html = html.replace('<div class="legacy-nav" hidden>{{SITE_NAV}}</div>', "")\n    output.parent.mkdir(parents=True, exist_ok=True)
+    html = html.replace('<div class="legacy-nav" hidden>{{SITE_NAV}}</div>', "")
+    output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(html, encoding="utf-8")
     # Interactive labs are a supporting page of the knowledge site.
     labs_source = root / "labs"
