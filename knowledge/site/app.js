@@ -193,7 +193,7 @@
     if (!location.hash) renderListing();
   }));
   $("back").addEventListener("click",navigateHome);
-  $("home-link").addEventListener("click",()=>{
+  document.querySelector(".site-nav-brand").addEventListener("click",()=>{
     search="";$("search").value="";filter="all";chapter="";
   });
   $("menu-toggle").addEventListener("click",()=>{

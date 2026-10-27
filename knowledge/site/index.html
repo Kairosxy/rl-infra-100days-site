@@ -15,16 +15,12 @@
 </head>
 <body>
   <a class="skip" href="#content">跳到正文</a>
-  <header class="top">
-    <a href="#" id="home-link" class="wordmark">RL Infra<span class="wordmark-dot">.</span></a>
-    <nav aria-label="网站导航">
-      <a href="#category=topic" data-nav="topic">知识</a>
-      <a href="#category=case" data-nav="case">问题</a>
-      <a href="#category=implementation" data-nav="implementation">实现</a>
-      <a href="quiz/">复习</a>
-    </nav>
-    <button id="menu-toggle" class="menu-toggle" aria-expanded="false" aria-controls="side" type="button">目录</button>
-  </header>
+  {{SITE_NAV}}
+  <div class="category-bar">
+    <a href="#category=topic" data-nav="topic">知识</a>
+    <a href="#category=case" data-nav="case">问题</a>
+    <a href="#category=implementation" data-nav="implementation">实现</a>
+  </div>
   <div class="layout">
     <aside id="side" class="sidebar" aria-label="知识章节">
       <p class="side-title">知识目录</p>

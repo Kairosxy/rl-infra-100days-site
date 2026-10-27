@@ -9,6 +9,8 @@ import argparse
 import json
 from pathlib import Path
 
+from site_nav import NAV_CSS, nav_markup
+
 TOTAL_QUESTIONS = 224
 
 
@@ -45,7 +47,8 @@ def build(root: Path, output: Path) -> int:
                 .replace("&", r"\u0026").replace("\u2028", r"\u2028")
                 .replace("\u2029", r"\u2029"))
     replacements = {
-        "{{QUIZ_STYLE}}": css, "{{QUIZ_DATA}}": data, "{{QUIZ_SCRIPT}}": js
+        "{{SITE_NAV}}": nav_markup("quiz"),
+        "{{QUIZ_STYLE}}": css + "\n" + NAV_CSS, "{{QUIZ_DATA}}": data, "{{QUIZ_SCRIPT}}": js
     }
     for key, value in replacements.items():
         if key not in template:

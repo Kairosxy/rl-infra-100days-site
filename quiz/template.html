@@ -10,10 +10,7 @@
 </head>
 <body>
 <a class="skip" href="#question-title">跳到问题</a>
-<header class="top">
-  <a class="brand" href="../">RL Infra<span>.</span></a>
-  <nav><a href="../">知识库</a><a aria-current="page" href="./">复习</a><a href="../legacy.html">历史课程</a></nav>
-</header>
+{{SITE_NAV}}
 <div class="layout">
   <aside class="sidebar">
     <h2>查找问题</h2>
@@ -93,12 +90,29 @@
         </details>
       </section>
       <details class="draft-panel">
-        <summary>记一点自己的想法（可选）</summary>
-        <label for="answer">回答</label>
-        <textarea id="answer" rows="3" placeholder="可以只写几个关键词。"></textarea>
+        <summary>按四层写下回答（可选）</summary>
+        <p class="layer-note">不用每层都写。<span id="layer-progress">已写 0 / 4 层</span></p>
+        <div class="layers">
+          <div class="layer">
+            <label for="answer-c1"><span class="layer-num">1</span>结论<span class="layer-hint">一句话，别铺垫</span></label>
+            <textarea id="answer-c1" data-layer="c1" rows="2" placeholder="先给判断。"></textarea>
+          </div>
+          <div class="layer">
+            <label for="answer-c2"><span class="layer-num">2</span>前提<span class="layer-hint">这个结论在哪成立</span></label>
+            <textarea id="answer-c2" data-layer="c2" rows="2" placeholder="条件、假设、边界。"></textarea>
+          </div>
+          <div class="layer">
+            <label for="answer-c3"><span class="layer-num">3</span>数值<span class="layer-hint">一个能算的例子</span></label>
+            <textarea id="answer-c3" data-layer="c3" rows="2" placeholder="具体数字或反例。"></textarea>
+          </div>
+          <div class="layer">
+            <label for="answer-c4"><span class="layer-num">4</span>落地<span class="layer-hint">实现上哪里会错</span></label>
+            <textarea id="answer-c4" data-layer="c4" rows="2" placeholder="代码、指标或排查方式。"></textarea>
+          </div>
+        </div>
         <label for="notes">容易混淆的地方</label>
         <textarea id="notes" rows="2" placeholder="有需要再记。"></textarea>
-        <div class="draft-info"><span id="saved" role="status">仅保存在当前浏览器</span><span id="count">0 字</span></div>
+        <div class="draft-info"><span id="saved" role="status">仅保存在本机</span><span id="count">0 字</span></div>
       </details>
       <div class="pager">
         <button type="button" id="prev">← 上一题</button>

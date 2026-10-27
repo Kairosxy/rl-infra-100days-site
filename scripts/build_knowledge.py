@@ -13,6 +13,7 @@ import shutil
 from pathlib import Path
 
 from markdown_render import render_markdown
+from site_nav import NAV_CSS, nav_markup
 
 GROUPS = ("topics", "cases", "implementations")
 RELATIONS = {
@@ -76,8 +77,11 @@ def generate_knowledge(root: Path, output: Path) -> int:
     data = (data.replace("<", r"\u003c").replace(">", r"\u003e")
                 .replace("&", r"\u0026").replace("\u2028", r"\u2028")
                 .replace("\u2029", r"\u2029"))
+    extra = ('<button id="menu-toggle" class="menu-toggle" aria-expanded="false" '
+             'aria-controls="side" type="button">目录</button>')
     for slot, value in {
-        "{{KNOWLEDGE_STYLE}}": css,
+        "{{SITE_NAV}}": nav_markup("knowledge", extra),
+        "{{KNOWLEDGE_STYLE}}": css + "\n" + NAV_CSS,
         "{{KNOWLEDGE_DATA}}": data,
         "{{KNOWLEDGE_JS}}": js,
     }.items():
@@ -96,6 +100,13 @@ def generate_knowledge(root: Path, output: Path) -> int:
             if not source_file.is_file():
                 raise FileNotFoundError(source_file)
             shutil.copy2(source_file, labs_target / asset)
+        page = labs_target / "index.html"
+        page.write_text(
+            page.read_text(encoding="utf-8").replace("{{SITE_NAV}}", nav_markup("labs")),
+            encoding="utf-8",
+        )
+        sheet = labs_target / "style.css"
+        sheet.write_text(sheet.read_text(encoding="utf-8") + "\n" + NAV_CSS, encoding="utf-8")
     return sum(len(catalog[group]) for group in GROUPS)
 
 
