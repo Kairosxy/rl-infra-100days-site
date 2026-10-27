@@ -95,7 +95,7 @@ def generate_knowledge(root: Path, output: Path) -> int:
     if labs_source.is_dir():
         labs_target = output.parent / "labs"
         labs_target.mkdir(parents=True, exist_ok=True)
-        for asset in ("index.html", "style.css", "app.js", "parallel.html"):
+        for asset in ("index.html", "style.css", "app.js", "parallel.html", "parallel-performance.html"):
             source_file = labs_source / asset
             if not source_file.is_file():
                 raise FileNotFoundError(source_file)
