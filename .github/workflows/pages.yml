@@ -1,4 +1,4 @@
-name: Publish course website
+name: Publish RL Infra knowledge site
 
 on:
   push:
@@ -27,7 +27,8 @@ jobs:
       - name: Install HTML builder dependencies
         run: python -m pip install -r site/requirements.txt
       - name: Build website
-        run: python scripts/build_site.py --output dist/index.html
+        run: python scripts/build_site.py --output dist/legacy.html
+          python scripts/build_knowledge.py --output dist/index.html
       - name: Build interview question bank
         run: python scripts/build_quiz.py --output dist/quiz/index.html
       - name: Validate course pages, question bank and public boundary
@@ -37,6 +38,7 @@ jobs:
           node --check site/app.js
           node --check quiz/app.js
           node --check labs/app.js
+          node --check knowledge/site/app.js
       - name: Save offline HTML
         uses: actions/upload-artifact@v4
         with:

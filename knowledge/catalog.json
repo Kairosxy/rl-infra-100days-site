@@ -1,0 +1,545 @@
+{
+  "schema": "rl-infra-knowledge-v1",
+  "chapters": [
+    {
+      "id": "rl",
+      "title": "RL 优化",
+      "description": "从采样分布到一次可信的参数更新"
+    },
+    {
+      "id": "learner",
+      "title": "Learner 与数值",
+      "description": "Loss、梯度、低精度和训推一致性"
+    },
+    {
+      "id": "parallel",
+      "title": "并行训练",
+      "description": "如何分配显存、计算与跨卡通信"
+    },
+    {
+      "id": "serving",
+      "title": "Serving 与 KV",
+      "description": "请求调度、缓存和长尾"
+    },
+    {
+      "id": "agent",
+      "title": "Agent 轨迹",
+      "description": "行为、观察、工具与奖励边界"
+    },
+    {
+      "id": "async",
+      "title": "异步训练",
+      "description": "数据供给、版本和恢复语义"
+    },
+    {
+      "id": "distill",
+      "title": "蒸馏与混合优化",
+      "description": "Teacher/Student、KL 与 RL 信号"
+    },
+    {
+      "id": "diagnosis",
+      "title": "性能与排障",
+      "description": "先找证据，再动配置"
+    },
+    {
+      "id": "research",
+      "title": "研究与设计",
+      "description": "论文、工程方案和可复现实验"
+    }
+  ],
+  "topics": [
+    {
+      "id": "policy-gradient",
+      "title": "一次 Reward 怎么更新 Policy？",
+      "chapter": "rl",
+      "summary": "区分一次采样的梯度和策略目标的期望梯度。",
+      "recall": {
+        "question": "Reward 不可微，还能更新模型参数吗？",
+        "answer": "可以。对采样动作的 Logprob 求导，Reward 充当系数；要区分单样本估计与期望。",
+        "spoken": "评分不提供导数，导数来自已采样动作的对数概率。"
+      },
+      "keywords": [
+        "policy",
+        "gradient",
+        "reinforce",
+        "reward",
+        "expectation"
+      ],
+      "cases": [],
+      "implementations": []
+    },
+    {
+      "id": "ppo-grpo",
+      "title": "PPO / GRPO 的优化目标",
+      "chapter": "rl",
+      "summary": "从 Ratio、Clip 到 Group Advantage，辨别更新目标与估计器。",
+      "recall": {
+        "question": "PPO Clip 能限制全策略的 KL 吗？",
+        "answer": "不能。它截断特定样本的 Surrogate 梯度，不是全分布硬约束。",
+        "spoken": "Clip 管的是样本层面的更新方向，KL 仍需要按明确口径监控。"
+      },
+      "keywords": [
+        "ppo",
+        "grpo",
+        "dapo",
+        "gspo",
+        "ratio",
+        "advantage"
+      ],
+      "cases": [
+        "ppo-clip-kl"
+      ],
+      "implementations": [
+        "verl-hybridflow"
+      ]
+    },
+    {
+      "id": "logprob-contract",
+      "title": "Token Logprob 与训练目标",
+      "chapter": "learner",
+      "summary": "Shift、Action Mask、Reduction 与 Policy Version 必须对齐。",
+      "recall": {
+        "question": "Loss 正常下降就代表 Token 对齐正确吗？",
+        "answer": "不代表。预测位置错一格或 Mask 包含 Observation，Shape 仍可能合法。",
+        "spoken": "先核对 Token、概率分布和 Mask，再解释 Loss 变化。"
+      },
+      "keywords": [
+        "logprob",
+        "token",
+        "shift",
+        "mask",
+        "reduction",
+        "sequence"
+      ],
+      "cases": [
+        "ppo-clip-kl",
+        "fp8-logprob-drift",
+        "moe-router-mismatch"
+      ],
+      "implementations": [
+        "nemo-router-replay"
+      ]
+    },
+    {
+      "id": "fp8-numerics",
+      "title": "FP8 的收益与数值边界",
+      "chapter": "learner",
+      "summary": "从量化 Scale 到 BF16/FP8 的 Logprob 差异与模型质量。",
+      "recall": {
+        "question": "FP8 GEMM 更快，RL Step 就一定更快吗？",
+        "answer": "不一定。还取决于瓶颈是否在 GEMM，以及精度和采样分布变化。",
+        "spoken": "先看瓶颈，再看量化误差怎样传到采样和梯度。"
+      },
+      "keywords": [
+        "fp8",
+        "transformerengine",
+        "mxfp8",
+        "scaling",
+        "precision"
+      ],
+      "cases": [
+        "fp8-logprob-drift"
+      ],
+      "implementations": [
+        "te-megatron-fp8"
+      ]
+    },
+    {
+      "id": "moe-router",
+      "title": "MoE Routing 与 R3",
+      "chapter": "learner",
+      "summary": "相同 Token 在两套引擎中选了不同 Expert，后果是什么？",
+      "recall": {
+        "question": "Router Replay 修复了所有训推差异吗？",
+        "answer": "没有。R3对齐 Expert 选择；采样变换、数值误差、版本差异仍需单独检查。",
+        "spoken": "R3 固定离散路由选择，不等于使两边所有概率完全相同。"
+      },
+      "keywords": [
+        "moe",
+        "r3",
+        "router",
+        "replay",
+        "drift"
+      ],
+      "cases": [
+        "fp8-logprob-drift",
+        "moe-router-mismatch"
+      ],
+      "implementations": [
+        "nemo-router-replay"
+      ]
+    },
+    {
+      "id": "parallel-topology",
+      "title": "DP / TP / PP / EP 怎么组合",
+      "chapter": "parallel",
+      "summary": "用计算、通信和峰值显存，而不是靠经验选择并行度。",
+      "recall": {
+        "question": "TP 增加一倍，为何训练可能更慢？",
+        "answer": "单卡计算减少的同时 Collective 更多或更慢；是否划算取决于形状和拓扑。",
+        "spoken": "先算通信发生在哪层，再谈并行规模。"
+      },
+      "keywords": [
+        "megatron",
+        "fsdp2",
+        "deepspeed",
+        "tensor",
+        "pipeline",
+        "expert"
+      ],
+      "cases": [],
+      "implementations": [
+        "verl-hybridflow",
+        "te-megatron-fp8",
+        "fsdp2-sharding"
+      ]
+    },
+    {
+      "id": "kv-scheduling",
+      "title": "KV Cache 与请求调度",
+      "chapter": "serving",
+      "summary": "Paged KV、Prefix Cache、Continuous Batching 的成本取舍。",
+      "recall": {
+        "question": "吞吐提升是否一定会改善 P99？",
+        "answer": "不一定。Admission 和 Prefill/Decode 竞争可能推高长尾。",
+        "spoken": "区分容量、吞吐、TTFT 和 TPOT，不能只盯一个数字。"
+      },
+      "keywords": [
+        "sglang",
+        "vllm",
+        "kv",
+        "cache",
+        "radix",
+        "attention"
+      ],
+      "cases": [
+        "kv-oom"
+      ],
+      "implementations": [
+        "sglang-scheduler",
+        "vllm-kv"
+      ]
+    },
+    {
+      "id": "agent-action",
+      "title": "Agent 的 Action 到底是什么",
+      "chapter": "agent",
+      "summary": "区分模型动作、工具 Observation、环境奖励和状态边界。",
+      "recall": {
+        "question": "工具返回的文字应该直接计算 Policy Loss 吗？",
+        "answer": "通常不应把环境 Observation 当作模型采样 Action；需要准确的 Action Mask。",
+        "spoken": "真正可训练的是模型选择的动作，不是对话记录里的每段文字。"
+      },
+      "keywords": [
+        "agent",
+        "harness",
+        "environment",
+        "reward",
+        "observation"
+      ],
+      "cases": [
+        "async-group-drain"
+      ],
+      "implementations": [
+        "slime-data-buffer"
+      ]
+    },
+    {
+      "id": "async-rollout",
+      "title": "异步 Rollout 与 Policy Staleness",
+      "chapter": "async",
+      "summary": "分清必要的数据依赖、外层批等待、版本差异和资源排空。",
+      "recall": {
+        "question": "达到训练数据目标，意味着所有在途请求都结束吗？",
+        "answer": "不意味着。停止投新任务和清空 Inflight 是两个时间点。",
+        "spoken": "异步减少的可以是额外等待，也可能增加旧样本和排空成本。"
+      },
+      "keywords": [
+        "async",
+        "partial",
+        "rollout",
+        "staleness",
+        "transferqueue",
+        "sampler"
+      ],
+      "cases": [
+        "rl-step-longtail",
+        "async-group-drain"
+      ],
+      "implementations": [
+        "verl-hybridflow",
+        "slime-data-buffer",
+        "areal-service",
+        "sglang-scheduler"
+      ]
+    },
+    {
+      "id": "opd-kl",
+      "title": "OPD、Teacher 分布与 KL",
+      "chapter": "distill",
+      "summary": "Teacher 的全词表信号如何与 RL Advantage 共存。",
+      "recall": {
+        "question": "Reverse KL 与 Forward KL 能混用吗？",
+        "answer": "不能直接等价；它们的期望分布、覆盖倾向和梯度不同。",
+        "spoken": "先固定被比较的两份分布和 KL 方向，再讨论蒸馏。"
+      },
+      "keywords": [
+        "opd",
+        "online",
+        "distillation",
+        "kl",
+        "teacher",
+        "student"
+      ],
+      "cases": [],
+      "implementations": []
+    },
+    {
+      "id": "rl-throughput",
+      "title": "RL Step 真的慢在哪里",
+      "chapter": "diagnosis",
+      "summary": "把吞吐数字拆到 Rollout、Train、通信、等待与排空。",
+      "recall": {
+        "question": "Learner 加速两倍，RL Step 会加速两倍吗？",
+        "answer": "不一定。若 Rollout 更久且阶段串行，整体加速受未优化部分限制。",
+        "spoken": "先量化 Step 的关键路径，避免局部优化冒充端到端收益。"
+      },
+      "keywords": [
+        "throughput",
+        "gpu",
+        "hours",
+        "profiling",
+        "async",
+        "capacity"
+      ],
+      "cases": [
+        "rl-step-longtail",
+        "async-group-drain",
+        "kv-oom"
+      ],
+      "implementations": [
+        "areal-service",
+        "fsdp2-sharding"
+      ]
+    },
+    {
+      "id": "evidence-standards",
+      "title": "怎样判断一种新方案有效",
+      "chapter": "research",
+      "summary": "论文主张、源码实现、实测结果必须分开。",
+      "recall": {
+        "question": "论文报告 2× 吞吐，就能当作本地方案的预期值吗？",
+        "answer": "不能。必须对齐模型、硬件、负载、质量与计时口径。",
+        "spoken": "先确认对照条件，再谈收益和可复现性。"
+      },
+      "keywords": [
+        "papers",
+        "benchmark",
+        "reproducibility",
+        "analysis"
+      ],
+      "cases": [],
+      "implementations": []
+    }
+  ],
+  "cases": [
+    {
+      "id": "ppo-clip-kl",
+      "title": "PPO Clip 看似生效，KL 仍然增大",
+      "summary": "为什么被 Clip 的样本不能保证完整策略稳定",
+      "topics": [
+        "ppo-grpo",
+        "logprob-contract"
+      ],
+      "implementations": []
+    },
+    {
+      "id": "fp8-logprob-drift",
+      "title": "开启 FP8 后，Logprob 与生成长度都变了",
+      "summary": "先排除分布定义、版本和 Token，再定位精度误差",
+      "topics": [
+        "fp8-numerics",
+        "logprob-contract",
+        "moe-router"
+      ],
+      "implementations": [
+        "te-megatron-fp8"
+      ]
+    },
+    {
+      "id": "moe-router-mismatch",
+      "title": "MoE Rollout 与训练选中了不同 Expert",
+      "summary": "R3 能修复哪部分分歧，又增加什么边界",
+      "topics": [
+        "moe-router",
+        "logprob-contract"
+      ],
+      "implementations": [
+        "nemo-router-replay"
+      ]
+    },
+    {
+      "id": "rl-step-longtail",
+      "title": "Learner 快了，但 RL Step 几乎没变",
+      "summary": "用关键路径和 Amdahl 规律定优化优先级",
+      "topics": [
+        "rl-throughput",
+        "async-rollout"
+      ],
+      "implementations": [
+        "areal-service",
+        "fsdp2-sharding"
+      ]
+    },
+    {
+      "id": "async-group-drain",
+      "title": "Group 达标了，为什么 GPU 还在忙",
+      "summary": "Group 完整、Batch 等待与 Inflight Drain 的不同",
+      "topics": [
+        "async-rollout",
+        "rl-throughput",
+        "agent-action"
+      ],
+      "implementations": [
+        "verl-hybridflow",
+        "slime-data-buffer"
+      ]
+    },
+    {
+      "id": "kv-oom",
+      "title": "请求增多后，KV Cache 为什么先 OOM",
+      "summary": "容量计算、前缀复用和调度策略",
+      "topics": [
+        "kv-scheduling",
+        "rl-throughput"
+      ],
+      "implementations": [
+        "sglang-scheduler",
+        "vllm-kv"
+      ]
+    }
+  ],
+  "implementations": [
+    {
+      "id": "verl-hybridflow",
+      "title": "verl / HybridFlow",
+      "framework": "verl",
+      "summary": "统一训练数据流与异构 Engine 接入的边界",
+      "topics": [
+        "ppo-grpo",
+        "async-rollout",
+        "parallel-topology"
+      ],
+      "cases": [
+        "async-group-drain"
+      ]
+    },
+    {
+      "id": "slime-data-buffer",
+      "title": "slime 的 Data Buffer 与训推集成",
+      "framework": "slime",
+      "summary": "数据缓冲和 Megatron + SGLang 集成的架构取舍",
+      "topics": [
+        "async-rollout",
+        "agent-action"
+      ],
+      "cases": [
+        "async-group-drain"
+      ]
+    },
+    {
+      "id": "areal-service",
+      "title": "AReaL 的异步服务化",
+      "framework": "AReaL",
+      "summary": "分离生成/训练/权重更新，并控制版本滞后",
+      "topics": [
+        "async-rollout",
+        "rl-throughput"
+      ],
+      "cases": [
+        "rl-step-longtail"
+      ]
+    },
+    {
+      "id": "te-megatron-fp8",
+      "title": "TransformerEngine / Megatron FP8",
+      "framework": "TransformerEngine · Megatron Core",
+      "summary": "不同 FP8 Recipe、Scale 及训练精度的实现入口",
+      "topics": [
+        "fp8-numerics",
+        "parallel-topology"
+      ],
+      "cases": [
+        "fp8-logprob-drift"
+      ]
+    },
+    {
+      "id": "nemo-router-replay",
+      "title": "NeMo RL Router Replay（R3）",
+      "framework": "NeMo RL",
+      "summary": "记录并重放 Expert Index 的集成边界与验证指标",
+      "topics": [
+        "moe-router",
+        "logprob-contract"
+      ],
+      "cases": [
+        "moe-router-mismatch"
+      ]
+    },
+    {
+      "id": "sglang-scheduler",
+      "title": "SGLang 的 RadixAttention 与调度",
+      "framework": "SGLang",
+      "summary": "Prefix Cache、请求调度及 KV 生命周期",
+      "topics": [
+        "kv-scheduling",
+        "async-rollout"
+      ],
+      "cases": [
+        "kv-oom"
+      ]
+    },
+    {
+      "id": "fsdp2-sharding",
+      "title": "FSDP2 的参数生命周期",
+      "framework": "PyTorch FSDP2",
+      "summary": "DTensor 分片、All-gather、Reduce-scatter 与显存峰值",
+      "topics": [
+        "parallel-topology",
+        "rl-throughput"
+      ],
+      "cases": [
+        "rl-step-longtail"
+      ]
+    },
+    {
+      "id": "vllm-kv",
+      "title": "vLLM 的 PagedAttention",
+      "framework": "vLLM",
+      "summary": "KV Block 管理与分批推理的边界",
+      "topics": [
+        "kv-scheduling"
+      ],
+      "cases": [
+        "kv-oom"
+      ]
+    }
+  ],
+  "releases": [
+    {
+      "date": "2026-10-27",
+      "kind": "topic",
+      "id": "ppo-grpo"
+    },
+    {
+      "date": "2026-10-27",
+      "kind": "case",
+      "id": "fp8-logprob-drift"
+    },
+    {
+      "date": "2026-10-27",
+      "kind": "implementation",
+      "id": "areal-service"
+    }
+  ]
+}

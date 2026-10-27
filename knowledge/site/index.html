@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="RL Infra：基础知识、工程问题与框架实现，连接可验证的技术证据。">
+  <title>RL Infra · 技术知识库</title>
+  <style>{{KNOWLEDGE_STYLE}}</style>
+  <script>
+    window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},
+      options:{skipHtmlTags:['script','style','textarea','pre','code','noscript']}};
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+  <a class="skip" href="#content">跳到正文</a>
+  <header class="top">
+    <a href="#" id="home-link" class="wordmark">RL Infra<span class="wordmark-dot">.</span></a>
+    <nav aria-label="网站导航">
+      <a href="#category=topic" data-nav="topic">知识</a>
+      <a href="#category=case" data-nav="case">问题</a>
+      <a href="#category=implementation" data-nav="implementation">实现</a>
+      <a href="quiz/">复习</a>
+      <a href="legacy.html">旧课程</a>
+    </nav>
+    <button id="menu-toggle" class="menu-toggle" aria-expanded="false" aria-controls="side" type="button">目录</button>
+  </header>
+  <div class="layout">
+    <aside id="side" class="sidebar" aria-label="知识章节">
+      <p class="side-title">知识目录</p>
+      <nav id="chapter-list" class="chapter-list"></nav>
+      <div class="side-bottom">
+        <a href="legacy.html">旧版课程归档</a>
+        <a href="quiz/">224 道复习题</a>
+      </div>
+    </aside>
+    <main id="content" class="main">
+      <div class="toolbar">
+        <label class="search" for="search"><span aria-hidden="true">⌕</span>
+          <input id="search" type="search" placeholder="搜索：FP8、R3、Staleness、KV…" autocomplete="off">
+          <kbd>/</kbd>
+        </label>
+      </div>
+      <section id="landing" class="landing">
+        <p class="overline">RL / TRAINING SYSTEMS</p>
+        <h1>从原理到工程决策</h1>
+        <p class="intro">理解核心机制，找到实际问题的原因，再看主流框架如何实现。内容按知识关联组织，随时可以从任何一处进入。</p>
+        <div class="filters" id="filters" aria-label="内容类型">
+          <button type="button" data-filter="all" aria-pressed="true">全部</button>
+          <button type="button" data-filter="topic" aria-pressed="false">基础知识</button>
+          <button type="button" data-filter="case" aria-pressed="false">工程问题</button>
+          <button type="button" data-filter="implementation" aria-pressed="false">框架实现</button>
+        </div>
+        <p id="results-label" class="results-label"></p>
+        <div id="item-list" class="item-list"></div>
+      </section>
+      <section id="detail" class="detail" hidden>
+        <div class="detail-head">
+          <button type="button" id="back" class="back">← 返回</button>
+          <p id="detail-context" class="detail-context"></p>
+          <h1 id="detail-title"></h1>
+          <p id="detail-summary" class="detail-summary"></p>
+        </div>
+        <div id="recall" class="recall" hidden></div>
+        <article id="article" class="article"></article>
+        <section id="related" class="related" hidden>
+          <h2>相关内容</h2>
+          <div id="related-list" class="related-list"></div>
+        </section>
+      </section>
+      <footer class="foot">公开技术资料 · <a href="https://github.com/Kairosxy/rl-infra-100days-site" target="_blank" rel="noopener noreferrer">查看源码与引用</a> · <a href="legacy.html">历史课程</a></footer>
+    </main>
+  </div>
+  <script type="application/json" id="knowledge-data">{{KNOWLEDGE_DATA}}</script>
+  <script>{{KNOWLEDGE_JS}}</script>
+</body>
+</html>

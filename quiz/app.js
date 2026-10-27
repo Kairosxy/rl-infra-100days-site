@@ -35,7 +35,7 @@
   }
   let state = loadProgress();
   let mode = "all", queue = [], cursor = 0, current = null, visible = false;
-  let source = "deep", timer = null;
+  let source = "brief", timer = null;
   const read = id => state.records[id] || blank();
   const writable = id => state.records[id] || (state.records[id] = blank());
   const localDate = (days = 0) => {
@@ -159,12 +159,12 @@
   }
   function hideReference() {
     visible = false;
-    source = "deep";
+    source = "brief";
     byId("reference").hidden = true;
     byId("show").textContent = "查看参考答案";
     byId("show").setAttribute("aria-expanded", "false");
     document.querySelectorAll("[data-source]").forEach(el => {
-      el.setAttribute("aria-selected", el.dataset.source === "deep" ? "true" : "false");
+      el.setAttribute("aria-selected", el.dataset.source === "brief" ? "true" : "false");
     });
   }
   function showQuestion() {
