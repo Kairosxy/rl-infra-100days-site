@@ -13,3 +13,30 @@
 @media(max-width:900px){.layout{grid-template-columns:180px minmax(0,1fr)}.sidebar{padding:34px 12px}.main{padding:30px 22px}.top{padding:0 22px;gap:15px}}
 @media(max-width:670px){.top{height:58px;padding:0 16px}.top nav a:nth-child(3),.top nav a:nth-child(5){display:none}.menu-toggle{display:block}.layout{display:block}.sidebar{display:none;position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:13px 16px}.sidebar.show{display:block}.chapter-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.side-bottom{display:none}.main{padding:25px 17px}.toolbar{margin-bottom:24px}.landing h1{font-size:30px}.intro{font-size:13px}.filters{gap:15px;margin-top:24px}.item{padding:18px 0}.item-title{font-size:17px}.detail h1{font-size:27px}.article{font-size:14px}.article h2{font-size:20px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}button,a{transition:none}}
+\n
+/* Whole-library map and contextual learning experiments */
+.knowledge-map{margin:28px 0 35px}
+.knowledge-map[hidden],.inline-labs[hidden]{display:none!important}
+.map-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:13px;margin-bottom:15px}
+.map-eyebrow{font:750 11px/1.5 ui-monospace,monospace;letter-spacing:.16em;color:#326d5b}
+.map-caption{font-size:12px;color:#73817b}
+.map-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.map-card{display:flex;flex-direction:column;min-height:198px;border:1px solid #dde6df;background:#fff;border-radius:14px;padding:18px;text-decoration:none;color:var(--ink);box-shadow:0 6px 20px #264c3507;transition:border-color .15s,transform .15s}
+.map-card:hover{border-color:#85ac97;transform:translateY(-2px);text-decoration:none}
+.map-index{font:700 11px ui-monospace,monospace;color:#7d998a}
+.map-card h2{font-size:17px;letter-spacing:-.03em;line-height:1.35;margin:10px 0 5px}
+.map-card p{font-size:12px;color:#6b7c72;margin:0 0 12px;line-height:1.6}
+.map-stats{font-size:11px;color:#3c775b;margin-top:auto;padding-top:8px}
+.map-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+.map-tags span{font-size:10px;background:#f1f5f1;color:#687c6d;border-radius:5px;padding:3px 6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.map-hint{font-size:12px;color:#74867a;margin:13px 0}
+.inline-labs{margin:34px 0 36px;padding:21px;border:1px solid #d8e7dc;background:#f8fbf8;border-radius:14px}
+.inline-labs h2{margin:0 0 7px;font:700 20px/1.4 system-ui,sans-serif;color:#274d3b}
+.inline-lab-intro{font-size:13px;color:#647a6d;margin:0 0 16px}
+.inline-lab-card{border:1px solid #dce7de;border-radius:11px;overflow:hidden;background:#fff;margin:14px 0}
+.inline-lab-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 15px;font-size:13px}
+.inline-lab-head a{font-size:12px;white-space:nowrap}
+.inline-lab-frame{display:block;width:100%;height:710px;border:0;border-top:1px solid #e5ebe6;background:white}
+@media(max-width:1150px){.map-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:670px){.map-grid{grid-template-columns:1fr}.map-card{min-height:unset;padding:16px}.inline-labs{padding:12px;margin:22px -6px}.inline-lab-frame{height:760px}.map-heading{align-items:flex-start;flex-direction:column;gap:4px}}
+@media(prefers-reduced-motion:reduce){.map-card{transition:none}.map-card:hover{transform:none}}
