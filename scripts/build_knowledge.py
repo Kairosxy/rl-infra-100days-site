@@ -69,6 +69,15 @@ def knowledge_payload(root: Path) -> dict:
 def generate_knowledge(root: Path, output: Path) -> int:
     root = root.resolve()
     catalog = knowledge_payload(root)
+    bank = json.loads((root / "quiz" / "data" / "questions.json").read_text(encoding="utf-8"))
+    questions = bank.get("questions", [])
+    if bank.get("schema") != "rl-infra-question-bank-v1" or len(questions) != 224:
+        raise ValueError("Knowledge product requires the complete 224-question bank")
+    known_topics = {topic["id"] for topic in catalog["topics"]}
+    for index, question in enumerate(questions, 1):
+        if question.get("code") != f"Q{index:03d}" or question.get("topic") not in known_topics:
+            raise ValueError(f"Invalid question linkage at Q{index:03d}")
+    catalog["question_bank"] = questions
     site = root / "knowledge" / "site"
     html = (site / "index.html").read_text(encoding="utf-8")
     css = (site / "style.css").read_text(encoding="utf-8")
