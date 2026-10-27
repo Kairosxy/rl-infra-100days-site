@@ -17,7 +17,7 @@
   <a class="skip" href="#content">跳到正文</a>
   {{SITE_NAV}}
   <div class="category-bar">
-    <a href="#category=topic" data-nav="topic">知识</a>
+    <a href="#" data-nav="all">知识地图</a>\n    <a href="#category=topic" data-nav="topic">知识</a>
     <a href="#category=case" data-nav="case">问题</a>
     <a href="#category=implementation" data-nav="implementation">实现</a>
   </div>
@@ -38,12 +38,12 @@
       </div>
       <section id="landing" class="landing">
         <p class="overline">RL / TRAINING SYSTEMS</p>
-        <h1>从原理到工程决策</h1>
-        <p class="intro">理解核心机制，找到实际问题的原因，再看主流框架如何实现。内容按知识关联组织，随时可以从任何一处进入。</p>
+        <h1>一张图看清 RL Infra</h1>
+        <p class="intro">先看全局，再进入知识主线。每个主题都连接工程问题、框架实现与可操作的机制演示。</p>\n        <section id="knowledge-map" class="knowledge-map" aria-label="知识库全局地图"></section>
         <div class="filters" id="filters" aria-label="内容类型">
           <button type="button" data-filter="all" aria-pressed="true">全部</button>
           <button type="button" data-filter="topic" aria-pressed="false">基础知识</button>
-          <button type="button" data-filter="case" aria-pressed="false">工程问题</button>
+          <button type="button" data-filter="case" aria-pressed="false">问题（工程与面试）</button>
           <button type="button" data-filter="implementation" aria-pressed="false">框架实现</button>
         </div>
         <p id="results-label" class="results-label"></p>
@@ -56,7 +56,7 @@
           <h1 id="detail-title"></h1>
           <p id="detail-summary" class="detail-summary"></p>
         </div>
-        <div id="recall" class="recall" hidden></div>
+        <div id="recall" class="recall" hidden></div>\n        <section id="inline-labs" class="inline-labs" hidden></section>
         <article id="article" class="article"></article>
         <section id="related" class="related" hidden>
           <h2>相关内容</h2>
