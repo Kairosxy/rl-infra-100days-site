@@ -1,290 +1,34 @@
 "use strict";
-/* The public knowledge reader has no network writes and stores no user data.
- */
-(function () {
-  const raw = JSON.parse(document.getElementById("knowledge-data").textContent);
-  if (raw.schema !== "rl-infra-knowledge-v1") throw new Error("Invalid knowledge catalog");
-  const $ = id => document.getElementById(id);
-  const types = {
-    topic: {key:"topics",label:"基础知识",prefix:"topic"},
-    case: {key:"cases",label:"工程问题",prefix:"case"},
-    implementation: {key:"implementations",label:"框架实现",prefix:"implementation"}
-  };
-  const pages = [];
-  const indexed = new Map();
-  for (const [type, info] of Object.entries(types)) {
-    for (const item of raw[info.key]) {
-      const page = {...item,type};
-      const lookupKey = type+":"+page.id;
-      if (indexed.has(lookupKey)) throw new Error("Duplicate ID "+lookupKey);
-      indexed.set(lookupKey,page);pages.push(page);
-    }
-  }
-  const chapters = new Map(raw.chapters.map(c=>[c.id,c]));
-  let filter = "all", chapter = "", search = "", savedLanding = "";
-  const params = ()=>new URLSearchParams(location.hash.replace(/^#/,""));
-  const href = (type,id)=>"#"+type+"="+encodeURIComponent(id);
-  function el(tag, cls, txt) {
-    const out = document.createElement(tag);
-    if (cls) out.className=cls;
-    if (txt != null) out.textContent=txt;
-    return out;
-  }
-  function sectionName(page) {
-    return page.type==="topic"
-      ? (chapters.get(page.chapter)?.title || "基础知识")
-      : (page.type==="case" ? "现象与排查" : page.framework);
-  }
-  function relatedItems(page) {
-    const targets = [];
-    if (page.type==="topic") {
-      (page.cases || []).forEach(id=>targets.push({type:"case",id}));
-      (page.implementations || []).forEach(id=>targets.push({type:"implementation",id}));
-    } else if (page.type==="case") {
-      (page.topics || []).forEach(id=>targets.push({type:"topic",id}));
-      (page.implementations || []).forEach(id=>targets.push({type:"implementation",id}));
-    } else {
-      (page.topics || []).forEach(id=>targets.push({type:"topic",id}));
-      (page.cases || []).forEach(id=>targets.push({type:"case",id}));
-    }
-    return targets.map(p=>indexed.get(p.type+":"+p.id)).filter(Boolean);
-  }
-
-  // Global map is derived from the same catalog as the article reader.
-  // Question nodes are cross-references, not independent navigation silos.
-  function renderMap() {
-    const host=$("knowledge-map");
-    if (!host) return;
-    host.replaceChildren();
-    const heading=el("div","map-heading");
-    heading.append(el("span","map-eyebrow","LEARNING MAP"));
-    heading.append(el("span","map-caption","主题 → 问题 → 工程实现"));
-    host.append(heading);
-    const grid=el("div","map-grid");
-    for (const c of raw.chapters) {
-      const topics=raw.topics.filter(t=>t.chapter===c.id);
-      const cases=new Set(),impl=new Set();
-      topics.forEach(t=>{
-        (t.cases||[]).forEach(x=>cases.add(x));
-        (t.implementations||[]).forEach(x=>impl.add(x));
-      });
-      const card=el("a","map-card");
-      card.href="#chapter="+encodeURIComponent(c.id);
-      const eyebrow=el("div","map-index",String(grid.children.length+1).padStart(2,"0"));
-      const title=el("h2","",c.title);
-      const desc=el("p","",c.description);
-      const stats=el("div","map-stats",topics.length+" 篇知识 · "+cases.size+" 个问题 · "+impl.size+" 个实现");
-      card.append(eyebrow,title,desc,stats);
-      if (topics.length) {
-        const tags=el("div","map-tags");
-        topics.slice(0,3).forEach(t=>tags.append(el("span","",t.title)));
-        card.append(tags);
-      }
-      grid.append(card);
-    }
-    host.append(grid);
-    const hint=el("p","map-hint","进入章节后阅读主线；问题和框架实现会在每篇文档中作为关联材料出现。");
-    host.append(hint);
-  }
-  const inlineLabByTopic={
-    "tp-matrix-communication":[["矩阵切分与通信","labs/parallel.html#tp"]],
-    "pp-pipeline-bubble":[["流水线填充与空泡","labs/parallel.html#pp"]],
-    "ep-token-routing":[["Expert 路由与负载","labs/parallel.html#ep"]],
-    "parallel-topology":[["多维并行 GPU 分组","labs/parallel.html#topo"]],
-    "rl-parallel-planning":[["训练与推理显存预算","labs/rl-memory.html"]],
-    "training-sharding":[["训练与推理显存预算","labs/rl-memory.html"]],
-    "serving-parallelism":[["TP 计算与通信成本","labs/parallel-performance.html"]]
-  };
-  function renderInlineLabs(page) {
-    const host=$("inline-labs");host.replaceChildren();
-    const labs=page.type==="topic"?(inlineLabByTopic[page.id]||[]):[];
-    host.hidden=!labs.length;
-    if (!labs.length)return;
-    const title=el("h2","","在文档中动手验证");
-    const intro=el("p","inline-lab-intro","这里的实验是正文的一部分。调整参数，观察机制，再回到上下文继续阅读。");
-    host.append(title,intro);
-    for (const [label,url] of labs) {
-      const wrap=el("div","inline-lab-card");
-      const head=el("div","inline-lab-head");
-      head.append(el("strong","",label));
-      const link=el("a","","单独打开 ↗");link.href=url;link.target="_blank";link.rel="noopener noreferrer";
-      head.append(link);wrap.append(head);
-      const frame=el("iframe","inline-lab-frame");
-      frame.title=label;frame.loading="lazy";frame.src=url;
-      frame.setAttribute("sandbox","allow-scripts");
-      wrap.append(frame);host.append(wrap);
-    }
-  }
-\n  function renderChapters() {
-    const nav = $("chapter-list");
-    nav.replaceChildren();
-    for (const c of raw.chapters) {
-      const a = el("a","chapter-choice",c.title);
-      a.href = "#chapter="+c.id;
-      a.dataset.chapter = c.id;
-      nav.appendChild(a);
-    }
-  }
-  function updateCurrent() {
-    $("chapter-list").querySelectorAll("a").forEach(a=>
-      a.classList.toggle("active",chapter!==""&&a.dataset.chapter===chapter));
-    document.querySelectorAll("[data-filter]").forEach(b=>
-      b.setAttribute("aria-pressed",String(b.dataset.filter===filter)));
-    document.querySelectorAll("[data-nav]").forEach(a=>
-      a.setAttribute("aria-current",String(a.dataset.nav===filter)));
-  }
-  const plainCache=new Map();
-  function plainText(html) {
-    if (plainCache.has(html)) return plainCache.get(html);
-    const box=document.createElement("div");
-    box.innerHTML=html;
-    const text=(box.textContent||"").replace(/\s+/g," ");
-    plainCache.set(html,text);
-    return text;
-  }
-  function match(page) {
-    if (filter!=="all" && page.type!==filter) return false;
-    if (chapter && (page.type!=="topic" || page.chapter!==chapter)) return false;
-    const words=search.toLocaleLowerCase().normalize("NFKC").trim().split(/\s+/).filter(Boolean);
-    if (!words.length) return true;
-    const corpus=[page.title,page.summary,page.framework||"",
-      (page.keywords||[]).join(" "),plainText(page.html||"")].join(" ")
-      .normalize("NFKC").toLocaleLowerCase();
-    return words.every(w=>corpus.includes(w));
-  }
-  function renderListing() {
-    const matches=pages.filter(match);
-    const list=$("item-list");list.replaceChildren();
-    if (chapter) {
-      const c=chapters.get(chapter);
-      $("landing").querySelector("h1").textContent=c?.title||"知识目录";
-      $("landing").querySelector(".intro").textContent=c?.description||"";
-      $("landing").querySelector(".overline").textContent="CHAPTER / "+chapter.toUpperCase();
-    } else if (search) {
-      $("landing").querySelector("h1").textContent="搜索结果";
-      $("landing").querySelector(".intro").textContent="输入关键词即可查找基础解释、案例和框架实现。";
-      $("landing").querySelector(".overline").textContent="SEARCH";
-    } else {
-      $("landing").querySelector("h1").textContent="一张图看清 RL Infra";
-      $("landing").querySelector(".intro").textContent=
-        "先看全局，再进入知识主线。每个主题都连接工程问题、框架实现与可操作的机制演示。";
-      $("landing").querySelector(".overline").textContent="RL / TRAINING SYSTEMS";
-    }
-    const map=$("knowledge-map");if(map) map.hidden=Boolean(chapter||search||filter!=="all");\n    $("results-label").textContent=matches.length+" 篇";
-    if (!matches.length) list.append(el("p","no-results","没有匹配内容。试试更短的关键词。"));
-    for (const page of matches) {
-      const a=el("a","item");a.href=href(page.type,page.id);
-      a.append(el("div","item-meta",types[page.type].label+" / "+sectionName(page)));
-      a.append(el("h2","item-title",page.title));
-      a.append(el("p","item-description",page.summary));
-      const n=relatedItems(page).length;
-      if (n>0) a.append(el("div","item-related","关联 "+n+" 篇"));
-      list.append(a);
-    }
-    updateCurrent();
-  }
-  function renderDetail(type, id) {
-    const page=indexed.get(type+":"+id);
-    if (!page) {navigateHome();return;}
-    $("landing").hidden=true;$("detail").hidden=false;
-    $("detail-context").textContent=types[type].label+" / "+sectionName(page);
-    $("detail-title").textContent=page.title;
-    $("detail-summary").textContent=page.summary;
-    const inlineHost=$("inline-labs");\n    if (inlineHost.parentElement===$("article")) $("detail").insertBefore(inlineHost,$("article"));\n    $("article").innerHTML=page.html || "<p>暂无正文，请查看关联内容。</p>";
-    renderInlineLabs(page);
-    // Keep the experiment inside the article flow rather than as a separate tool page.
-    const inline=$("inline-labs");
-    if (!inline.hidden) {
-      const anchor=$("article").querySelector("h2");
-      if (anchor) anchor.before(inline);
-      else $("article").append(inline);
-    }
-    const recall=$("recall");recall.replaceChildren();
-    recall.hidden=!(type==="topic" && page.recall?.question);
-    if (!recall.hidden) {
-      recall.append(el("p","recall-label","想一想 · 不用写答案"));
-      recall.append(el("p","question",page.recall.question));
-      const details=el("details");
-      details.append(el("summary","","看解释"));
-      details.append(el("p","answer",page.recall.answer));
-      if (page.recall.spoken) details.append(el("p","spoken",page.recall.spoken));
-      recall.append(details);
-    }
-    const related=relatedItems(page), box=$("related-list");box.replaceChildren();
-    $("related").hidden=related.length===0;
-    for (const target of related) {
-      const a=el("a","related-link");a.href=href(target.type,target.id);
-      a.append(el("span","related-type",types[target.type].label));
-      a.append(el("span","",target.title));
-      box.append(a);
-    }
-    document.title=page.title+" · RL Infra";
-    if (window.MathJax?.typesetPromise) window.MathJax.typesetPromise([$("article"),recall]).catch(()=>{});
-    updateCurrent();
-  }
-  function navigateHome() {
-    window.location.hash=savedLanding||"";
-    if (!location.hash) render();
-  }
-  function closeMenu() {
-    $("side").classList.remove("show");
-    $("menu-toggle").setAttribute("aria-expanded","false");
-  }
-  function render() {
-    const p=params();
-    closeMenu();
-    let type=null,id=null;
-    for (const candidate of Object.keys(types)) {
-      if (p.has(candidate)) {type=candidate;id=p.get(candidate);break;}
-    }
-    if (type) {
-      if (!indexed.has(type+":"+id)) {history.replaceState(null,"",location.pathname);return render();}
-      renderDetail(type,id);
-    } else {
-      $("detail").hidden=true;$("landing").hidden=false;
-      chapter=chapters.has(p.get("chapter"))?p.get("chapter"):"";
-      filter=types[p.get("category")]?p.get("category"):"all";
-      savedLanding=location.hash;
-      renderListing();
-      document.title="RL Infra · 技术知识库";
-    }
-    window.scrollTo({top:0,behavior:"instant"});
-  }
-  renderChapters();\n  renderMap();
-  $("search").addEventListener("input",function(){
-    search=this.value.trim();
-    if (chapter) { chapter=""; history.replaceState(null,"",location.pathname); }
-    if (!$("landing").hidden) renderListing();
-    else {
-      location.hash=search ? "#category=all" : (savedLanding||"");
-      render();
-    }
-  });
-  document.querySelectorAll("[data-filter]").forEach(b=>b.addEventListener("click",()=>{
-    filter=b.dataset.filter;
-    chapter="";
-    window.location.hash=filter==="all"?"":"#category="+filter;
-    if (!location.hash) renderListing();
-  }));
-  $("back").addEventListener("click",navigateHome);
-  document.querySelector(".site-nav-brand").addEventListener("click",()=>{
-    search="";$("search").value="";filter="all";chapter="";
-  });
-  $("menu-toggle").addEventListener("click",()=>{
-    const open=$("side").classList.toggle("show");
-    $("menu-toggle").setAttribute("aria-expanded",String(open));
-  });
-  $("chapter-list").addEventListener("click",()=>{
-    closeMenu();
-    if (!$("detail").hidden) { filter="all"; }
-  });
-  document.addEventListener("keydown",e=>{
-    if (e.key==="/" && !["INPUT","TEXTAREA"].includes(document.activeElement?.tagName)
-       && !e.altKey && !e.ctrlKey && !e.metaKey) {
-      e.preventDefault();$("search").focus();
-    }
-    if (e.key==="Escape" && document.activeElement===$("search")) $("search").blur();
-  });
-  window.addEventListener("hashchange",render);
-  render();
-})();
+(()=>{const data=JSON.parse(document.getElementById("knowledge-data").textContent);const $=id=>document.getElementById(id);
+const kinds={topic:["topics","知识"],case:["cases","工程问题"],implementation:["implementations","框架实现"]};
+const all=Object.entries(kinds).flatMap(([type,[key]])=>data[key].map(x=>({...x,type})));
+const byId=new Map(all.map(x=>[x.type+":"+x.id,x]));const chapterById=new Map(data.chapters.map(x=>[x.id,x]));
+const slug=(type,id)=>"#"+type+"="+encodeURIComponent(id);const node=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e};
+const matches=(x,q)=>{if(!q)return true;const t=[x.title,x.summary,x.framework||"",...(x.keywords||[])].join(" ").normalize("NFKC").toLowerCase();return q.normalize("NFKC").toLowerCase().split(/\s+/).every(w=>t.includes(w))};
+const relations=x=>{const links=[];for(const [type,key] of [["topic","topics"],["case","cases"],["implementation","implementations"]])for(const id of x[key]||[]){const item=byId.get(type+":"+id);if(item&&!links.some(a=>a.type===type&&a.id===id))links.push(item)}return links};
+const unique=a=>[...new Map(a.map(x=>[x.type+":"+x.id,x])).values()];
+const chapterTopics=id=>data.topics.filter(x=>x.chapter===id).map(x=>byId.get("topic:"+x.id));
+const chapterConnections=id=>unique(chapterTopics(id).flatMap(relations).filter(x=>x.type!=="topic"));
+const labByTopic={"tp-matrix-communication":{label:"矩阵切分、通信与输出拼接",url:"labs/parallel.html#tp"},"pp-pipeline-bubble":{label:"流水线调度与空泡",url:"labs/parallel.html#pp"},"ep-token-routing":{label:"Token 路由与专家负载",url:"labs/parallel.html#ep"},"parallel-topology":{label:"多维并行 GPU 拓扑",url:"labs/parallel.html#topo"},"parallel-performance":{label:"TP 性能推演",url:"labs/parallel-performance.html"},"parallel-config-workbook":{label:"训练与推理显存预算",url:"labs/rl-memory.html"}};
+let search="",qfilter="all",lfilter="all";
+function linkCard(x,style="row"){const a=node("a",style);a.href=slug(x.type,x.id);const meta=node("span","row-meta",kinds[x.type][1]+(x.type==="topic"?" / "+(chapterById.get(x.chapter)?.title||""):""));const title=node("strong","",x.title);const desc=node("span","row-desc",x.summary);a.append(meta,title,desc);return a}
+function renderSidebar(){const box=$("chapter-list");box.replaceChildren();$("chapter-count").textContent=data.chapters.length;data.chapters.forEach((c,i)=>{const a=node("a","side-link");a.href="#chapter="+c.id;a.dataset.chapter=c.id;a.append(node("span","side-index",String(i+1).padStart(2,"0")),node("span","",c.title),node("span","side-arrow","↗"));box.append(a)})}
+function renderMap(){const host=$("map");host.replaceChildren();data.chapters.forEach((c,i)=>{const ts=chapterTopics(c.id),rs=chapterConnections(c.id);const a=node("a","map-card");a.href="#chapter="+c.id;a.append(node("span","map-number",String(i+1).padStart(2,"0")),node("h3","",c.title),node("p","",c.description));const tags=node("div","map-tags");ts.slice(0,3).forEach(t=>tags.append(node("span","",t.title)));a.append(tags,node("div","map-foot",ts.length+" 篇知识　·　"+rs.filter(x=>x.type==="case").length+" 个工程问题"));host.append(a)});$("total-entries").textContent=all.length;$("home-questions").replaceChildren(...data.cases.slice(0,3).map(x=>linkCard(byId.get("case:"+x.id))))}
+function renderChapter(id){const c=chapterById.get(id);if(!c)return renderHome();const ts=chapterTopics(id),rs=chapterConnections(id);$("chapter-index").textContent="KNOWLEDGE AREA / "+String(data.chapters.indexOf(c)+1).padStart(2,"0");$("chapter-title").textContent=c.title;$("chapter-desc").textContent=c.description;$("chapter-summary").textContent=ts.length+" 篇知识文档　 /　 "+rs.filter(x=>x.type==="case").length+" 个关联问题　 /　 "+rs.filter(x=>x.type==="implementation").length+" 个框架实现";$("chapter-topics").replaceChildren(...ts.map((x,i)=>{const a=linkCard(x,"topic-row");a.prepend(node("span","topic-index",String(i+1).padStart(2,"0")));return a}));$("chapter-connections").replaceChildren(...rs.map(x=>linkCard(x,"connection")));show("chapter")}
+function renderQuestions(){const q=search.toLowerCase();const items=[...data.cases.map(x=>({...byId.get("case:"+x.id),questionKind:"engineering"})),...data.topics.filter(x=>x.recall?.question).map(x=>({...byId.get("topic:"+x.id),questionKind:"concept"}))].filter(x=>(qfilter==="all"||x.questionKind===qfilter)&&matches(x,q));$("question-count").textContent=items.length+" 个已关联的问题";const host=$("question-list");host.replaceChildren();for(const x of items){const a=node("a","question-card");a.href=slug(x.type,x.id);a.append(node("span","question-kind",x.questionKind==="engineering"?"工程 / 诊断":"概念 / 面试"),node("strong","",x.questionKind==="concept"?x.recall.question:x.title),node("p","",x.summary));host.append(a)}if(!items.length)host.append(node("p","empty","没有找到相关问题。"));setButtons("question-filters","qfilter",qfilter);show("questions")}
+function renderLibrary(){const items=all.filter(x=>(lfilter==="all"||x.type===lfilter)&&matches(x,search));$("library-count").textContent=items.length+" 项内容";$("library-list").replaceChildren(...items.map(x=>linkCard(x)));if(!items.length)$("library-list").append(node("p","empty","没有匹配内容。"));setButtons("library-filters","filter",lfilter);show("library")}
+function setButtons(id,key,value){$(id).querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset[key]===value)))}
+function renderRelated(x){const list=unique(relations(x));$("related-list").replaceChildren(...list.map(v=>linkCard(v,"connection")));$("related").hidden=!list.length}
+function renderLab(x){const host=$("lab");host.hidden=true;const frame=$("lab-frame");frame.removeAttribute("src");let lab=x.type==="topic"?labByTopic[x.id]:null;if(!lab&&x.type==="topic"&&x.chapter==="parallel")lab={label:"并行配置与显存",url:"labs/rl-memory.html"};if(!lab)return;host.hidden=false;$("lab-description").textContent=lab.label+"。这里的参数模型用于理解机制，不能替代真实 GPU Benchmark。";$("lab-open").href=lab.url;frame.title=lab.label;frame.src=lab.url}
+function renderDetail(type,id){const x=byId.get(type+":"+id);if(!x)return renderHome();const bc=$("breadcrumbs");bc.replaceChildren();const home=node("a","","知识地图");home.href="#";bc.append(home,node("span",""," / "));if(x.type==="topic"){const c=chapterById.get(x.chapter);const a=node("a","",c?.title||"知识");a.href="#chapter="+x.chapter;bc.append(a,node("span",""," / "))}bc.append(node("span","",x.title));$("detail-type").textContent=kinds[x.type][1]+(x.framework?" / "+x.framework:"");$("detail-title").textContent=x.title;$("detail-summary").textContent=x.summary;$("article").innerHTML=x.html||"<p>暂无正文。</p>";
+const quick=$("detail-quick");quick.hidden=true;quick.replaceChildren();if(x.type==="topic"&&x.recall?.question){quick.hidden=false;quick.append(node("span","quick-label","想一想 · 不用写答案"),node("strong","",x.recall.question));const d=node("details");d.append(node("summary","","查看思路"),node("p","",x.recall.answer));quick.append(d)}
+const toc=$("toc");toc.replaceChildren();$("article").querySelectorAll("h2,h3").forEach((h,i)=>{const id="section-"+i;h.id=id;const a=node("a",h.tagName==="H3"?"sub":"",h.textContent);a.href="#"+id;a.addEventListener("click",e=>{e.preventDefault();h.scrollIntoView({behavior:"smooth"});history.replaceState(null,"",slug(type,x.id))});toc.append(a)});
+renderRelated(x);renderLab(x);show("detail");if(window.MathJax?.typesetPromise)window.MathJax.typesetPromise([$("article")]).catch(()=>{})}
+function show(id){document.querySelectorAll(".view").forEach(x=>x.hidden=x.id!==id);document.querySelectorAll("[data-nav]").forEach(a=>{const active=(id==="home"&&a.dataset.nav==="map")||(id==="questions"&&a.dataset.nav==="questions")||(id==="library"&&a.dataset.nav==="library");if(active)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});$("chapter-list").querySelectorAll("a").forEach(a=>a.classList.toggle("active",id==="chapter"&&location.hash==="#chapter="+a.dataset.chapter));document.title=(id==="detail"?$("detail-title").textContent+" · ":"")+"RL Infra · 知识工作台";$("side").classList.remove("show");$("menu-toggle").setAttribute("aria-expanded","false");window.scrollTo(0,0)}
+function renderHome(){show("home")}
+function route(){const p=new URLSearchParams(location.hash.slice(1));for(const type of Object.keys(kinds))if(p.has(type))return renderDetail(type,p.get(type));if(p.has("chapter"))return renderChapter(p.get("chapter"));if(p.get("view")==="questions")return renderQuestions();if(p.get("view")==="library")return renderLibrary();renderHome()}
+renderSidebar();renderMap();document.querySelectorAll("[data-home]").forEach(x=>x.addEventListener("click",()=>{location.hash="";route()}));$("menu-toggle").addEventListener("click",()=>{const open=$("side").classList.toggle("show");$("menu-toggle").setAttribute("aria-expanded",String(open))});
+$("question-filters").addEventListener("click",e=>{const b=e.target.closest("[data-qfilter]");if(b){qfilter=b.dataset.qfilter;renderQuestions()}});$("library-filters").addEventListener("click",e=>{const b=e.target.closest("[data-filter]");if(b){lfilter=b.dataset.filter;renderLibrary()}});
+$("search").addEventListener("input",e=>{search=e.target.value.trim();$("search-status").textContent=search?"检索中 · "+search:"";if(search){if(location.hash!=="#view=library")location.hash="#view=library";else renderLibrary()}else route()});
+document.addEventListener("keydown",e=>{if(e.key==="/"&&!["INPUT","TEXTAREA"].includes(document.activeElement?.tagName)&&!e.metaKey&&!e.ctrlKey){e.preventDefault();$("search").focus()}if(e.key==="Escape")$("search").blur()});
+window.addEventListener("hashchange",route);route()})();
