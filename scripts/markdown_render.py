@@ -12,7 +12,7 @@ import html
 import mimetypes
 import re
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import unquote, urlparse, quote
 
 import markdown
 from pymdownx import slugs
@@ -69,7 +69,15 @@ def render_markdown(source: Path, root: Path, drop_title: bool = True) -> str:
         relative = referenced.relative_to(root.resolve()).as_posix()
         fragment = urlparse(html.unescape(match.group(2))).fragment
         destination = f"https://github.com/{REPOSITORY}/blob/main/{relative}"
-        if fragment:
+        parts = Path(relative).parts
+        if len(parts) == 3 and parts[0] == "knowledge" and parts[1] in ("topics", "cases", "implementations"):
+            kind = {"topics": "topic", "cases": "case", "implementations": "implementation"}[parts[1]]
+            destination = f"#{kind}={Path(relative).stem}"
+            if fragment:
+                destination += "&anchor=" + quote(fragment)
+        elif parts[0] == "labs":
+            destination = relative + ("#" + fragment if fragment else "")
+        elif fragment:
             destination += "#" + fragment
         return f'{match.group(1)}{html.escape(destination, quote=True)}{match.group(3)}'
 

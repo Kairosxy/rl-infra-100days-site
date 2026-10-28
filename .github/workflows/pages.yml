@@ -32,6 +32,27 @@ jobs:
         run: python scripts/build_quiz.py --output dist/quiz/index.html
       - name: Validate knowledge graph, question bank and public boundary
         run: python -m unittest discover -s scripts -p 'test_*.py' -v
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Mechanism and review regression checks
+        run: node scripts/test_mechanisms.js
+      - name: Check every published inline and external script
+        run: python scripts/check_scripts.py dist
+      - name: Install browser test runner
+        run: |
+          python -m pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Browser regression and responsive screenshots
+        run: python scripts/browser_smoke.py --dist dist --output test-artifacts
+      - name: Save browser acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rl-infra-browser-acceptance
+          path: test-artifacts
+          retention-days: 14
+          if-no-files-found: warn
       - name: Check browser JavaScript syntax
         run: |
           node --check quiz/app.js
@@ -66,6 +87,11 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v4
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Verify live release identity
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: python scripts/verify_deployment.py --url "$PAGE_URL" --sha "$GITHUB_SHA"

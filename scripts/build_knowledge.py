@@ -7,12 +7,15 @@ graph. Archived courses and local answer records are built independently.
 from __future__ import annotations
 
 import argparse
+import os
+from datetime import datetime, timezone
 import json
 import re
 import shutil
 from pathlib import Path
 
 from markdown_render import render_markdown
+from product_data import enrich_payload
 from site_nav import NAV_CSS, nav_markup
 
 GROUPS = ("topics", "cases", "implementations")
@@ -98,11 +101,12 @@ def generate_knowledge(root: Path, output: Path) -> int:
     for index, question in enumerate(questions, 1):
         if question.get("code") != f"Q{index:03d}" or question.get("topic") not in known_topics:
             raise ValueError(f"Invalid question linkage at Q{index:03d}")
-    catalog["question_bank"] = questions
+    enrich_payload(root, catalog, bank)
+    catalog["build"] = {"commit": os.environ.get("GITHUB_SHA", "local"), "created_at": datetime.now(timezone.utc).isoformat()}
     site = root / "knowledge" / "site"
     html = (site / "index.html").read_text(encoding="utf-8")
     css = (site / "style.css").read_text(encoding="utf-8")
-    js = (site / "app.js").read_text(encoding="utf-8")
+    js = "\n".join((site / name).read_text(encoding="utf-8") for name in ("core.js", "experiments.js", "app.js"))
     data = json.dumps(catalog, ensure_ascii=False, separators=(",", ":"))
     data = (data.replace("<", r"\u003c").replace(">", r"\u003e")
                 .replace("&", r"\u0026").replace("\u2028", r"\u2028")
@@ -119,6 +123,7 @@ def generate_knowledge(root: Path, output: Path) -> int:
     html = html.replace('<div class="legacy-nav" hidden>{{SITE_NAV}}</div>', "")
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(html, encoding="utf-8")
+    (output.parent / "build-info.json").write_text(json.dumps({**catalog["build"], "topics": len(catalog["topics"]), "questions": len(questions)}, ensure_ascii=False), encoding="utf-8")
     # Interactive labs are a supporting page of the knowledge site.
     labs_source = root / "labs"
     if labs_source.is_dir():

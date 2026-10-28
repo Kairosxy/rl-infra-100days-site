@@ -1,0 +1,40 @@
+{
+  "schema": "rl-infra-learning-map-v1",
+  "system_flow": [
+    {"title":"数据与组","detail":"Prompt / group","topic":"ppo-grpo"},
+    {"title":"生成与交互","detail":"Rollout / tools","topic":"kv-scheduling"},
+    {"title":"评分","detail":"Reward / verifier","topic":"agent-action"},
+    {"title":"概率与优势","detail":"Logprob / advantage","topic":"logprob-contract"},
+    {"title":"训练与权重","detail":"Update / sync","topic":"rl-parallel-planning"}
+  ],
+  "paths": [
+    {"title":"先读懂一次 RL 更新","goal":"说清 Reward、Logprob、Advantage 和版本之间的关系。","topics":["policy-gradient","ppo-grpo","logprob-contract","async-rollout"]},
+    {"title":"配置多机多卡","goal":"先查容量和通信，再比较性能。","topics":["distributed-collectives","parallel-topology","tp-matrix-communication","pp-pipeline-bubble","ep-token-routing","cp-sp-attention","training-sharding","serving-parallelism","rl-parallel-planning"]},
+    {"title":"排查训推差异与长尾","goal":"从概率契约到精度、路由与系统时间线。","topics":["logprob-contract","fp8-numerics","moe-router","kv-scheduling","rl-throughput","evidence-standards"]}
+  ],
+  "prerequisites": {
+    "ppo-grpo":["policy-gradient"],"logprob-contract":["policy-gradient"],"parallel-topology":["distributed-collectives"],"tp-matrix-communication":["distributed-collectives"],"pp-pipeline-bubble":["distributed-collectives"],"ep-token-routing":["moe-router","distributed-collectives"],"cp-sp-attention":["tp-matrix-communication"],"training-sharding":["distributed-collectives"],"serving-parallelism":["tp-matrix-communication","kv-scheduling"],"rl-parallel-planning":["parallel-topology","training-sharding","serving-parallelism"],"fp8-numerics":["logprob-contract"],"async-rollout":["ppo-grpo","logprob-contract"],"opd-kl":["logprob-contract"],"rl-throughput":["kv-scheduling","parallel-topology"]
+  },
+  "experiments": [
+    {"entry":"topic:tp-matrix-communication","type":"tp","after":"从一个矩阵开始"},
+    {"entry":"topic:tp-matrix-communication","type":"cost","after":"计算、显存、通信"},
+    {"entry":"topic:pp-pipeline-bubble","type":"pp","after":"为什么拆层"},
+    {"entry":"topic:ep-token-routing","type":"ep","after":"通信与长尾"},
+    {"entry":"topic:parallel-topology","type":"topology","after":"贯穿示例"},
+    {"entry":"topic:distributed-collectives","type":"collective","after":"四个必须分清"},
+    {"entry":"topic:cp-sp-attention","type":"context","after":"SP 与 CP"},
+    {"entry":"topic:training-sharding","type":"sharding","after":"三类状态"},
+    {"entry":"topic:rl-parallel-planning","type":"memory","after":"第一步"},
+    {"entry":"topic:serving-parallelism","type":"cost","after":"三个并行"},
+    {"entry":"implementation:parallel-config-workbook","type":"memory","after":"先算容量"},
+    {"entry":"implementation:megatron-parallel-groups","type":"topology","after":"先看拓扑"},
+    {"entry":"topic:policy-gradient","type":"policy","after":"推导成立"},
+    {"entry":"topic:policy-gradient","type":"baseline","after":"代码里"},
+    {"entry":"topic:logprob-contract","type":"mask","after":"快速反例"},
+    {"entry":"topic:ppo-grpo","type":"ppo","after":"真正影响"},
+    {"entry":"topic:ppo-grpo","type":"grpo","after":"GRPO 换掉"}
+  ],
+  "question_links": {
+    "Q003":["ppo-grpo"],"Q004":["logprob-contract","async-rollout"],"Q005":["ppo-grpo"],"Q008":["opd-kl"],"Q017":["policy-gradient"],"Q021":["ppo-grpo"],"Q022":["ppo-grpo"],"Q033":["opd-kl","ppo-grpo"],"Q034":["opd-kl"],"Q039":["ppo-grpo"],"Q054":["kv-scheduling","async-rollout"],"Q073":["logprob-contract"],"Q074":["fp8-numerics","logprob-contract"],"Q076":["kv-scheduling","logprob-contract"],"Q077":["fp8-numerics"],"Q078":["fp8-numerics"],"Q080":["fp8-numerics","rl-throughput"],"Q081":["parallel-topology"],"Q082":["moe-router"],"Q083":["ppo-grpo","parallel-topology"],"Q084":["pp-pipeline-bubble","rl-throughput"],"Q085":["rl-parallel-planning"],"Q086":["tp-matrix-communication","serving-parallelism"],"Q087":["distributed-collectives","rl-throughput"],"Q088":["rl-parallel-planning"],"Q090":["agent-action","async-rollout"],"Q091":["rl-parallel-planning","async-rollout"],"Q094":["async-rollout"],"Q100":["logprob-contract"],"Q101":["async-rollout","rl-throughput"],"Q103":["training-sharding","kv-scheduling"],"Q120":["ppo-grpo","parallel-topology"],"Q132":["ppo-grpo","parallel-topology"],"Q147":["opd-kl","training-sharding"],"Q148":["tp-matrix-communication","opd-kl"],"Q175":["moe-router","ep-token-routing"],"Q176":["ep-token-routing","tp-matrix-communication","distributed-collectives"],"Q177":["cp-sp-attention"],"Q178":["cp-sp-attention"],"Q179":["ppo-grpo","parallel-topology"],"Q180":["logprob-contract","cp-sp-attention"],"Q181":["training-sharding"],"Q182":["pp-pipeline-bubble"],"Q183":["distributed-collectives","rl-throughput"],"Q184":["rl-parallel-planning"],"Q185":["logprob-contract"],"Q186":["logprob-contract"],"Q187":["logprob-contract"],"Q188":["kv-scheduling","logprob-contract"],"Q189":["kv-scheduling","logprob-contract"],"Q190":["kv-scheduling","fp8-numerics"],"Q192":["logprob-contract"],"Q193":["kv-scheduling","async-rollout"],"Q194":["logprob-contract"],"Q198":["training-sharding","cp-sp-attention"],"Q200":["training-sharding"],"Q201":["training-sharding","kv-scheduling"],"Q202":["training-sharding"],"Q203":["rl-throughput"],"Q204":["evidence-standards","rl-throughput"],"Q212":["logprob-contract"],"Q216":["agent-action","async-rollout"],"Q217":["async-rollout"],"Q219":["evidence-standards"]
+  }
+}
