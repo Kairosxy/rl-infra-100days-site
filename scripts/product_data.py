@@ -23,7 +23,8 @@ def enrich_payload(root: Path, catalog: dict, bank: dict) -> dict:
         require([stage['topic']])
     prereq = meta.get('prerequisites', {})
     for topic, ids in prereq.items():
-        require([topic]); require(ids)
+        require([topic])
+        require(ids)
     visiting, visited = set(), set()
     def visit(topic):
         if topic in visiting:
@@ -33,7 +34,8 @@ def enrich_payload(root: Path, catalog: dict, bank: dict) -> dict:
         visiting.add(topic)
         for predecessor in prereq.get(topic, []):
             visit(predecessor)
-        visiting.remove(topic); visited.add(topic)
+        visiting.remove(topic)
+        visited.add(topic)
     for topic in topics:
         visit(topic)
     for experiment in meta.get('experiments', []):
