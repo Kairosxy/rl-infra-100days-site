@@ -18,6 +18,8 @@ Rollout 开始时使用 v10 权重，Trainer 可能已更新到 v11。记录在�
 
 构造两个 Group 的完成时间：A 在 3s 完整，B 在 10s 完整。同步外层筛选必须等到 10s；异步供给可以在 3s 对 A 做组内统计，但**能否立刻执行训练更新**还取决于 Mini-batch、版本和资源。统计“可更早处理”不等于测得“端到端必定加速”。
 
+![两个 Group 的就绪时间与同步、异步筛选边界](../assets/async-rollout/group-readiness.svg)
+
 建议至少记录 Accepted Groups、Inflight、Rejected、Policy Version Gap、Drain Time 和 GPU Busy Time。没有这几项，只有 Step Time 的对照很难解释结果。
 
 ## Partial Rollout：版本年龄与概率偏移

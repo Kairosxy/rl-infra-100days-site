@@ -39,7 +39,7 @@
     const lookup = new Map(items.map(x => [key(x), x]));
     function topicsOf(item) { return item.type === 'topic' ? [item.id] : (item.topics || []); }
     function inChapter(item, id) {
-      return !id || topicsOf(item).some(t => lookup.get('topic:' + t)?.chapter === id);
+      return !id || (id === 'frameworks' && item.type === 'implementation') || topicsOf(item).some(t => lookup.get('topic:' + t)?.chapter === id);
     }
     function inSection(item, id) {
       return !id || topicsOf(item).some(t => topicSection.get(t) === id);

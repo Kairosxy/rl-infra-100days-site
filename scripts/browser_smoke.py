@@ -118,6 +118,7 @@ def main():
             page.locator('#questions input[type=file]').set_input_files({'name':'invalid.json','mimeType':'application/json','buffer':json.dumps(incoming).encode()})
             page.wait_for_timeout(80)
             check(page.evaluate('(key)=>JSON.parse(localStorage.getItem(key))',KEY)==stored,'invalid import is atomic and does not change stored data')
+            page.locator('.review-panel summary').click()
             with page.expect_download() as download_info:
                 page.locator('#questions .review-tools button').first.click()
             download_info.value.save_as(args.output/'review-roundtrip.json')
