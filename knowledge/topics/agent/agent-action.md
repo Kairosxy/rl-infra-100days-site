@@ -8,6 +8,6 @@
 
 一个有效的最小 Agent Loop 要能验证工具结果与正确 Trial/Trajectory 的 ID 关联、异常是否影响 Reward、工具重试是否幂等、环境是否在不同采样之间污染。不要因为 Harness 能执行工具就默认满足 RL 所需的数据契约。
 
-当 Agent Harness 与 RL Trainer 分离时，训练侧真正依赖的是可追溯的 Action / Observation / Reward 序列，而不是某个 ReAct 框架内部类名。
+Agent Harness 与 RL Trainer 分离时，接口需要提供可追溯的 Action / Observation / Reward 序列，并与具体 ReAct 实现的内部类名解耦。
 
 参考：[Agent Lightning](https://github.com/microsoft/agent-lightning)；[verl Agentic RL 文档](https://verl.readthedocs.io/en/latest/advance/agent_loop.html)。

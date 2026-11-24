@@ -7,10 +7,54 @@
       "description": "",
       "sections": [
         {
+          "id": "math-foundations",
+          "title": "数学与优化基础",
+          "topics": [
+            "tensor-autograd",
+            "probability-information"
+          ]
+        },
+        {
+          "id": "token-representation",
+          "title": "Token 与表示",
+          "topics": [
+            "token-representation"
+          ]
+        },
+        {
           "id": "model-1",
           "title": "模型前向与注意力",
           "topics": [
-            "transformer-attention"
+            "transformer-attention",
+            "attention-context"
+          ]
+        },
+        {
+          "id": "model-capacity",
+          "title": "模型容量与条件计算",
+          "topics": [
+            "model-moe"
+          ]
+        },
+        {
+          "id": "multimodal-models",
+          "title": "多模态理解与 Omni",
+          "topics": [
+            "multimodal-models"
+          ]
+        },
+        {
+          "id": "generative-models",
+          "title": "生成模型",
+          "topics": [
+            "generative-models"
+          ]
+        },
+        {
+          "id": "embodied-world-models",
+          "title": "具身策略与世界模型",
+          "topics": [
+            "embodied-world-models"
           ]
         }
       ]
@@ -20,6 +64,34 @@
       "title": "GPU 与分布式计算基础",
       "description": "",
       "sections": [
+        {
+          "id": "gpu-execution",
+          "title": "GPU 执行与存储",
+          "topics": [
+            "gpu-execution-memory"
+          ]
+        },
+        {
+          "id": "cuda-execution",
+          "title": "异步执行与编译",
+          "topics": [
+            "cuda-streams"
+          ]
+        },
+        {
+          "id": "gpu-sharing",
+          "title": "GPU 资源共享与隔离",
+          "topics": [
+            "gpu-resource-sharing"
+          ]
+        },
+        {
+          "id": "gpu-network",
+          "title": "网络与集群拓扑",
+          "topics": [
+            "gpu-network-topology"
+          ]
+        },
         {
           "id": "parallel-1",
           "title": "通信原语",
@@ -34,6 +106,13 @@
       "title": "大模型分布式训练",
       "description": "",
       "sections": [
+        {
+          "id": "training-lifecycle",
+          "title": "训练流程与优化器",
+          "topics": [
+            "training-update-lifecycle"
+          ]
+        },
         {
           "id": "parallel-topology",
           "title": "并行拓扑",
@@ -72,11 +151,39 @@
       "description": "",
       "sections": [
         {
+          "id": "serving-generation",
+          "title": "自回归生成与采样",
+          "topics": [
+            "autoregressive-serving"
+          ]
+        },
+        {
           "id": "serving-1",
           "title": "缓存与推理并行",
           "topics": [
             "kv-scheduling",
             "serving-parallelism"
+          ]
+        },
+        {
+          "id": "context-lifecycle",
+          "title": "Agent 上下文生命周期",
+          "topics": [
+            "agent-context-lifecycle"
+          ]
+        },
+        {
+          "id": "speculative-decoding",
+          "title": "投机解码",
+          "topics": [
+            "speculative-decoding"
+          ]
+        },
+        {
+          "id": "test-time-compute",
+          "title": "推理时计算与搜索",
+          "topics": [
+            "test-time-compute"
           ]
         }
       ]
@@ -87,6 +194,14 @@
       "description": "",
       "sections": [
         {
+          "id": "rl-foundations",
+          "title": "强化学习基础与价值估计",
+          "topics": [
+            "mdp-value-return",
+            "gae-bootstrap"
+          ]
+        },
+        {
           "id": "rl-1",
           "title": "策略优化",
           "topics": [
@@ -95,10 +210,45 @@
           ]
         },
         {
+          "id": "off-policy-estimation",
+          "title": "离策略估计",
+          "topics": [
+            "importance-sampling"
+          ]
+        },
+        {
+          "id": "feedback-preference",
+          "title": "反馈范式与偏好优化",
+          "topics": [
+            "posttraining-feedback"
+          ]
+        },
+        {
           "id": "distill-1",
           "title": "蒸馏与混合优化",
           "topics": [
             "opd-kl"
+          ]
+        },
+        {
+          "id": "adaptive-sampling",
+          "title": "自适应采样与树形探索",
+          "topics": [
+            "adaptive-rollout-search"
+          ]
+        },
+        {
+          "id": "continuous-posttraining",
+          "title": "生成与连续动作后训练",
+          "topics": [
+            "continuous-action-posttraining"
+          ]
+        },
+        {
+          "id": "self-improvement",
+          "title": "持续学习与自我改进",
+          "topics": [
+            "self-improvement-loop"
           ]
         }
       ]
@@ -109,10 +259,24 @@
       "description": "",
       "sections": [
         {
-          "id": "async-1",
-          "title": "异步数据与版本",
+          "id": "rl-data-cycle",
+          "title": "RL 数据循环与接口",
           "topics": [
-            "async-rollout"
+            "rl-data-cycle"
+          ]
+        },
+        {
+          "id": "trajectory-data-plane",
+          "title": "分布式轨迹数据面",
+          "topics": [
+            "ray-data-runtime"
+          ]
+        },
+        {
+          "id": "feedback-services",
+          "title": "评分与教师服务",
+          "topics": [
+            "feedback-services"
           ]
         },
         {
@@ -120,6 +284,20 @@
           "title": "训推资源规划",
           "topics": [
             "rl-parallel-planning"
+          ]
+        },
+        {
+          "id": "weight-publication",
+          "title": "权重传输与策略发布",
+          "topics": [
+            "weight-publication"
+          ]
+        },
+        {
+          "id": "async-1",
+          "title": "异步数据与版本",
+          "topics": [
+            "async-rollout"
           ]
         }
       ]
@@ -130,10 +308,31 @@
       "description": "",
       "sections": [
         {
+          "id": "agent-harness",
+          "title": "Harness 与环境交互",
+          "topics": [
+            "agent-harness-environment"
+          ]
+        },
+        {
           "id": "agent-1",
           "title": "交互与轨迹",
           "topics": [
             "agent-action"
+          ]
+        },
+        {
+          "id": "long-horizon-credit",
+          "title": "长时程任务与信用分配",
+          "topics": [
+            "long-horizon-credit"
+          ]
+        },
+        {
+          "id": "environment-collection",
+          "title": "环境与并行采集",
+          "topics": [
+            "parallel-environment-collection"
           ]
         }
       ]
@@ -147,7 +346,15 @@
           "id": "learner-2",
           "title": "低精度计算",
           "topics": [
+            "floating-point-quantization",
             "fp8-numerics"
+          ]
+        },
+        {
+          "id": "kernel-optimization",
+          "title": "算子与编译优化",
+          "topics": [
+            "kernel-optimization"
           ]
         },
         {
@@ -168,7 +375,8 @@
           "id": "learner-1",
           "title": "概率与目标",
           "topics": [
-            "logprob-contract"
+            "logprob-contract",
+            "policy-correction"
           ]
         },
         {
@@ -176,6 +384,20 @@
           "title": "路由一致性",
           "topics": [
             "moe-router"
+          ]
+        },
+        {
+          "id": "gradient-safety",
+          "title": "更新等价性与梯度安全",
+          "topics": [
+            "gradient-equivalence"
+          ]
+        },
+        {
+          "id": "training-faults",
+          "title": "训练稳定与分布式容错",
+          "topics": [
+            "distributed-fault-recovery"
           ]
         }
       ]
@@ -203,6 +425,13 @@
           "title": "实验与证据",
           "topics": [
             "evidence-standards"
+          ]
+        },
+        {
+          "id": "resource-observability",
+          "title": "资源设计与可观测",
+          "topics": [
+            "performance-measurement"
           ]
         }
       ]
@@ -724,7 +953,7 @@
       "id": "technology-lineage",
       "title": "RL Infra 技术谱系与演进",
       "chapter": "research",
-      "summary": "按十一章审查 58 个技术家族，明确上位问题、演进分支、当前正文和覆盖缺口；吸收日程中的可公开验证技术增量。",
+      "summary": "58 个技术家族的核心问题、机制分支与阅读入口，按十一章组织。",
       "recall": {
         "question": "为什么技术谱系不能按热门论文名称平铺？",
         "answer": "模型结构、训练目标、估计器和运行时实现属于不同层级；先确定共同问题，再比较机制和证据。",
@@ -747,6 +976,948 @@
       "cases": [],
       "implementations": [],
       "source": "topics/research/technology-lineage.md"
+    },
+    {
+      "id": "tensor-autograd",
+      "title": "张量、矩阵乘法与自动微分",
+      "chapter": "model",
+      "summary": "从矩阵乘法、计算图和链式法则理解梯度、参数更新及激活显存。",
+      "recall": {
+        "question": "为什么只知道一个 Token 的 logprob 数值不能直接得到参数梯度？",
+        "answer": "数值只记录前向结果，参数梯度依赖当前可微计算图中的局部导数和链式法则。",
+        "spoken": "数值只记录前向结果，参数梯度依赖当前可微计算图中的局部导数和链式法则。"
+      },
+      "keywords": [
+        "tensor",
+        "GEMM",
+        "autograd",
+        "backward",
+        "gradient",
+        "激活"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/model/tensor-autograd.md"
+    },
+    {
+      "id": "probability-information",
+      "title": "概率、Logprob 与信息量",
+      "chapter": "model",
+      "summary": "用同一个离散分布推导条件概率、期望、Softmax、交叉熵、Entropy 和 KL。",
+      "recall": {
+        "question": "为什么一个采样 Token 的 log-ratio 可以为负，而 KL 不能为负？",
+        "answer": "KL 是在指定分布下对 log-ratio 取完整期望；单样本值是随机量。",
+        "spoken": "KL 是在指定分布下对 log-ratio 取完整期望；单样本值是随机量。"
+      },
+      "keywords": [
+        "probability",
+        "softmax",
+        "logprob",
+        "entropy",
+        "KL",
+        "cross entropy",
+        "期望",
+        "方差"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/model/probability-information.md"
+    },
+    {
+      "id": "token-representation",
+      "title": "Tokenizer、Embedding 与语言模型训练目标",
+      "chapter": "model",
+      "summary": "解释文本如何成为 token ID、向量、logits 与 next-token loss，区分多模态表示。",
+      "recall": {
+        "question": "为什么位置 t 的 logits 不能直接与位置 t 的 token ID 计算自回归 Loss？",
+        "answer": "Causal LM 的第 t 个输出条件于截至 t 的输入，预测的是下一个 token；标签需要移位。",
+        "spoken": "Causal LM 的第 t 个输出条件于截至 t 的输入，预测的是下一个 token；标签需要移位。"
+      },
+      "keywords": [
+        "tokenizer",
+        "BPE",
+        "embedding",
+        "LM head",
+        "causal shift",
+        "SFT",
+        "multimodal"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/model/token-representation.md"
+    },
+    {
+      "id": "model-moe",
+      "title": "Dense、MoE 与模型容量",
+      "chapter": "model",
+      "summary": "区分总参数、激活参数、路由概率、Expert 计算、负载均衡与 EP 的实现边界。",
+      "recall": {
+        "question": "MoE 只激活两个专家，为什么显存仍可能比 Dense 更大？",
+        "answer": "激活参数决定每 token 的一部分计算量，但所有常驻专家权重及训练状态仍占存储。",
+        "spoken": "激活参数决定每 token 的一部分计算量，但所有常驻专家权重及训练状态仍占存储。"
+      },
+      "keywords": [
+        "dense",
+        "MoE",
+        "expert",
+        "router",
+        "top-k",
+        "capacity",
+        "activated parameters"
+      ],
+      "cases": [
+        "moe-router-mismatch"
+      ],
+      "implementations": [
+        "megatron-parallel-groups"
+      ],
+      "source": "topics/model/model-moe.md"
+    },
+    {
+      "id": "gpu-execution-memory",
+      "title": "GPU 执行模型、显存与算术强度",
+      "chapter": "compute",
+      "summary": "从 SM、Warp、Tensor Core 与存储层级推导 GEMM 的计算/访存成本。",
+      "recall": {
+        "question": "为什么同一个模型的 Prefill 与小 Batch Decode 可能受不同瓶颈限制？",
+        "answer": "权重可复用程度和有效算术强度不同，Decode 常有较低的矩阵维度和更多串行访存/启动成本。",
+        "spoken": "权重可复用程度和有效算术强度不同，Decode 常有较低的矩阵维度和更多串行访存/启动成本。"
+      },
+      "keywords": [
+        "SM",
+        "warp",
+        "tensor core",
+        "HBM",
+        "L2",
+        "shared memory",
+        "roofline",
+        "GEMM"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/compute/gpu-execution-memory.md"
+    },
+    {
+      "id": "cuda-streams",
+      "title": "CUDA Stream、Event 与异步执行",
+      "chapter": "compute",
+      "summary": "区分 CPU 提交、GPU 完成、跨 Stream 依赖、真实重叠与 CUDA Graph。",
+      "recall": {
+        "question": "为什么 CPU 上测一次 CUDA 调用耗时，通常不等于 Kernel 执行时间？",
+        "answer": "调用可能仅把工作提交到 Stream，CPU 返回时 GPU 尚未完成；必须选择正确同步或 Event 边界。",
+        "spoken": "调用可能仅把工作提交到 Stream，CPU 返回时 GPU 尚未完成；必须选择正确同步或 Event 边界。"
+      },
+      "keywords": [
+        "CUDA",
+        "stream",
+        "event",
+        "async",
+        "synchronize",
+        "CUDA graph",
+        "overlap"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/compute/cuda-streams.md"
+    },
+    {
+      "id": "gpu-network-topology",
+      "title": "PCIe、NVLink、RDMA 与集群通信",
+      "chapter": "compute",
+      "summary": "识别节点内外通信路径、有效带宽、时延、GPU Direct 与通信拓扑。",
+      "recall": {
+        "question": "为什么相同 64 MiB 的 All-Reduce 换了 Rank 放置后耗时可能不同？",
+        "answer": "实际链路、拓扑、共享带宽、同步及 Collective 算法变化，消息大小只是成本的一项。",
+        "spoken": "实际链路、拓扑、共享带宽、同步及 Collective 算法变化，消息大小只是成本的一项。"
+      },
+      "keywords": [
+        "PCIe",
+        "NVLink",
+        "NVSwitch",
+        "RDMA",
+        "InfiniBand",
+        "RoCE",
+        "GPUDirect",
+        "NUMA"
+      ],
+      "cases": [],
+      "implementations": [
+        "parallel-config-workbook",
+        "megatron-parallel-groups"
+      ],
+      "source": "topics/compute/gpu-network-topology.md"
+    },
+    {
+      "id": "training-update-lifecycle",
+      "title": "从 DataLoader 到 Optimizer Step",
+      "chapter": "parallel",
+      "summary": "理解 SFT/预训练的 forward、backward、有效 batch、梯度累积、DDP、AdamW 与 checkpoint。",
+      "recall": {
+        "question": "每卡两个 Microbatch、不同有效 Token 数时，为什么不能简单平均两个 mean loss？",
+        "answer": "等权平均 Microbatch mean 与全局 token mean 不同；全局目标决定分子和分母的归约。",
+        "spoken": "等权平均 Microbatch mean 与全局 token mean 不同；全局目标决定分子和分母的归约。"
+      },
+      "keywords": [
+        "pretraining",
+        "SFT",
+        "DDP",
+        "microbatch",
+        "gradient accumulation",
+        "AdamW",
+        "checkpoint"
+      ],
+      "cases": [
+        "fsdp2-root-forward-oom"
+      ],
+      "implementations": [
+        "fsdp2-sharding"
+      ],
+      "source": "topics/parallel/training-update-lifecycle.md"
+    },
+    {
+      "id": "autoregressive-serving",
+      "title": "Prefill、Decode 与实际采样分布",
+      "chapter": "serving",
+      "summary": "跟踪请求的 token 生命周期、prefill/decode 计算、采样变换与延迟指标。",
+      "recall": {
+        "question": "为什么 Temperature、Top-p 不能只当成无关训练语义的推理参数？",
+        "answer": "它们改变实际行为分布，RL 的 behavior logprob 应对应真正生成动作的概率。",
+        "spoken": "它们改变实际行为分布，RL 的 behavior logprob 应对应真正生成动作的概率。"
+      },
+      "keywords": [
+        "prefill",
+        "decode",
+        "TTFT",
+        "TPOT",
+        "TBT",
+        "sampling",
+        "top-p",
+        "temperature",
+        "continuous batching"
+      ],
+      "cases": [
+        "kv-oom"
+      ],
+      "implementations": [
+        "sglang-scheduler",
+        "vllm-kv",
+        "sglang-vllm-parallel"
+      ],
+      "source": "topics/serving/autoregressive-serving.md"
+    },
+    {
+      "id": "mdp-value-return",
+      "title": "MDP、Return 与价值函数",
+      "chapter": "rl",
+      "summary": "从状态、动作、奖励和环境转移解释 Return、Bellman、V/Q、Advantage 与 MC/TD。",
+      "recall": {
+        "question": "Reward 和 Value 为什么不是同一个量？",
+        "answer": "Reward 是一次转移的反馈；Value 是从给定状态按策略继续执行时未来回报的期望。",
+        "spoken": "Reward 是一次转移的反馈；Value 是从给定状态按策略继续执行时未来回报的期望。"
+      },
+      "keywords": [
+        "MDP",
+        "POMDP",
+        "return",
+        "Bellman",
+        "value",
+        "Q",
+        "MC",
+        "TD",
+        "advantage"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/rl/mdp-value-return.md"
+    },
+    {
+      "id": "gae-bootstrap",
+      "title": "GAE：TD 误差、Bootstrap 与终止边界",
+      "chapter": "rl",
+      "summary": "逐步复算 TD residual 和 GAE，区分真正终止、外部截断与轨迹拼接边界。",
+      "recall": {
+        "question": "外部时间限制截断时，为什么可能需要保留下一状态 Value，却不能跨新 episode 递推 GAE？",
+        "answer": "Bootstrap 取决于是否真实终止；GAE 的连续递推还取决于样本是否属于同一条实际连续轨迹。",
+        "spoken": "Bootstrap 取决于是否真实终止；GAE 的连续递推还取决于样本是否属于同一条实际连续轨迹。"
+      },
+      "keywords": [
+        "GAE",
+        "TD",
+        "bootstrap",
+        "terminated",
+        "truncated",
+        "advantage",
+        "critic"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/rl/gae-bootstrap.md"
+    },
+    {
+      "id": "importance-sampling",
+      "title": "Importance Sampling、支持集与有效样本量",
+      "chapter": "rl",
+      "summary": "从换测度恒等式解释行为/目标分布、Token/Trajectory ratio、截断及 ESS。",
+      "recall": {
+        "question": "Top-p 截断丢掉了目标分布仍有概率的 Token，精确 IS 能恢复其贡献吗？",
+        "answer": "不能。精确换测度要求目标有质量的事件在行为分布下有支持；未采样的零概率区域不能靠重加权补回。",
+        "spoken": "不能。精确换测度要求目标有质量的事件在行为分布下有支持；未采样的零概率区域不能靠重加权补回。"
+      },
+      "keywords": [
+        "importance sampling",
+        "off-policy",
+        "behavior",
+        "ratio",
+        "support",
+        "ESS",
+        "V-trace"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/rl/importance-sampling.md"
+    },
+    {
+      "id": "posttraining-feedback",
+      "title": "SFT、RLHF、RLVR 与偏好优化",
+      "chapter": "rl",
+      "summary": "沿监督、偏好、Reward Model、Verifier 与在线 RL 区分反馈来源和优化目标。",
+      "recall": {
+        "question": "RLVR 与 GRPO 为什么不是互相替代的算法？",
+        "answer": "RLVR 说明奖励来自可验证信号；GRPO 定义组相对 Advantage 与策略优化方式，两者可组合。",
+        "spoken": "RLVR 说明奖励来自可验证信号；GRPO 定义组相对 Advantage 与策略优化方式，两者可组合。"
+      },
+      "keywords": [
+        "SFT",
+        "RLHF",
+        "RLVR",
+        "RLAIF",
+        "reward model",
+        "ORM",
+        "PRM",
+        "DPO",
+        "preference"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/rl/posttraining-feedback.md"
+    },
+    {
+      "id": "speculative-decoding",
+      "title": "投机解码：Draft、Verify 与技术分支",
+      "chapter": "serving",
+      "summary": "解释精确投机采样、接受概率、Block draft、MTP/EAGLE/DFlash 的关系和收益上限。",
+      "recall": {
+        "question": "为什么 Draft 的接受率很高，端到端吞吐仍可能下降？",
+        "answer": "每轮提交 Token 数要除以 Draft、Verify、KV 与调度成本；并发下验证宽度还可能损害吞吐。",
+        "spoken": "每轮提交 Token 数要除以 Draft、Verify、KV 与调度成本；并发下验证宽度还可能损害吞吐。"
+      },
+      "keywords": [
+        "speculative decoding",
+        "draft",
+        "verify",
+        "MTP",
+        "EAGLE",
+        "DFlash",
+        "acceptance"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/serving/speculative-decoding.md"
+    },
+    {
+      "id": "rl-data-cycle",
+      "title": "一次 RL 更新：模型角色与数据生命周期",
+      "chapter": "async",
+      "summary": "从 Prompt、Rollout、Reward、Logprob、Advantage 到 Learner 与权重发布定义同步 RL 基线。",
+      "recall": {
+        "question": "为什么 Rollout 完成不代表样本已经可以训练？",
+        "answer": "算法可能仍需要 reward、同组完整性、行为概率、价值与 advantage 等字段，且版本和 mask 必须一致。",
+        "spoken": "算法可能仍需要 reward、同组完整性、行为概率、价值与 advantage 等字段，且版本和 mask 必须一致。"
+      },
+      "keywords": [
+        "RL loop",
+        "rollout",
+        "learner",
+        "reward",
+        "reference",
+        "critic",
+        "teacher",
+        "trajectory",
+        "weight sync"
+      ],
+      "cases": [
+        "async-group-drain"
+      ],
+      "implementations": [
+        "verl-hybridflow",
+        "slime-data-buffer",
+        "areal-service"
+      ],
+      "source": "topics/async/rl-data-cycle.md"
+    },
+    {
+      "id": "ray-data-runtime",
+      "title": "Ray Task、Actor、ObjectRef 与队列背压",
+      "chapter": "async",
+      "summary": "理解远程执行、对象引用、资源预约、载荷传输、pending task 与背压。",
+      "recall": {
+        "question": "拿到 ObjectRef 是否说明数据已经在消费进程的 GPU 显存中？",
+        "answer": "不是。ObjectRef 代表远程结果或对象身份；其就绪、对象所在节点、序列化、跨节点与 H2D 都需分别确认。",
+        "spoken": "不是。ObjectRef 代表远程结果或对象身份；其就绪、对象所在节点、序列化、跨节点与 H2D 都需分别确认。"
+      },
+      "keywords": [
+        "Ray",
+        "actor",
+        "task",
+        "ObjectRef",
+        "object store",
+        "placement group",
+        "queue",
+        "backpressure"
+      ],
+      "cases": [
+        "async-group-drain"
+      ],
+      "implementations": [
+        "slime-data-buffer",
+        "areal-service"
+      ],
+      "source": "topics/async/ray-data-runtime.md"
+    },
+    {
+      "id": "agent-harness-environment",
+      "title": "Agent Harness、环境状态与工具执行",
+      "chapter": "agent",
+      "summary": "跟踪模型、Harness、Tool、Sandbox 和外部状态的多轮生命周期，解释失败与重试契约。",
+      "recall": {
+        "question": "为什么复制一条 Agent 的 Token 前缀不能保证从同一环境状态继续采样？",
+        "answer": "工具可能改变外部状态；会话、文件、随机状态及未完成调用需要单独 snapshot 或可重放契约。",
+        "spoken": "工具可能改变外部状态；会话、文件、随机状态及未完成调用需要单独 snapshot 或可重放契约。"
+      },
+      "keywords": [
+        "agent harness",
+        "environment",
+        "POMDP",
+        "tool call",
+        "sandbox",
+        "observation",
+        "snapshot",
+        "retry"
+      ],
+      "cases": [
+        "async-group-drain"
+      ],
+      "implementations": [],
+      "source": "topics/agent/agent-harness-environment.md"
+    },
+    {
+      "id": "floating-point-quantization",
+      "title": "浮点格式、量化与混合精度",
+      "chapter": "optimization",
+      "summary": "区分指数/尾数、舍入、FP16/BF16/FP8、整数与浮点量化、PTQ/QAT。",
+      "recall": {
+        "question": "BF16 与 FP16 都是 16 bit，为什么动态范围与数值精度不同？",
+        "answer": "两者指数位和尾数位分配不同；BF16 指数范围接近 FP32，但同量级的格点通常比 FP16 更粗。",
+        "spoken": "两者指数位和尾数位分配不同；BF16 指数范围接近 FP32，但同量级的格点通常比 FP16 更粗。"
+      },
+      "keywords": [
+        "FP32",
+        "BF16",
+        "FP16",
+        "FP8",
+        "FP4",
+        "INT8",
+        "quantization",
+        "PTQ",
+        "QAT",
+        "mixed precision"
+      ],
+      "cases": [
+        "fp8-logprob-drift"
+      ],
+      "implementations": [
+        "te-megatron-fp8"
+      ],
+      "source": "topics/optimization/floating-point-quantization.md"
+    },
+    {
+      "id": "gradient-equivalence",
+      "title": "Loss Reduction、梯度范数与更新一致性",
+      "chapter": "learner",
+      "summary": "区分逻辑梯度与物理分片，推导全局范数、AMP 顺序、NaN 与同步 Skip。",
+      "recall": {
+        "question": "一个梯度被两个 Rank 完整复制，计算全局 norm 时都平方求和会怎样？",
+        "answer": "同一逻辑梯度被重复计入，范数放大为 sqrt(2) 倍；应按唯一逻辑元素统计。",
+        "spoken": "同一逻辑梯度被重复计入，范数放大为 sqrt(2) 倍；应按唯一逻辑元素统计。"
+      },
+      "keywords": [
+        "gradient",
+        "loss reduction",
+        "global norm",
+        "clip",
+        "AMP",
+        "NaN",
+        "skip",
+        "determinism"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/learner/gradient-equivalence.md"
+    },
+    {
+      "id": "policy-correction",
+      "title": "训推一致性：差异来源与策略纠偏",
+      "chapter": "learner",
+      "summary": "分解同版本执行偏差与跨版本策略漂移，定位数值对齐、Replay、IS、Score Centering 与版本控制。",
+      "recall": {
+        "question": "R3、IS 和 Score Centering 分别修改什么？",
+        "answer": "R3 对齐专家选择路径，IS 改变样本的概率权重，Score Centering 处理行为分布下 Score 的非零期望偏置；三者不是同一修正。",
+        "spoken": "R3 对齐专家选择路径，IS 改变样本的概率权重，Score Centering 处理行为分布下 Score 的非零期望偏置；三者不是同一修正。"
+      },
+      "keywords": [
+        "TIM",
+        "training-inference mismatch",
+        "policy correction",
+        "R3",
+        "IS",
+        "TIS",
+        "Score Centering",
+        "staleness"
+      ],
+      "cases": [
+        "fp8-logprob-drift",
+        "moe-router-mismatch",
+        "ppo-clip-kl"
+      ],
+      "implementations": [
+        "nemo-router-replay"
+      ],
+      "source": "topics/learner/policy-correction.md"
+    },
+    {
+      "id": "performance-measurement",
+      "title": "性能测量、关键路径与资源效率",
+      "chapter": "research",
+      "summary": "以实际时间轴、吞吐分母、GPU-time、p99 和可控 A/B 评估系统改动。",
+      "recall": {
+        "question": "Rollout Tokens/s 提升 2 倍，为什么不能据此宣称 RL 训练吞吐提升 2 倍？",
+        "answer": "Learner、Reward、权重发布、在途废弃与资源数量可能改变；有效训练吞吐需按完整时间和资源核算。",
+        "spoken": "Learner、Reward、权重发布、在途废弃与资源数量可能改变；有效训练吞吐需按完整时间和资源核算。"
+      },
+      "keywords": [
+        "profiling",
+        "GPU-time",
+        "throughput",
+        "p99",
+        "SLO",
+        "benchmark",
+        "A/B",
+        "critical path"
+      ],
+      "cases": [
+        "rl-step-longtail"
+      ],
+      "implementations": [],
+      "source": "topics/research/performance-measurement.md"
+    },
+    {
+      "id": "attention-context",
+      "title": "Attention、位置编码与长上下文",
+      "chapter": "model",
+      "summary": "从 MHA/MQA/GQA/MLA、位置编码、稀疏连接、Linear Attention 与 SSM 区分长上下文设计轴。",
+      "recall": {
+        "question": "GQA 与 FlashAttention 为什么可以同时使用？",
+        "answer": "GQA 改变 KV Head 的参数和缓存组织；FlashAttention 优化注意力计算的 IO，两者不是同一设计轴。",
+        "spoken": "GQA 改变 KV Head 的参数和缓存组织；FlashAttention 优化注意力计算的 IO，两者不是同一设计轴。"
+      },
+      "keywords": [
+        "attention",
+        "MHA",
+        "MQA",
+        "GQA",
+        "MLA",
+        "RoPE",
+        "SWA",
+        "SSM",
+        "linear attention"
+      ],
+      "cases": [
+        "kv-oom"
+      ],
+      "implementations": [
+        "vllm-kv",
+        "sglang-scheduler"
+      ],
+      "source": "topics/model/attention-context.md"
+    },
+    {
+      "id": "multimodal-models",
+      "title": "ViT、VLM 与 Omni 的模态接口",
+      "chapter": "model",
+      "summary": "从视觉 Patch、图文对齐到多模态融合、跨模态生成与实时音视频链路。",
+      "recall": {
+        "question": "ViT、VLM 和 Omni 为什么不能作为同一层级的模型演进？",
+        "answer": "ViT 是视觉编码 Backbone，VLM 描述视觉语言融合模型，Omni 强调更广的模态接口与可能的统一生成能力。",
+        "spoken": "ViT 是视觉编码 Backbone，VLM 描述视觉语言融合模型，Omni 强调更广的模态接口与可能的统一生成能力。"
+      },
+      "keywords": [
+        "ViT",
+        "CLIP",
+        "VLM",
+        "Omni",
+        "vision encoder",
+        "projector",
+        "audio",
+        "video",
+        "codec"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/model/multimodal-models.md"
+    },
+    {
+      "id": "generative-models",
+      "title": "自回归、Diffusion、DiT 与 Flow Matching",
+      "chapter": "model",
+      "summary": "区分生成分布、表示空间、去噪/速度目标、网络 Backbone 和采样求解器。",
+      "recall": {
+        "question": "DiT 与 Flow Matching 是同一层面的算法选择吗？",
+        "answer": "DiT 是以 Transformer 实现生成网络的结构；Flow Matching 定义学习概率路径速度场的训练方法，两者可以组合。",
+        "spoken": "DiT 是以 Transformer 实现生成网络的结构；Flow Matching 定义学习概率路径速度场的训练方法，两者可以组合。"
+      },
+      "keywords": [
+        "autoregressive",
+        "VAE",
+        "diffusion",
+        "DDPM",
+        "DiT",
+        "flow matching",
+        "rectified flow",
+        "latent",
+        "ODE"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/model/generative-models.md"
+    },
+    {
+      "id": "embodied-world-models",
+      "title": "VLA、连续动作策略与 World Model",
+      "chapter": "model",
+      "summary": "区分从观测到动作的策略、模仿学习、动作块和预测环境转移的世界模型。",
+      "recall": {
+        "question": "VLA 输出一个动作块，与语言模型生成同样数量的 Token 有什么本质差别？",
+        "answer": "动作块有实际控制时间、连续坐标、执行反馈与安全边界；策略可能输出连续分布，不具有离散词表 Logprob。",
+        "spoken": "动作块有实际控制时间、连续坐标、执行反馈与安全边界；策略可能输出连续分布，不具有离散词表 Logprob。"
+      },
+      "keywords": [
+        "VLA",
+        "robotics",
+        "behavior cloning",
+        "action chunk",
+        "continuous action",
+        "world model",
+        "model-based RL"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/model/embodied-world-models.md"
+    },
+    {
+      "id": "feedback-services",
+      "title": "Reward、Verifier 与 Teacher 的服务化",
+      "chapter": "async",
+      "summary": "区分反馈产物、请求负载、批处理、版本、失败与回填；建立服务吞吐预算。",
+      "recall": {
+        "question": "同一条评分请求超时后重试，为什么不能直接认定上一轮结果无效？",
+        "answer": "超时仅说明调用方未获得及时响应，服务端可能已执行；需按 sample/attempt 与评分版本幂等接收结果。",
+        "spoken": "超时仅说明调用方未获得及时响应，服务端可能已执行；需按 sample/attempt 与评分版本幂等接收结果。"
+      },
+      "keywords": [
+        "reward serving",
+        "verifier",
+        "teacher",
+        "reward model",
+        "timeout",
+        "retry",
+        "batching",
+        "idempotency"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/async/feedback-services.md"
+    },
+    {
+      "id": "weight-publication",
+      "title": "Weight Sync、Reshard 与策略版本",
+      "chapter": "async",
+      "summary": "区分逻辑参数与物理分片、Optimizer 提交、生成端安装、KV 失效和失败恢复。",
+      "recall": {
+        "question": "Learner 执行了 optimizer.step()，为什么不能直接认为新的 Rollout 已经使用新权重？",
+        "answer": "权重还可能需要重分片、传输、安装和发布，生成端须按完成的安装版本准入。",
+        "spoken": "权重还可能需要重分片、传输、安装和发布，生成端须按完成的安装版本准入。"
+      },
+      "keywords": [
+        "weight sync",
+        "reshard",
+        "checkpoint",
+        "policy version",
+        "publication",
+        "KV invalidation"
+      ],
+      "cases": [],
+      "implementations": [
+        "verl-hybridflow"
+      ],
+      "source": "topics/async/weight-publication.md"
+    },
+    {
+      "id": "kernel-optimization",
+      "title": "Kernel Fusion、FlashAttention 与执行开销",
+      "chapter": "optimization",
+      "summary": "用数据搬运与中间张量预算理解算子融合、Tiling、在线 Softmax、编译与 Graph 的区别。",
+      "recall": {
+        "question": "FlashAttention 降低显存开销，是否意味着标准 Attention 的全部计算从平方变成线性？",
+        "answer": "不是。精确标准 Attention 仍需相关位置的打分计算；优化避免完整中间矩阵的 HBM 物化与重复 IO。",
+        "spoken": "不是。精确标准 Attention 仍需相关位置的打分计算；优化避免完整中间矩阵的 HBM 物化与重复 IO。"
+      },
+      "keywords": [
+        "kernel fusion",
+        "FlashAttention",
+        "tiling",
+        "online softmax",
+        "Triton",
+        "CUDA Graph",
+        "HBM"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/optimization/kernel-optimization.md"
+    },
+    {
+      "id": "gpu-resource-sharing",
+      "title": "GPU 共驻留、时间复用与资源隔离",
+      "chapter": "compute",
+      "summary": "比较训练和生成共卡时的计算并发、显存预算、MPS 与 MIG 的隔离边界。",
+      "recall": {
+        "question": "MPS 的计算资源上限为什么不等于显存或带宽隔离？",
+        "answer": "MPS 的执行资源限制约束客户端可使用的计算资源；显存分配、HBM 带宽和其他共享资源需要独立预算。",
+        "spoken": "MPS 的执行资源限制约束客户端可使用的计算资源；显存分配、HBM 带宽和其他共享资源需要独立预算。"
+      },
+      "keywords": [
+        "MPS",
+        "MIG",
+        "GPU sharing",
+        "co-residency",
+        "time slicing",
+        "offload",
+        "green contexts"
+      ],
+      "cases": [
+        "rl-step-longtail"
+      ],
+      "implementations": [],
+      "source": "topics/compute/gpu-resource-sharing.md"
+    },
+    {
+      "id": "agent-context-lifecycle",
+      "title": "Agent Context：历史、压缩与 KV 生命周期",
+      "chapter": "serving",
+      "summary": "分离完整轨迹、实际模型上下文和物理缓存，解释上下文裁剪与重 Prefill 的取舍。",
+      "recall": {
+        "question": "摘要让输入少了 12k Token，为什么下一次 Prefill 仍可能更重？",
+        "answer": "摘要可能改变共享前缀，使原有 KV 无法命中；应比较未命中的输入长度，而非仅比较总输入长度。",
+        "spoken": "摘要可能改变共享前缀，使原有 KV 无法命中；应比较未命中的输入长度，而非仅比较总输入长度。"
+      },
+      "keywords": [
+        "context compaction",
+        "context eviction",
+        "prefix cache",
+        "summary",
+        "agent memory",
+        "KV"
+      ],
+      "cases": [
+        "kv-oom"
+      ],
+      "implementations": [
+        "sglang-scheduler",
+        "vllm-kv"
+      ],
+      "source": "topics/serving/agent-context-lifecycle.md"
+    },
+    {
+      "id": "test-time-compute",
+      "title": "Test-time Scaling：候选、搜索与验证预算",
+      "chapter": "serving",
+      "summary": "建立额外推理计算的候选生成、搜索、验证与预算分配模型。",
+      "recall": {
+        "question": "Pass@8 提高为何不一定使 Best-of-8 的实际正确率同步提高？",
+        "answer": "Pass@8 只说明候选集合中存在正确答案；Best-of-8 还取决于选择器能否把正确答案排到首位。",
+        "spoken": "Pass@8 只说明候选集合中存在正确答案；Best-of-8 还取决于选择器能否把正确答案排到首位。"
+      },
+      "keywords": [
+        "test-time scaling",
+        "best-of-N",
+        "pass@k",
+        "beam search",
+        "MCTS",
+        "verifier",
+        "reasoning budget"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/serving/test-time-compute.md"
+    },
+    {
+      "id": "self-improvement-loop",
+      "title": "Self-training、Self-play 与自我改进循环",
+      "chapter": "rl",
+      "summary": "区分自主数据生成、模型自评、对弈和课程生成，建立可验证的跨迭代学习指标。",
+      "recall": {
+        "question": "模型生成自己的训练数据并做一次 SFT，足以证明 Recursive Self-Improvement 吗？",
+        "answer": "不足。自主数据只是循环的一环，还需证明持续、独立可测的能力改进与改进机制自身的演进。",
+        "spoken": "不足。自主数据只是循环的一环，还需证明持续、独立可测的能力改进与改进机制自身的演进。"
+      },
+      "keywords": [
+        "self-training",
+        "self-rewarding",
+        "self-play",
+        "curriculum",
+        "RSI",
+        "absolute zero"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/rl/self-improvement-loop.md"
+    },
+    {
+      "id": "adaptive-rollout-search",
+      "title": "Rollout 预算：动态采样与树形探索",
+      "chapter": "rl",
+      "summary": "从组奖励方差与采样预算理解动态补投、状态分叉和采样分布变化。",
+      "recall": {
+        "question": "为什么全同奖励组过滤后，吞吐与数据分布必须同时评估？",
+        "answer": "过滤会改变被训练的 Prompt 分布，也会增加生成但未消费的轨迹；需同时统计有效梯度信号和全部生成成本。",
+        "spoken": "过滤会改变被训练的 Prompt 分布，也会增加生成但未消费的轨迹；需同时统计有效梯度信号和全部生成成本。"
+      },
+      "keywords": [
+        "dynamic sampling",
+        "DAPO",
+        "tree rollout",
+        "adaptive sampling",
+        "entropy",
+        "prefix tree",
+        "replay"
+      ],
+      "cases": [],
+      "implementations": [
+        "slime-data-buffer"
+      ],
+      "source": "topics/rl/adaptive-rollout-search.md"
+    },
+    {
+      "id": "continuous-action-posttraining",
+      "title": "连续动作与 Diffusion / Flow 策略的后训练",
+      "chapter": "rl",
+      "summary": "从连续密度、动作块和去噪轨迹解释模仿、连续控制及生成模型 RL 的目标边界。",
+      "recall": {
+        "question": "为什么 Flow Matching 的速度预测 MSE 不能直接填入 PPO 的 old_logprob？",
+        "answer": "回归误差不是动作概率密度；须由实际随机策略、转移核或可计算的密度/其他目标定义正确估计器。",
+        "spoken": "回归误差不是动作概率密度；须由实际随机策略、转移核或可计算的密度/其他目标定义正确估计器。"
+      },
+      "keywords": [
+        "continuous action",
+        "Gaussian policy",
+        "DDPO",
+        "diffusion policy",
+        "flow policy",
+        "offline RL",
+        "SAC"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/rl/continuous-action-posttraining.md"
+    },
+    {
+      "id": "long-horizon-credit",
+      "title": "多轮 Agent 的时间尺度与信用分配",
+      "chapter": "agent",
+      "summary": "用终点奖励、动作时间尺度和状态值解释长程策略优化、过程奖励与目标偏移。",
+      "recall": {
+        "question": "一次工具调用耗时 10 秒，是否必须算作十个折扣步？",
+        "answer": "不必。折扣的时间单位由 MDP/Semi-MDP 的定义决定，真实耗时可以进入目标或约束，但不能无意改变折扣语义。",
+        "spoken": "不必。折扣的时间单位由 MDP/Semi-MDP 的定义决定，真实耗时可以进入目标或约束，但不能无意改变折扣语义。"
+      },
+      "keywords": [
+        "credit assignment",
+        "long horizon",
+        "POMDP",
+        "semi-MDP",
+        "process reward",
+        "reward shaping",
+        "GAE"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/agent/long-horizon-credit.md"
+    },
+    {
+      "id": "parallel-environment-collection",
+      "title": "环境池、并行采集与 Episode 边界",
+      "chapter": "agent",
+      "summary": "区分会话、环境 Worker、生成 Worker、重置与状态分叉，建立并行采集的基本契约。",
+      "recall": {
+        "question": "向量环境在同一步返回新 episode 的 observation，能直接用作旧 episode 的 bootstrap 状态吗？",
+        "answer": "不能。要识别 autoreset 模式，取旧 episode 的最终 observation；新 episode 初始状态属于另一条轨迹。",
+        "spoken": "不能。要识别 autoreset 模式，取旧 episode 的最终 observation；新 episode 初始状态属于另一条轨迹。"
+      },
+      "keywords": [
+        "vector environment",
+        "autoreset",
+        "environment pool",
+        "episode",
+        "sandbox",
+        "multi-agent",
+        "snapshot"
+      ],
+      "cases": [
+        "async-group-drain"
+      ],
+      "implementations": [
+        "slime-data-buffer",
+        "areal-service"
+      ],
+      "source": "topics/agent/parallel-environment-collection.md"
+    },
+    {
+      "id": "distributed-fault-recovery",
+      "title": "训练异常、分布式故障与一致恢复",
+      "chapter": "learner",
+      "summary": "按首次故障、逻辑更新边界、Checkpoint 和在途轨迹处理 NaN、OOM、Hang 与恢复。",
+      "recall": {
+        "question": "某 Rank OOM 后其他 Rank 报 NCCL timeout，应该先增大超时时间吗？",
+        "answer": "先定位最早的 Rank 异常及 Collective 边界；其余 Rank 可能因为参与者退出而超时。增大超时不能修复缺失参与者。",
+        "spoken": "先定位最早的 Rank 异常及 Collective 边界；其余 Rank 可能因为参与者退出而超时。增大超时不能修复缺失参与者。"
+      },
+      "keywords": [
+        "NaN",
+        "OOM",
+        "NCCL hang",
+        "fault tolerance",
+        "checkpoint",
+        "torch elastic",
+        "recovery",
+        "idempotency"
+      ],
+      "cases": [
+        "fsdp2-root-forward-oom",
+        "async-group-drain"
+      ],
+      "implementations": [
+        "fsdp2-sharding"
+      ],
+      "source": "topics/learner/distributed-fault-recovery.md"
     }
   ],
   "cases": [
@@ -756,7 +1927,8 @@
       "summary": "为什么被 Clip 的样本不能保证完整策略稳定",
       "topics": [
         "ppo-grpo",
-        "logprob-contract"
+        "logprob-contract",
+        "policy-correction"
       ],
       "implementations": [],
       "source": "cases/rl/ppo-clip-kl.md"
@@ -768,7 +1940,9 @@
       "topics": [
         "fp8-numerics",
         "logprob-contract",
-        "moe-router"
+        "moe-router",
+        "floating-point-quantization",
+        "policy-correction"
       ],
       "implementations": [
         "te-megatron-fp8"
@@ -781,7 +1955,9 @@
       "summary": "R3 能修复哪部分分歧，又增加什么边界",
       "topics": [
         "moe-router",
-        "logprob-contract"
+        "logprob-contract",
+        "model-moe",
+        "policy-correction"
       ],
       "implementations": [
         "nemo-router-replay"
@@ -794,7 +1970,9 @@
       "summary": "用关键路径和 Amdahl 规律定优化优先级",
       "topics": [
         "rl-throughput",
-        "async-rollout"
+        "async-rollout",
+        "performance-measurement",
+        "gpu-resource-sharing"
       ],
       "implementations": [
         "areal-service",
@@ -809,7 +1987,12 @@
       "topics": [
         "async-rollout",
         "rl-throughput",
-        "agent-action"
+        "agent-action",
+        "rl-data-cycle",
+        "ray-data-runtime",
+        "agent-harness-environment",
+        "parallel-environment-collection",
+        "distributed-fault-recovery"
       ],
       "implementations": [
         "verl-hybridflow",
@@ -823,7 +2006,10 @@
       "summary": "容量计算、前缀复用和调度策略",
       "topics": [
         "kv-scheduling",
-        "rl-throughput"
+        "rl-throughput",
+        "autoregressive-serving",
+        "attention-context",
+        "agent-context-lifecycle"
       ],
       "implementations": [
         "sglang-scheduler",
@@ -837,7 +2023,9 @@
       "summary": "通过参数组边界和同时存活对象识别参数展开峰值",
       "topics": [
         "training-sharding",
-        "parallel-topology"
+        "parallel-topology",
+        "training-update-lifecycle",
+        "distributed-fault-recovery"
       ],
       "implementations": [
         "fsdp2-sharding"
@@ -854,7 +2042,9 @@
       "topics": [
         "ppo-grpo",
         "async-rollout",
-        "parallel-topology"
+        "parallel-topology",
+        "rl-data-cycle",
+        "weight-publication"
       ],
       "cases": [
         "async-group-drain"
@@ -868,7 +2058,11 @@
       "summary": "数据缓冲和 Megatron + SGLang 集成的架构取舍",
       "topics": [
         "async-rollout",
-        "agent-action"
+        "agent-action",
+        "rl-data-cycle",
+        "ray-data-runtime",
+        "parallel-environment-collection",
+        "adaptive-rollout-search"
       ],
       "cases": [
         "async-group-drain"
@@ -882,7 +2076,10 @@
       "summary": "分离生成/训练/权重更新，并控制版本滞后",
       "topics": [
         "async-rollout",
-        "rl-throughput"
+        "rl-throughput",
+        "rl-data-cycle",
+        "ray-data-runtime",
+        "parallel-environment-collection"
       ],
       "cases": [
         "rl-step-longtail"
@@ -896,7 +2093,8 @@
       "summary": "不同 FP8 Recipe、Scale 及训练精度的实现入口",
       "topics": [
         "fp8-numerics",
-        "parallel-topology"
+        "parallel-topology",
+        "floating-point-quantization"
       ],
       "cases": [
         "fp8-logprob-drift"
@@ -910,7 +2108,8 @@
       "summary": "记录并重放 Expert Index 的集成边界与验证指标",
       "topics": [
         "moe-router",
-        "logprob-contract"
+        "logprob-contract",
+        "policy-correction"
       ],
       "cases": [
         "moe-router-mismatch"
@@ -924,7 +2123,10 @@
       "summary": "Prefix Cache、请求调度及 KV 生命周期",
       "topics": [
         "kv-scheduling",
-        "async-rollout"
+        "async-rollout",
+        "autoregressive-serving",
+        "attention-context",
+        "agent-context-lifecycle"
       ],
       "cases": [
         "kv-oom"
@@ -938,7 +2140,9 @@
       "summary": "DTensor 分片、All-gather、Reduce-scatter 与显存峰值",
       "topics": [
         "parallel-topology",
-        "rl-throughput"
+        "rl-throughput",
+        "training-update-lifecycle",
+        "distributed-fault-recovery"
       ],
       "cases": [
         "rl-step-longtail",
@@ -952,7 +2156,10 @@
       "framework": "vLLM",
       "summary": "KV Block 管理与分批推理的边界",
       "topics": [
-        "kv-scheduling"
+        "kv-scheduling",
+        "autoregressive-serving",
+        "attention-context",
+        "agent-context-lifecycle"
       ],
       "cases": [
         "kv-oom"
@@ -969,7 +2176,9 @@
         "tp-matrix-communication",
         "pp-pipeline-bubble",
         "ep-token-routing",
-        "cp-sp-attention"
+        "cp-sp-attention",
+        "gpu-network-topology",
+        "model-moe"
       ],
       "cases": [],
       "keywords": [
@@ -988,7 +2197,8 @@
       "topics": [
         "serving-parallelism",
         "ep-token-routing",
-        "rl-parallel-planning"
+        "rl-parallel-planning",
+        "autoregressive-serving"
       ],
       "cases": [],
       "keywords": [
@@ -1007,7 +2217,8 @@
       "topics": [
         "training-sharding",
         "rl-parallel-planning",
-        "distributed-collectives"
+        "distributed-collectives",
+        "gpu-network-topology"
       ],
       "cases": [],
       "keywords": [
@@ -1034,6 +2245,191 @@
       "date": "2026-10-27",
       "kind": "implementation",
       "id": "areal-service"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "tensor-autograd"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "probability-information"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "token-representation"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "model-moe"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "gpu-execution-memory"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "cuda-streams"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "gpu-network-topology"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "training-update-lifecycle"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "autoregressive-serving"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "mdp-value-return"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "gae-bootstrap"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "importance-sampling"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "posttraining-feedback"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "speculative-decoding"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "rl-data-cycle"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "ray-data-runtime"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "agent-harness-environment"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "floating-point-quantization"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "gradient-equivalence"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "policy-correction"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "performance-measurement"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "attention-context"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "multimodal-models"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "generative-models"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "embodied-world-models"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "feedback-services"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "weight-publication"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "kernel-optimization"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "gpu-resource-sharing"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "agent-context-lifecycle"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "test-time-compute"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "self-improvement-loop"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "adaptive-rollout-search"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "continuous-action-posttraining"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "long-horizon-credit"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "parallel-environment-collection"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "distributed-fault-recovery"
     }
   ]
 }

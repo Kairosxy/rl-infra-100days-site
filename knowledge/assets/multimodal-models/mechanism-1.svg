@@ -1,0 +1,72 @@
+<svg width="285pt" height="301pt"
+ viewBox="0.00 0.00 285.30 300.80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 286.4)">
+<title>图像编码、投影及文本与视觉表示融合</title>
+
+<g id="edge1" class="edge">
+<title>I&#45;&gt;E</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M84,-235.9C84,-230.94 84,-225.43 84,-220.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="86.45,-220.09 84,-213.09 81.55,-220.09 86.45,-220.09"/>
+</g>
+
+<g id="edge2" class="edge">
+<title>E&#45;&gt;P</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M84,-176.9C84,-171.94 84,-166.43 84,-161.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="86.45,-161.09 84,-154.09 81.55,-161.09 86.45,-161.09"/>
+</g>
+
+<g id="edge4" class="edge">
+<title>P&#45;&gt;L</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M104.4,-117.9C111.26,-112.15 119,-105.66 126.22,-99.61"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="127.82,-101.46 131.61,-95.09 124.67,-97.71 127.82,-101.46"/>
+</g>
+
+<g id="edge3" class="edge">
+<title>T&#45;&gt;L</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M200.3,-117.9C193.34,-112.15 185.48,-105.66 178.16,-99.61"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="179.64,-97.66 172.69,-95.09 176.52,-101.44 179.64,-97.66"/>
+</g>
+
+<g id="edge5" class="edge">
+<title>L&#45;&gt;A</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M152,-58.9C152,-53.94 152,-48.43 152,-43.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="154.45,-43.09 152,-36.09 149.55,-43.09 154.45,-43.09"/>
+</g>
+
+<g id="node1" class="node">
+<title>I</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M103.5,-272C103.5,-272 64.5,-272 64.5,-272 58.5,-272 52.5,-266 52.5,-260 52.5,-260 52.5,-248 52.5,-248 52.5,-242 58.5,-236 64.5,-236 64.5,-236 103.5,-236 103.5,-236 109.5,-236 115.5,-242 115.5,-248 115.5,-248 115.5,-260 115.5,-260 115.5,-266 109.5,-272 103.5,-272"/>
+<text text-anchor="middle" x="84" y="-250.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Image</text>
+</g>
+
+<g id="node2" class="node">
+<title>E</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M130,-213C130,-213 38,-213 38,-213 32,-213 26,-207 26,-201 26,-201 26,-189 26,-189 26,-183 32,-177 38,-177 38,-177 130,-177 130,-177 136,-177 142,-183 142,-189 142,-189 142,-201 142,-201 142,-207 136,-213 130,-213"/>
+<text text-anchor="middle" x="84" y="-191.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Vision Encoder</text>
+</g>
+
+<g id="node3" class="node">
+<title>P</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M156,-154C156,-154 12,-154 12,-154 6,-154 0,-148 0,-142 0,-142 0,-130 0,-130 0,-124 6,-118 12,-118 12,-118 156,-118 156,-118 162,-118 168,-124 168,-130 168,-130 168,-142 168,-142 168,-148 162,-154 156,-154"/>
+<text text-anchor="middle" x="84" y="-132.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Projector or Resampler</text>
+</g>
+
+<g id="node4" class="node">
+<title>T</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M244.5,-154C244.5,-154 197.5,-154 197.5,-154 191.5,-154 185.5,-148 185.5,-142 185.5,-142 185.5,-130 185.5,-130 185.5,-124 191.5,-118 197.5,-118 197.5,-118 244.5,-118 244.5,-118 250.5,-118 256.5,-124 256.5,-130 256.5,-130 256.5,-142 256.5,-142 256.5,-148 250.5,-154 244.5,-154"/>
+<text text-anchor="middle" x="221" y="-132.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Text IDs</text>
+</g>
+
+<g id="node5" class="node">
+<title>L</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M204,-95C204,-95 100,-95 100,-95 94,-95 88,-89 88,-83 88,-83 88,-71 88,-71 88,-65 94,-59 100,-59 100,-59 204,-59 204,-59 210,-59 216,-65 216,-71 216,-71 216,-83 216,-83 216,-89 210,-95 204,-95"/>
+<text text-anchor="middle" x="152" y="-73.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Language model</text>
+</g>
+
+<g id="node6" class="node">
+<title>A</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M183,-36C183,-36 121,-36 121,-36 115,-36 109,-30 109,-24 109,-24 109,-12 109,-12 109,-6 115,0 121,0 121,0 183,0 183,0 189,0 195,-6 195,-12 195,-12 195,-24 195,-24 195,-30 189,-36 183,-36"/>
+<text text-anchor="middle" x="152" y="-14.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Text logits</text>
+</g>
+</g>
+</svg>

@@ -1,0 +1,85 @@
+<svg width="222pt" height="425pt"
+ viewBox="0.00 0.00 221.80 424.80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 410.4)">
+<title>Serving 请求路径和性能比较维度</title>
+
+<g id="edge1" class="edge">
+<title>A&#45;&gt;B</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M96.5,-359.9C96.5,-354.94 96.5,-349.43 96.5,-344.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="98.95,-344.09 96.5,-337.09 94.05,-344.09 98.95,-344.09"/>
+</g>
+
+<g id="edge2" class="edge">
+<title>B&#45;&gt;C</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M96.5,-300.9C96.5,-295.94 96.5,-290.43 96.5,-285.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="98.95,-285.09 96.5,-278.09 94.05,-285.09 98.95,-285.09"/>
+</g>
+
+<g id="edge3" class="edge">
+<title>C&#45;&gt;D</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M96.5,-241.9C96.5,-236.94 96.5,-231.43 96.5,-226.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="98.95,-226.09 96.5,-219.09 94.05,-226.09 98.95,-226.09"/>
+</g>
+
+<g id="edge4" class="edge">
+<title>D&#45;&gt;E</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M96.5,-182.9C96.5,-177.94 96.5,-172.43 96.5,-167.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="98.95,-167.09 96.5,-160.09 94.05,-167.09 98.95,-167.09"/>
+</g>
+
+<g id="edge5" class="edge">
+<title>E&#45;&gt;F</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M96.5,-123.9C96.5,-118.94 96.5,-113.43 96.5,-108.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="98.95,-108.09 96.5,-101.09 94.05,-108.09 98.95,-108.09"/>
+</g>
+
+<g id="edge6" class="edge">
+<title>F&#45;&gt;G</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M96.5,-64.97C96.5,-60.11 96.5,-54.69 96.5,-49.38"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="98.95,-49.27 96.5,-42.27 94.05,-49.27 98.95,-49.27"/>
+</g>
+
+<g id="node1" class="node">
+<title>A</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M158,-396C158,-396 35,-396 35,-396 29,-396 23,-390 23,-384 23,-384 23,-372 23,-372 23,-366 29,-360 35,-360 35,-360 158,-360 158,-360 164,-360 170,-366 170,-372 170,-372 170,-384 170,-384 170,-390 164,-396 158,-396"/>
+<text text-anchor="middle" x="96.5" y="-374.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Request / Tokenizer</text>
+</g>
+
+<g id="node2" class="node">
+<title>B</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M166,-337C166,-337 27,-337 27,-337 21,-337 15,-331 15,-325 15,-325 15,-313 15,-313 15,-307 21,-301 27,-301 27,-301 166,-301 166,-301 172,-301 178,-307 178,-313 178,-313 178,-325 178,-325 178,-331 172,-337 166,-337"/>
+<text text-anchor="middle" x="96.5" y="-315.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Admission / Scheduler</text>
+</g>
+
+<g id="node3" class="node">
+<title>C</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M115,-278C115,-278 78,-278 78,-278 72,-278 66,-272 66,-266 66,-266 66,-254 66,-254 66,-248 72,-242 78,-242 78,-242 115,-242 115,-242 121,-242 127,-248 127,-254 127,-254 127,-266 127,-266 127,-272 121,-278 115,-278"/>
+<text text-anchor="middle" x="96.5" y="-256.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Prefill</text>
+</g>
+
+<g id="node4" class="node">
+<title>D</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M169,-219C169,-219 24,-219 24,-219 18,-219 12,-213 12,-207 12,-207 12,-195 12,-195 12,-189 18,-183 24,-183 24,-183 169,-183 169,-183 175,-183 181,-189 181,-195 181,-195 181,-207 181,-207 181,-213 175,-219 169,-219"/>
+<text text-anchor="middle" x="96.5" y="-197.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">KV Cache / Prefix Reuse</text>
+</g>
+
+<g id="node5" class="node">
+<title>E</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M120,-160C120,-160 73,-160 73,-160 67,-160 61,-154 61,-148 61,-148 61,-136 61,-136 61,-130 67,-124 73,-124 73,-124 120,-124 120,-124 126,-124 132,-130 132,-136 132,-136 132,-148 132,-148 132,-154 126,-160 120,-160"/>
+<text text-anchor="middle" x="96.5" y="-138.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Decode</text>
+</g>
+
+<g id="node6" class="node">
+<title>F</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M135,-101C135,-101 58,-101 58,-101 52,-101 46,-95 46,-89 46,-89 46,-77 46,-77 46,-71 52,-65 58,-65 58,-65 135,-65 135,-65 141,-65 147,-71 147,-77 147,-77 147,-89 147,-89 147,-95 141,-101 135,-101"/>
+<text text-anchor="middle" x="96.5" y="-79.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">TP/DP/EP/PP</text>
+</g>
+
+<g id="node7" class="node">
+<title>G</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M181,-42C181,-42 12,-42 12,-42 6,-42 0,-36 0,-30 0,-30 0,-12 0,-12 0,-6 6,0 12,0 12,0 181,0 181,0 187,0 193,-6 193,-12 193,-12 193,-30 193,-30 193,-36 187,-42 181,-42"/>
+<text text-anchor="middle" x="96.5" y="-24.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">TTFT / TPOT / Throughput /</text>
+<text text-anchor="middle" x="96.5" y="-10.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">P99</text>
+</g>
+</g>
+</svg>

@@ -1,0 +1,96 @@
+<svg width="196pt" height="478pt"
+ viewBox="0.00 0.00 195.80 477.80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 463.4)">
+<title>一次训练更新中的计算、累积与同步</title>
+
+<g id="edge1" class="edge">
+<title>D&#45;&gt;F</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M83.5,-412.9C83.5,-407.94 83.5,-402.43 83.5,-397.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="85.95,-397.09 83.5,-390.09 81.05,-397.09 85.95,-397.09"/>
+</g>
+
+<g id="edge2" class="edge">
+<title>F&#45;&gt;L</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M83.5,-353.9C83.5,-348.94 83.5,-343.43 83.5,-338.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="85.95,-338.09 83.5,-331.09 81.05,-338.09 85.95,-338.09"/>
+</g>
+
+<g id="edge3" class="edge">
+<title>L&#45;&gt;B</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M83.5,-294.9C83.5,-289.94 83.5,-284.43 83.5,-279.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="85.95,-279.09 83.5,-272.09 81.05,-279.09 85.95,-279.09"/>
+</g>
+
+<g id="edge4" class="edge">
+<title>B&#45;&gt;A</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M83.5,-235.9C83.5,-230.94 83.5,-225.43 83.5,-220.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="85.95,-220.09 83.5,-213.09 81.05,-220.09 85.95,-220.09"/>
+</g>
+
+<g id="edge5" class="edge">
+<title>A&#45;&gt;R</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M83.5,-176.9C83.5,-171.94 83.5,-166.43 83.5,-161.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="85.95,-161.09 83.5,-154.09 81.05,-161.09 85.95,-161.09"/>
+</g>
+
+<g id="edge6" class="edge">
+<title>R&#45;&gt;O</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M83.5,-117.9C83.5,-112.94 83.5,-107.43 83.5,-102.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="85.95,-102.09 83.5,-95.09 81.05,-102.09 85.95,-102.09"/>
+</g>
+
+<g id="edge7" class="edge">
+<title>O&#45;&gt;W</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M83.5,-58.9C83.5,-53.94 83.5,-48.43 83.5,-43.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="85.95,-43.09 83.5,-36.09 81.05,-43.09 85.95,-43.09"/>
+</g>
+
+<g id="node1" class="node">
+<title>D</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M131,-449C131,-449 36,-449 36,-449 30,-449 24,-443 24,-437 24,-437 24,-425 24,-425 24,-419 30,-413 36,-413 36,-413 131,-413 131,-413 137,-413 143,-419 143,-425 143,-425 143,-437 143,-437 143,-443 137,-449 131,-449"/>
+<text text-anchor="middle" x="83.5" y="-427.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Batch / Packing</text>
+</g>
+
+<g id="node2" class="node">
+<title>F</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M109.5,-390C109.5,-390 57.5,-390 57.5,-390 51.5,-390 45.5,-384 45.5,-378 45.5,-378 45.5,-366 45.5,-366 45.5,-360 51.5,-354 57.5,-354 57.5,-354 109.5,-354 109.5,-354 115.5,-354 121.5,-360 121.5,-366 121.5,-366 121.5,-378 121.5,-378 121.5,-384 115.5,-390 109.5,-390"/>
+<text text-anchor="middle" x="83.5" y="-368.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Forward</text>
+</g>
+
+<g id="node3" class="node">
+<title>L</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M98.5,-331C98.5,-331 68.5,-331 68.5,-331 62.5,-331 56.5,-325 56.5,-319 56.5,-319 56.5,-307 56.5,-307 56.5,-301 62.5,-295 68.5,-295 68.5,-295 98.5,-295 98.5,-295 104.5,-295 110.5,-301 110.5,-307 110.5,-307 110.5,-319 110.5,-319 110.5,-325 104.5,-331 98.5,-331"/>
+<text text-anchor="middle" x="83.5" y="-309.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Loss</text>
+</g>
+
+<g id="node4" class="node">
+<title>B</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M114.5,-272C114.5,-272 52.5,-272 52.5,-272 46.5,-272 40.5,-266 40.5,-260 40.5,-260 40.5,-248 40.5,-248 40.5,-242 46.5,-236 52.5,-236 52.5,-236 114.5,-236 114.5,-236 120.5,-236 126.5,-242 126.5,-248 126.5,-248 126.5,-260 126.5,-260 126.5,-266 120.5,-272 114.5,-272"/>
+<text text-anchor="middle" x="83.5" y="-250.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Backward</text>
+</g>
+
+<g id="node5" class="node">
+<title>A</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M155,-213C155,-213 12,-213 12,-213 6,-213 0,-207 0,-201 0,-201 0,-189 0,-189 0,-183 6,-177 12,-177 12,-177 155,-177 155,-177 161,-177 167,-183 167,-189 167,-189 167,-201 167,-201 167,-207 161,-213 155,-213"/>
+<text text-anchor="middle" x="83.5" y="-191.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Gradient Accumulation</text>
+</g>
+
+<g id="node6" class="node">
+<title>R</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M127,-154C127,-154 40,-154 40,-154 34,-154 28,-148 28,-142 28,-142 28,-130 28,-130 28,-124 34,-118 40,-118 40,-118 127,-118 127,-118 133,-118 139,-124 139,-130 139,-130 139,-142 139,-142 139,-148 133,-154 127,-154"/>
+<text text-anchor="middle" x="83.5" y="-132.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Gradient Sync</text>
+</g>
+
+<g id="node7" class="node">
+<title>O</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M129.5,-95C129.5,-95 37.5,-95 37.5,-95 31.5,-95 25.5,-89 25.5,-83 25.5,-83 25.5,-71 25.5,-71 25.5,-65 31.5,-59 37.5,-59 37.5,-59 129.5,-59 129.5,-59 135.5,-59 141.5,-65 141.5,-71 141.5,-71 141.5,-83 141.5,-83 141.5,-89 135.5,-95 129.5,-95"/>
+<text text-anchor="middle" x="83.5" y="-73.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Optimizer Step</text>
+</g>
+
+<g id="node8" class="node">
+<title>W</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M123.5,-36C123.5,-36 43.5,-36 43.5,-36 37.5,-36 31.5,-30 31.5,-24 31.5,-24 31.5,-12 31.5,-12 31.5,-6 37.5,0 43.5,0 43.5,0 123.5,0 123.5,0 129.5,0 135.5,-6 135.5,-12 135.5,-12 135.5,-24 135.5,-24 135.5,-30 129.5,-36 123.5,-36"/>
+<text text-anchor="middle" x="83.5" y="-14.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">New Weights</text>
+</g>
+</g>
+</svg>

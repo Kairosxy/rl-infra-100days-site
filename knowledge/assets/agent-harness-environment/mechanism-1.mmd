@@ -1,0 +1,12 @@
+sequenceDiagram
+ participant H as Harness
+ participant M as Model
+ participant E as Environment
+ H->>M: Context + tool schema
+ M-->>H: Assistant action
+ H->>H: Parse and validate
+ H->>E: Execute tool with attempt ID
+ E-->>H: Observation / status
+ H->>H: Append history and update state
+ H->>M: Next context
+ M-->>H: Final answer / stop

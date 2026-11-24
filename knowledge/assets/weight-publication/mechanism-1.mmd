@@ -1,0 +1,10 @@
+sequenceDiagram
+ participant L as Learner
+ participant T as Transfer / Reshard
+ participant R as Rollout
+ L->>L: Optimizer commit version v+1
+ L->>T: Export committed weights
+ T->>R: Transfer and install shards
+ R->>R: Validate version / cache policy
+ R-->>L: Ready v+1
+ R->>R: Admit requests under v+1

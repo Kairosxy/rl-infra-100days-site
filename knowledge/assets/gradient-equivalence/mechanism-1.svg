@@ -1,0 +1,86 @@
+<svg width="279pt" height="381pt"
+ viewBox="0.00 0.00 279.30 380.80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 366.4)">
+<title>梯度累积、Unscale、全局裁剪与异常更新跳过</title>
+
+<g id="edge1" class="edge">
+<title>L&#45;&gt;B</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M134.5,-315.93C134.5,-310.48 134.5,-304.33 134.5,-298.45"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="136.95,-298.23 134.5,-291.23 132.05,-298.23 136.95,-298.23"/>
+</g>
+
+<g id="edge2" class="edge">
+<title>B&#45;&gt;U</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M134.5,-254.93C134.5,-249.48 134.5,-243.33 134.5,-237.45"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="136.95,-237.23 134.5,-230.23 132.05,-237.23 136.95,-237.23"/>
+</g>
+
+<g id="edge3" class="edge">
+<title>U&#45;&gt;F</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M134.5,-193.93C134.5,-188.48 134.5,-182.33 134.5,-176.45"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="136.95,-176.23 134.5,-169.23 132.05,-176.23 136.95,-176.23"/>
+</g>
+
+<g id="edge4" class="edge">
+<title>F&#45;&gt;C</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M117.94,-132.7C109.18,-123.54 98.31,-112.19 88.92,-102.38"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="90.48,-100.47 83.87,-97.1 86.94,-103.86 90.48,-100.47"/>
+<text text-anchor="middle" x="119" y="-112.2" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="11.00" fill="#293a31">finite</text>
+</g>
+
+<g id="edge6" class="edge">
+<title>F&#45;&gt;S</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M151.06,-132.7C159.82,-123.54 170.69,-112.19 180.08,-102.38"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="182.06,-103.86 185.13,-97.1 178.52,-100.47 182.06,-103.86"/>
+<text text-anchor="middle" x="195" y="-112.2" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="11.00" fill="#293a31">nonfinite</text>
+</g>
+
+<g id="edge5" class="edge">
+<title>C&#45;&gt;O</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M67.5,-60.93C67.5,-55.48 67.5,-49.33 67.5,-43.45"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="69.95,-43.23 67.5,-36.23 65.05,-43.23 69.95,-43.23"/>
+</g>
+
+<g id="node1" class="node">
+<title>L</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M169,-352C169,-352 100,-352 100,-352 94,-352 88,-346 88,-340 88,-340 88,-328 88,-328 88,-322 94,-316 100,-316 100,-316 169,-316 169,-316 175,-316 181,-322 181,-328 181,-328 181,-340 181,-340 181,-346 175,-352 169,-352"/>
+<text text-anchor="middle" x="134.5" y="-330.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Scaled loss</text>
+</g>
+
+<g id="node2" class="node">
+<title>B</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M189,-291C189,-291 80,-291 80,-291 74,-291 68,-285 68,-279 68,-279 68,-267 68,-267 68,-261 74,-255 80,-255 80,-255 189,-255 189,-255 195,-255 201,-261 201,-267 201,-267 201,-279 201,-279 201,-285 195,-291 189,-291"/>
+<text text-anchor="middle" x="134.5" y="-269.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Accumulate grads</text>
+</g>
+
+<g id="node3" class="node">
+<title>U</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M159,-230C159,-230 110,-230 110,-230 104,-230 98,-224 98,-218 98,-218 98,-206 98,-206 98,-200 104,-194 110,-194 110,-194 159,-194 159,-194 165,-194 171,-200 171,-206 171,-206 171,-218 171,-218 171,-224 165,-230 159,-230"/>
+<text text-anchor="middle" x="134.5" y="-208.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Unscale</text>
+</g>
+
+<g id="node4" class="node">
+<title>F</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M183.5,-169C183.5,-169 85.5,-169 85.5,-169 79.5,-169 73.5,-163 73.5,-157 73.5,-157 73.5,-145 73.5,-145 73.5,-139 79.5,-133 85.5,-133 85.5,-133 183.5,-133 183.5,-133 189.5,-133 195.5,-139 195.5,-145 195.5,-145 195.5,-157 195.5,-157 195.5,-163 189.5,-169 183.5,-169"/>
+<text text-anchor="middle" x="134.5" y="-147.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Nonfinite check</text>
+</g>
+
+<g id="node5" class="node">
+<title>C</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M123,-97C123,-97 12,-97 12,-97 6,-97 0,-91 0,-85 0,-85 0,-73 0,-73 0,-67 6,-61 12,-61 12,-61 123,-61 123,-61 129,-61 135,-67 135,-73 135,-73 135,-85 135,-85 135,-91 129,-97 123,-97"/>
+<text text-anchor="middle" x="67.5" y="-75.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Global norm / clip</text>
+</g>
+
+<g id="node6" class="node">
+<title>O</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M113,-36C113,-36 22,-36 22,-36 16,-36 10,-30 10,-24 10,-24 10,-12 10,-12 10,-6 16,0 22,0 22,0 113,0 113,0 119,0 125,-6 125,-12 125,-12 125,-24 125,-24 125,-30 119,-36 113,-36"/>
+<text text-anchor="middle" x="67.5" y="-14.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Optimizer step</text>
+</g>
+
+<g id="node7" class="node">
+<title>S</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M238.5,-97C238.5,-97 164.5,-97 164.5,-97 158.5,-97 152.5,-91 152.5,-85 152.5,-85 152.5,-73 152.5,-73 152.5,-67 158.5,-61 164.5,-61 164.5,-61 238.5,-61 238.5,-61 244.5,-61 250.5,-67 250.5,-73 250.5,-73 250.5,-85 250.5,-85 250.5,-91 244.5,-97 238.5,-97"/>
+<text text-anchor="middle" x="201.5" y="-75.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Skip update</text>
+</g>
+</g>
+</svg>

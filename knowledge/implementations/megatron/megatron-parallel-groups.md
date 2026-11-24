@@ -2,17 +2,7 @@
 
 ## 先看拓扑，而不是先填配置
 
-```mermaid
-flowchart TD
- A["16 GPU / 2 nodes"] --> B["Dense: TP=2 × PP=2 × DP=4"]
- B --> C["TP 组：层内 GEMM / Attention"]
- B --> D["PP 组：跨 Stage Activation"]
- B --> E["DP 组：副本梯度归约"]
- C --> F["SP / CP：序列与 KV 访问"]
- E --> G["MoE: EP 复用 Rank 维度"]
- G --> H["Expert DP / All-to-All"]
- H --> I["NCCL Trace / Rank Group 验证"]
-```
+![16 GPU 的 Dense 与 MoE 并行组组织](../../assets/megatron-parallel-groups/mechanism-1.svg)
 
 **问题**：16 张 GPU，Dense TP=2、PP=2、DP=4；为什么只改 Rank Order，跨节点通信就可能换一条链路？
 

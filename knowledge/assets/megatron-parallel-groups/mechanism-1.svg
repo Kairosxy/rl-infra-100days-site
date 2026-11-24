@@ -1,0 +1,109 @@
+<svg width="616pt" height="366pt"
+ viewBox="0.00 0.00 615.80 365.80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 351.4)">
+<title>16 GPU 的 Dense 与 MoE 并行组组织</title>
+
+<g id="edge1" class="edge">
+<title>A&#45;&gt;B</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M314,-300.9C314,-295.94 314,-290.43 314,-285.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="316.45,-285.09 314,-278.09 311.55,-285.09 316.45,-285.09"/>
+</g>
+
+<g id="edge2" class="edge">
+<title>B&#45;&gt;C</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M250.68,-241.98C226.03,-235.35 197.69,-227.73 172.4,-220.93"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="172.76,-218.49 165.36,-219.04 171.48,-223.22 172.76,-218.49"/>
+</g>
+
+<g id="edge3" class="edge">
+<title>B&#45;&gt;D</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M314,-241.9C314,-236.94 314,-231.43 314,-226.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="316.45,-226.09 314,-219.09 311.55,-226.09 316.45,-226.09"/>
+</g>
+
+<g id="edge4" class="edge">
+<title>B&#45;&gt;E</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M369.21,-241.9C390.22,-235.39 414.3,-227.93 435.91,-221.23"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="436.87,-223.5 442.83,-219.09 435.42,-218.82 436.87,-223.5"/>
+</g>
+
+<g id="edge5" class="edge">
+<title>C&#45;&gt;F</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M102,-182.9C102,-177.94 102,-172.43 102,-167.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="104.45,-167.09 102,-160.09 99.55,-167.09 104.45,-167.09"/>
+</g>
+
+<g id="edge6" class="edge">
+<title>E&#45;&gt;G</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M498,-182.9C498,-177.94 498,-172.43 498,-167.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="500.45,-167.09 498,-160.09 495.55,-167.09 500.45,-167.09"/>
+</g>
+
+<g id="edge7" class="edge">
+<title>G&#45;&gt;H</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M498,-123.9C498,-118.94 498,-113.43 498,-108.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="500.45,-108.09 498,-101.09 495.55,-108.09 500.45,-108.09"/>
+</g>
+
+<g id="edge8" class="edge">
+<title>H&#45;&gt;I</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M498,-64.97C498,-60.11 498,-54.69 498,-49.38"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="500.45,-49.27 498,-42.27 495.55,-49.27 500.45,-49.27"/>
+</g>
+
+<g id="node1" class="node">
+<title>A</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M366.5,-337C366.5,-337 261.5,-337 261.5,-337 255.5,-337 249.5,-331 249.5,-325 249.5,-325 249.5,-313 249.5,-313 249.5,-307 255.5,-301 261.5,-301 261.5,-301 366.5,-301 366.5,-301 372.5,-301 378.5,-307 378.5,-313 378.5,-313 378.5,-325 378.5,-325 378.5,-331 372.5,-337 366.5,-337"/>
+<text text-anchor="middle" x="314" y="-315.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">16 GPU / 2 nodes</text>
+</g>
+
+<g id="node2" class="node">
+<title>B</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M403,-278C403,-278 225,-278 225,-278 219,-278 213,-272 213,-266 213,-266 213,-254 213,-254 213,-248 219,-242 225,-242 225,-242 403,-242 403,-242 409,-242 415,-248 415,-254 415,-254 415,-266 415,-266 415,-272 409,-278 403,-278"/>
+<text text-anchor="middle" x="314" y="-256.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Dense: TP=2 × PP=2 × DP=4</text>
+</g>
+
+<g id="node3" class="node">
+<title>C</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M192,-219C192,-219 12,-219 12,-219 6,-219 0,-213 0,-207 0,-207 0,-195 0,-195 0,-189 6,-183 12,-183 12,-183 192,-183 192,-183 198,-183 204,-189 204,-195 204,-195 204,-207 204,-207 204,-213 198,-219 192,-219"/>
+<text text-anchor="middle" x="102" y="-197.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">TP 组：层内 GEMM / Attention</text>
+</g>
+
+<g id="node4" class="node">
+<title>D</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M395,-219C395,-219 233,-219 233,-219 227,-219 221,-213 221,-207 221,-207 221,-195 221,-195 221,-189 227,-183 233,-183 233,-183 395,-183 395,-183 401,-183 407,-189 407,-195 407,-195 407,-207 407,-207 407,-213 401,-219 395,-219"/>
+<text text-anchor="middle" x="314" y="-197.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">PP 组：跨 Stage Activation</text>
+</g>
+
+<g id="node5" class="node">
+<title>E</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M559.5,-219C559.5,-219 436.5,-219 436.5,-219 430.5,-219 424.5,-213 424.5,-207 424.5,-207 424.5,-195 424.5,-195 424.5,-189 430.5,-183 436.5,-183 436.5,-183 559.5,-183 559.5,-183 565.5,-183 571.5,-189 571.5,-195 571.5,-195 571.5,-207 571.5,-207 571.5,-213 565.5,-219 559.5,-219"/>
+<text text-anchor="middle" x="498" y="-197.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">DP 组：副本梯度归约</text>
+</g>
+
+<g id="node6" class="node">
+<title>F</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M173,-160C173,-160 31,-160 31,-160 25,-160 19,-154 19,-148 19,-148 19,-136 19,-136 19,-130 25,-124 31,-124 31,-124 173,-124 173,-124 179,-124 185,-130 185,-136 185,-136 185,-148 185,-148 185,-154 179,-160 173,-160"/>
+<text text-anchor="middle" x="102" y="-138.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">SP / CP：序列与 KV 访问</text>
+</g>
+
+<g id="node7" class="node">
+<title>G</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M568.5,-160C568.5,-160 427.5,-160 427.5,-160 421.5,-160 415.5,-154 415.5,-148 415.5,-148 415.5,-136 415.5,-136 415.5,-130 421.5,-124 427.5,-124 427.5,-124 568.5,-124 568.5,-124 574.5,-124 580.5,-130 580.5,-136 580.5,-136 580.5,-148 580.5,-148 580.5,-154 574.5,-160 568.5,-160"/>
+<text text-anchor="middle" x="498" y="-138.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">MoE: EP 复用 Rank 维度</text>
+</g>
+
+<g id="node8" class="node">
+<title>H</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M561,-101C561,-101 435,-101 435,-101 429,-101 423,-95 423,-89 423,-89 423,-77 423,-77 423,-71 429,-65 435,-65 435,-65 561,-65 561,-65 567,-65 573,-71 573,-77 573,-77 573,-89 573,-89 573,-95 567,-101 561,-101"/>
+<text text-anchor="middle" x="498" y="-79.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Expert DP / All&#45;to&#45;All</text>
+</g>
+
+<g id="node9" class="node">
+<title>I</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M575,-42C575,-42 421,-42 421,-42 415,-42 409,-36 409,-30 409,-30 409,-12 409,-12 409,-6 415,0 421,0 421,0 575,0 575,0 581,0 587,-6 587,-12 587,-12 587,-30 587,-30 587,-36 581,-42 575,-42"/>
+<text text-anchor="middle" x="498" y="-24.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">NCCL Trace / Rank Group</text>
+<text text-anchor="middle" x="498" y="-10.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">验证</text>
+</g>
+</g>
+</svg>

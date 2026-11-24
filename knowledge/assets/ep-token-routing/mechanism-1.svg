@@ -1,0 +1,84 @@
+<svg width="195pt" height="419pt"
+ viewBox="0.00 0.00 194.80 418.80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 404.4)">
+<title>Expert 路由、Dispatch、计算与 Combine</title>
+
+<g id="edge1" class="edge">
+<title>T&#45;&gt;R</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M83,-353.9C83,-348.94 83,-343.43 83,-338.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="85.45,-338.09 83,-331.09 80.55,-338.09 85.45,-338.09"/>
+</g>
+
+<g id="edge2" class="edge">
+<title>R&#45;&gt;D</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M83,-294.9C83,-289.94 83,-284.43 83,-279.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="85.45,-279.09 83,-272.09 80.55,-279.09 85.45,-279.09"/>
+</g>
+
+<g id="edge3" class="edge">
+<title>D&#45;&gt;A</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M83,-235.9C83,-230.94 83,-225.43 83,-220.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="85.45,-220.09 83,-213.09 80.55,-220.09 85.45,-220.09"/>
+</g>
+
+<g id="edge4" class="edge">
+<title>A&#45;&gt;E</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M83,-176.9C83,-171.94 83,-166.43 83,-161.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="85.45,-161.09 83,-154.09 80.55,-161.09 85.45,-161.09"/>
+</g>
+
+<g id="edge5" class="edge">
+<title>E&#45;&gt;B</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M83,-117.9C83,-112.94 83,-107.43 83,-102.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="85.45,-102.09 83,-95.09 80.55,-102.09 85.45,-102.09"/>
+</g>
+
+<g id="edge6" class="edge">
+<title>B&#45;&gt;C</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M83,-58.9C83,-53.94 83,-48.43 83,-43.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="85.45,-43.09 83,-36.09 80.55,-43.09 85.45,-43.09"/>
+</g>
+
+<g id="node1" class="node">
+<title>T</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M114,-390C114,-390 52,-390 52,-390 46,-390 40,-384 40,-378 40,-378 40,-366 40,-366 40,-360 46,-354 52,-354 52,-354 114,-354 114,-354 120,-354 126,-360 126,-366 126,-366 126,-378 126,-378 126,-384 120,-390 114,-390"/>
+<text text-anchor="middle" x="83" y="-368.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">16 Tokens</text>
+</g>
+
+<g id="node2" class="node">
+<title>R</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M123.5,-331C123.5,-331 42.5,-331 42.5,-331 36.5,-331 30.5,-325 30.5,-319 30.5,-319 30.5,-307 30.5,-307 30.5,-301 36.5,-295 42.5,-295 42.5,-295 123.5,-295 123.5,-295 129.5,-295 135.5,-301 135.5,-307 135.5,-307 135.5,-319 135.5,-319 135.5,-325 129.5,-331 123.5,-331"/>
+<text text-anchor="middle" x="83" y="-309.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Router Top&#45;2</text>
+</g>
+
+<g id="node3" class="node">
+<title>D</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M130,-272C130,-272 36,-272 36,-272 30,-272 24,-266 24,-260 24,-260 24,-248 24,-248 24,-242 30,-236 36,-236 36,-236 130,-236 130,-236 136,-236 142,-242 142,-248 142,-248 142,-260 142,-260 142,-266 136,-272 130,-272"/>
+<text text-anchor="middle" x="83" y="-250.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Pack / Dispatch</text>
+</g>
+
+<g id="node4" class="node">
+<title>A</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M110,-213C110,-213 56,-213 56,-213 50,-213 44,-207 44,-201 44,-201 44,-189 44,-189 44,-183 50,-177 56,-177 56,-177 110,-177 110,-177 116,-177 122,-183 122,-189 122,-189 122,-201 122,-201 122,-207 116,-213 110,-213"/>
+<text text-anchor="middle" x="83" y="-191.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">All&#45;to&#45;All</text>
+</g>
+
+<g id="node5" class="node">
+<title>E</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M154,-154C154,-154 12,-154 12,-154 6,-154 0,-148 0,-142 0,-142 0,-130 0,-130 0,-124 6,-118 12,-118 12,-118 154,-118 154,-118 160,-118 166,-124 166,-130 166,-130 166,-142 166,-142 166,-148 160,-154 154,-154"/>
+<text text-anchor="middle" x="83" y="-132.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">GPU0..3 / Expert GEMM</text>
+</g>
+
+<g id="node6" class="node">
+<title>B</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M124,-95C124,-95 42,-95 42,-95 36,-95 30,-89 30,-83 30,-83 30,-71 30,-71 30,-65 36,-59 42,-59 42,-59 124,-59 124,-59 130,-59 136,-65 136,-71 136,-71 136,-83 136,-83 136,-89 130,-95 124,-95"/>
+<text text-anchor="middle" x="83" y="-73.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">All&#45;to&#45;All 返回</text>
+</g>
+
+<g id="node7" class="node">
+<title>C</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M140.5,-36C140.5,-36 25.5,-36 25.5,-36 19.5,-36 13.5,-30 13.5,-24 13.5,-24 13.5,-12 13.5,-12 13.5,-6 19.5,0 25.5,0 25.5,0 140.5,0 140.5,0 146.5,0 152.5,-6 152.5,-12 152.5,-12 152.5,-24 152.5,-24 152.5,-30 146.5,-36 140.5,-36"/>
+<text text-anchor="middle" x="83" y="-14.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Unpack / Combine</text>
+</g>
+</g>
+</svg>

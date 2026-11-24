@@ -1,0 +1,6 @@
+flowchart TD
+ A["输入 [B,T,H]"] --> B["SP：切分激活的序列维"]
+ A --> C["CP：切分 Attention 的上下文位置"]
+ C --> D["跨 Rank KV 交换 / Attention 归约"]
+ D --> E["Mask / Position / 数值等价"]
+ E --> F["显存峰值与通信"]

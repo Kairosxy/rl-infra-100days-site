@@ -1,0 +1,10 @@
+flowchart LR
+ P[Prompt + group_id] --> G[Rollout]
+ G --> R[Reward / Verifier]
+ G --> L[Behavior / Old logprob]
+ R --> A[Advantage]
+ L --> U[Learner]
+ A --> U
+ U --> W[Commit new weights]
+ W --> I[Install / publish]
+ I --> G

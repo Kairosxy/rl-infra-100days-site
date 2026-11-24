@@ -4,15 +4,7 @@
 
 ## 不从“经验推荐 TP=8”开始
 
-```mermaid
-flowchart TD
- A["模型结构 / GPU 拓扑 / Batch / Seq"] --> B["单卡容量预算"]
- B --> C["可行的并行组合"]
- C --> D["通信与 Bubble 成本"]
- D --> E["训练 vs 推理关键路径"]
- E --> F["候选配置 A/B 实测"]
- F --> G["错误、P99、吞吐、成本"]
-```
+![从容量预算到并行配置的实测比较](../../assets/parallel-config-workbook/mechanism-1.svg)
 
 **锚点**：2 节点 × 8 GPU，Dense 模型 7B 参数、BF16，训练使用 Adam，推理请求最长 65536 Token。以下是筛选逻辑，不是已验证的推荐配置。
 

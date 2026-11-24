@@ -1,0 +1,6 @@
+flowchart TD
+ A[前置: 矩阵乘法 / 反向传播 / GPU HBM] --> B[核心: 参数/数据/层/专家/序列切分]
+ B --> C[机制: DP / TP / PP / EP / CP / FSDP]
+ C --> D[实现: Process Group / Collective / 调度]
+ D --> E[性能: FLOPs / HBM / 带宽 / Bubble]
+ E --> F[排障: OOM / NCCL Hang / 低利用率 / 数值漂移]

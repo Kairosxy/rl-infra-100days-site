@@ -2,15 +2,7 @@
 
 训练通常要同时考虑参数、梯度、优化器和反向通信；推理则主要面对权重、KV、请求调度和每 Token 延迟。SGLang 与 vLLM 都提供模型并行与 KV 管理，但具体 Scheduler、Cache、MoE Dispatch 和版本支持并非相同实现。
 
-```mermaid
-flowchart LR
- A["Request / Tokenizer"] --> B["Admission / Scheduler"]
- B --> C["Prefill"]
- C --> D["KV Cache / Prefix Reuse"]
- D --> E["Decode"]
- E --> F["TP/DP/EP/PP"]
- F --> G["TTFT / TPOT / Throughput / P99"]
-```
+![Serving 请求路径和性能比较维度](../../assets/sglang-vllm-parallel/mechanism-1.svg)
 
 ## 一个贯穿的 KV 例子
 

@@ -1,0 +1,10 @@
+flowchart TD
+ S[训练或推理异常] --> A{主要症状}
+ A -->|OOM| B[参数常驻 vs Activation vs 临时通信峰值]
+ A -->|慢| C[算子耗时 / Collective / Bubble / Router 偏斜]
+ A -->|Hang| D[Rank Collective 顺序 / 进程退出 / 网络]
+ A -->|结果漂移| E[切分维度 / Mask / 数值精度 / Policy Version]
+ B --> F[固定 Batch/Seq 逐项切换分片]
+ C --> G[Nsight Timeline 与 Rank 对齐]
+ D --> H[检查每 Rank 最后进入的 Collective]
+ E --> I[固定输入与权重对照单卡]

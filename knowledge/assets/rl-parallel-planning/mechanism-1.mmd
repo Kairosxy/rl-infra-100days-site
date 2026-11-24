@@ -1,0 +1,9 @@
+flowchart LR
+ A["Prompt / Sampler"] --> B["Rollout Engine"]
+ B --> C["Trajectory / Reward"]
+ C --> D["Learner Engine"]
+ D --> E["权重版本 v+1"]
+ E --> F["权重转换 / 同步"]
+ F --> B
+ B --> G["KV / Decode / TP-EP"]
+ D --> H["Gradient / Optimizer / TP-PP-EP-DP"]

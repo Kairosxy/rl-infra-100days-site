@@ -64,6 +64,22 @@ def main():
                 check(page.locator('#detail').is_visible(),f'visible {kind}:{ident}')
                 report['routes']+=1
             check(not errors,'all content routes without runtime exceptions')
+            # Static figures and readable technical objects must work without CDN access.
+            for kind,ident,title in entries:
+                go(f'#{kind}={ident}')
+                images=page.locator('#article img')
+                if images.count():
+                    page.wait_for_function("[...document.querySelectorAll('#article .article-figure img')].every(e=>e.complete && e.naturalWidth>0)")
+                    check(images.evaluate_all('(imgs)=>imgs.every(e=>e.alt.trim() && e.closest(".article-figure"))'),ident+' static figure labels and layout')
+                check(page.locator('#article pre > code.language-mermaid').count()==0,ident+' no CDN-dependent diagram')
+                check(page.locator('#article table:not(.experiment table):not(.article-table table)').count()==0,ident+' native tables have scroll regions')
+            page.set_viewport_size({'width':375,'height':900})
+            for ident in ('technology-lineage','gae-bootstrap','test-time-compute','weight-publication','distributed-fault-recovery'):
+                go('#topic='+ident)
+                expect(page.locator('#detail')).to_be_visible()
+                check(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'),ident+' mobile reading width')
+                page.screenshot(path=str(args.output/f'{ident}-mobile.png'))
+            page.set_viewport_size({'width':1440,'height':1000})
             for spec in payload['learning_map']['experiments']:
                 kind,ident=spec['entry'].split(':',1)
                 go(f'#{kind}={ident}')
@@ -98,7 +114,8 @@ def main():
             page.go_back()
             expect(page.locator('#learning-paths')).to_be_visible()
             page.locator('#learning-paths .route-steps a').first.click()
-            expect(page.locator('#detail-title')).to_have_text(payload['topics'][0]['title'])
+            first_topic = payload['learning_map']['paths'][0]['topics'][0]
+            expect(page.locator('#detail-title')).to_have_text(next(t['title'] for t in payload['topics'] if t['id'] == first_topic))
             page.go_back()
             expect(page.locator('#knowledge-map')).to_be_visible()
             check(page.locator('#chapter-list').count() == 1, 'one directory DOM')
