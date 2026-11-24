@@ -103,8 +103,8 @@ def generate_knowledge(root: Path, output: Path) -> int:
     catalog["build"] = {"commit": os.environ.get("GITHUB_SHA", "local"), "created_at": datetime.now(timezone.utc).isoformat()}
     site = root / "knowledge" / "site"
     html = (site / "index.html").read_text(encoding="utf-8")
-    css = (site / "style.css").read_text(encoding="utf-8")
-    js = "\n".join((site / name).read_text(encoding="utf-8") for name in ("core.js", "experiments.js", "app.js"))
+    css = "\n".join((site / name).read_text(encoding="utf-8") for name in ("style.css", "reader.css"))
+    js = "\n".join((site / name).read_text(encoding="utf-8") for name in ("core.js", "navigation.js", "experiments.js", "app.js"))
     data = json.dumps(catalog, ensure_ascii=False, separators=(",", ":"))
     data = (data.replace("<", r"\u003c").replace(">", r"\u003e")
                 .replace("&", r"\u0026").replace("\u2028", r"\u2028")
