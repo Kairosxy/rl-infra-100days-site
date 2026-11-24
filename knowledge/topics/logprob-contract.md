@@ -25,3 +25,11 @@ $B=2,L=7$，Prompt Length 为 $[2,3]$、Valid Length 为 $[5,6]$，那么在目�
 Prompt 两个 Token，Response 两个 Token。正确应使用 `logits[1], logits[2]` 预测 `token_ids[2], token_ids[3]`。故意使用 `logits[2], logits[3]`，Shape 仍然匹配，Loss 也能 Backward，概率语义已经改变。
 
 可运行的 CPU 例子仍在 [sequence_logprob_lab.py](https://github.com/Kairosxy/rl-infra-100days-site/blob/main/examples/day_04/sequence_logprob_lab.py)；该路径沿用了旧课表命名，文件内容可作为本主题的实验依据。
+
+## Speculative Decoding：接受率与 KL 不是同一个量
+
+固定一个历史前缀，令 target 分布 p=[0.5,0.5]，draft 分布 q=[0.99,0.01]。标准随机 speculative sampling 从 q 提议 token x，以 min(1,p(x)/q(x)) 接受；拒绝后从归一化的正残差 max(p-q,0) 采样。单位置期望接受率为 sum(min(p,q))=0.51，而不是 logits 的比值。这里假设两侧概率已经按实际采样规则归一化。
+
+另取 p=[0.99,0.01]、q=[1-1e-12,1e-12]。接受率约 0.99，但 KL(p||q) 约 0.22 nats；继续缩小 q 的第二项可以让 KL 任意增大，而接受率几乎不变。接受率由重叠概率质量决定，KL 对极小概率更敏感。该反例是理论推导，不是 DFlash 或 MTP 的实测。多 token 接受长度还依赖前缀条件分布与验证算法；不能把单位置公式直接当成 block 接受率。
+
+在满足精确拒绝采样条件时，最终输出服从 target 分布，draft 只是提议分布。RL 的 behavior logprob 应对应实际输出分布及其采样变换，而不是 draft logprob。贪心验证、近似接受或特殊采样实现需要单独核查。参考 [Fast Inference from Transformers via Speculative Decoding](https://arxiv.org/abs/2211.17192)。具体 DFlash/MTP 的训练目标与服务端验证路径尚需固定源码版本后补充。
