@@ -14,7 +14,7 @@ $$
 
 取 $\epsilon=0.2$：$A=+2$、$r=1.5$ 时，两个候选值是 3.0 与 2.4，最终为 2.4；这条样本继续提高概率时进入平坦区。对负 Advantage，平台在区间下界另一侧：$A=-2,r=0.6$ 时目标为 $-1.6$。平台是**单条样本的局部目标**，并非 KL 硬约束。
 
-![正负 Advantage 的 PPO Clip 目标](../assets/ppo-grpo/clipped-objective.svg)
+![正负 Advantage 的 PPO Clip 目标](../../assets/ppo-grpo/clipped-objective.svg)
 
 ## GRPO 换掉的是什么
 

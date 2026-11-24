@@ -34,8 +34,15 @@ def local_reference(path: str, source: Path, root: Path) -> Path | None:
     return resolved
 
 
-def render_markdown(source: Path, root: Path, drop_title: bool = True) -> str:
+def render_markdown(
+    source: Path,
+    root: Path,
+    drop_title: bool = True,
+    *,
+    knowledge_routes: dict[Path, str] | None = None,
+) -> str:
     """Render GFM tables, code blocks and MathJax-ready formulas."""
+    routes = knowledge_routes or {}
     rendered = markdown.markdown(
         source.read_text(encoding="utf-8"),
         extensions=["tables", "fenced_code", "pymdownx.arithmatex", "toc"],
@@ -66,15 +73,17 @@ def render_markdown(source: Path, root: Path, drop_title: bool = True) -> str:
 
     def link_to_source(match: re.Match[str]) -> str:
         referenced = local_reference(match.group(2), source, root)
-        if referenced is None or not referenced.is_file():
+        if referenced is None:
             return match.group(0)
+        if not referenced.exists():
+            raise FileNotFoundError(f'Missing local link in {source}: {referenced}')
         relative = referenced.relative_to(root.resolve()).as_posix()
         fragment = urlparse(html.unescape(match.group(2))).fragment
-        destination = f"https://github.com/{REPOSITORY}/blob/main/{relative}"
+        view = "tree" if referenced.is_dir() else "blob"
+        destination = f"https://github.com/{REPOSITORY}/{view}/main/{relative}"
         parts = Path(relative).parts
-        if len(parts) == 3 and parts[0] == "knowledge" and parts[1] in ("topics", "cases", "implementations"):
-            kind = {"topics": "topic", "cases": "case", "implementations": "implementation"}[parts[1]]
-            destination = f"#{kind}={Path(relative).stem}"
+        if referenced in routes:
+            destination = routes[referenced]
             if fragment:
                 destination += "&anchor=" + quote(fragment)
         elif parts[0] == "labs":

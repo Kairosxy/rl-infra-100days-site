@@ -14,7 +14,7 @@ flowchart LR
 
 **直觉**：EP 切的是 Expert 参数，而不是自动把 Token 均匀切开。**不变量**：每条 Assignment 的 Token ID、Expert ID、Router 权重与原始位置必须在 Dispatch/Combine 前后对应；不平衡是路由结果的性质，不一定是通信实现错误。
 
-![32 次 Expert Assignment 的均衡与热点对照](../assets/ep-token-routing/expert-load.svg)
+![32 次 Expert Assignment 的均衡与热点对照](../../assets/ep-token-routing/expert-load.svg)
 
 ## 通信与长尾
 

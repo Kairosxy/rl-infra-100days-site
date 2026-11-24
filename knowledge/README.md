@@ -2,13 +2,15 @@
 
 这一层不是把 100 天课程换个目录继续发布。内容按三个实体维护：
 
-- `topics/{id}.md`：稳定的基础知识。解释核心模型、必要的数学/代码与可被验证的边界。
-- `cases/{id}.md`：真实工程问题。先写现象和最小反证，再列候选原因、测量、方案与限制。
-- `implementations/{id}.md`：主流框架实现。说明为什么这样设计、在哪些版本/子系统有效、资源与维护代价；无法确认源码的细节不能编造。
+- `topics/{chapter}/{id}.md`：稳定的基础知识。解释核心模型、必要的数学/代码与可被验证的边界。
+- `cases/{domain}/{id}.md`：真实工程问题。先写现象和最小反证，再列候选原因、测量、方案与限制。
+- `implementations/{framework}/{id}.md`：主流框架实现。说明为什么这样设计、在哪些版本/子系统有效、资源与维护代价；无法确认源码的细节不能编造。
 
-`catalog.json` 是目录与关联关系的唯一索引。每个条目拥有稳定的 `id`；`topics` 归属一个 Chapter，`cases` 和 `implementations` 通过双向引用与核心主题关联。构建器检查重复 ID、缺失正文和损坏关联，失败时阻止发布。
+`catalog.json` 是目录与关联关系的唯一索引。每个条目拥有稳定的 `id`；`topics` 归属一个 Chapter，`cases` 和 `implementations` 通过双向引用与核心主题关联。每个条目必须声明相对 `knowledge/` 的 `source`，文件名须与 ID 一致。Topic 的目录与 Chapter 一致；Case 选择一个主要领域；Implementation 使用框架英文 slug，跨框架放 `cross-framework/`。构建器检查规范路径、重复或未登记正文、缺失文件和损坏关联。站内链接按 catalog 的稳定 ID 生成，不按物理路径生成。
 
-[技术谱系与演进](topics/technology-lineage.md) 维护十一章的长期覆盖目标与分类规则。先补技术家族的上位问题和机制分支，再按需新增具体方法；计划节点不注册为空正文，既有稳定 ID 不变。
+新增或移动文章时同步修改 `source` 及 Markdown 相对链接，保持 ID、题目映射和其他关系不变。技术家族未有实质正文前，只在谱系文档登记覆盖目标，不预建空目录。
+
+[技术谱系与演进](topics/research/technology-lineage.md) 维护十一章的长期覆盖目标与分类规则。先补技术家族的上位问题和机制分支，再按需新增具体方法；计划节点不注册为空正文，既有稳定 ID 不变。
 
 论文/框架不构成第四份重复讲义：直接作为对应 Topic、Case、Implementation 的证据，并标注论文声称、源码已核实、推导示意、实测结果的差别。具体 API/源码结论应有 Commit/Release 依据。
 

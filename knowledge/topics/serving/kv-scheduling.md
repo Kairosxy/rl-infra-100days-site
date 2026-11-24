@@ -15,7 +15,7 @@ $$
 
 PagedAttention 通过分页管理 KV，减少分配粒度和碎片造成的浪费；Prefix Cache 复用相同前缀，降低重复 Prefill；Continuous Batching 改变请求交错执行方式。它们解决的是不同约束，不是三种同义的加速按钮。
 
-![共享前缀与私有后缀的物理 KV Block](../assets/kv-scheduling/shared-prefix.svg)
+![共享前缀与私有后缀的物理 KV Block](../../assets/kv-scheduling/shared-prefix.svg)
 
 SGLang 的 RadixAttention/HiCache 与 vLLM 的 PagedAttention 能作为代码级对照。需要同时记录吞吐、TTFT、TPOT 和 P99，并固定请求长度与到达分布。
 

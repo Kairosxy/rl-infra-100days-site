@@ -32,7 +32,7 @@ MHA 的 KV Head 数等于 Query Head 数。GQA 让一组 Query Head 共享一个
 
 BF16 KV Cache 每 token 需要 2×32×8×128×2=131072 bytes，即 128 KiB。8192 token 为 1 GiB，未计分配粒度、缓存页表及并行策略。训练激活不是 KV Cache：反向需要的中间值取决于算子保存策略、重计算及 sharding；不能拿推理 KV 公式代替训练激活估算。
 
-训练通常计算多个位置的 logits 和梯度；自回归 decode 每步只加入新 token 的 K/V，但查询仍要读取历史缓存。RL learner 对固定轨迹重算 logprob 时，必须保持 token IDs、位置、mask 和概率分布的约定一致。参见 [KV 调度](kv-scheduling.md) 与 [Logprob 契约](logprob-contract.md)。
+训练通常计算多个位置的 logits 和梯度；自回归 decode 每步只加入新 token 的 K/V，但查询仍要读取历史缓存。RL learner 对固定轨迹重算 logprob 时，必须保持 token IDs、位置、mask 和概率分布的约定一致。参见 [KV 调度](../serving/kv-scheduling.md) 与 [Logprob 契约](../learner/logprob-contract.md)。
 
 ## 最小验证
 
