@@ -18,7 +18,8 @@ def main():
     parser.add_argument('--dist',type=Path,default=Path('dist'))
     parser.add_argument('--output',type=Path,default=Path('test-artifacts'))
     parser.add_argument('--inline-preview',action='store_true')
-    args=parser.parse_args(); args.output.mkdir(parents=True,exist_ok=True)
+    args=parser.parse_args()
+    args.output.mkdir(parents=True,exist_ok=True)
     html=(args.dist/'index.html').read_text(encoding='utf-8')
     payload=json.loads(re.search(r'<script type="application/json" id="knowledge-data">(.*?)</script>',html,re.S).group(1))
     entries=[(kind,x['id'],x['title']) for kind,name in [('topic','topics'),('case','cases'),('implementation','implementations')] for x in payload[name]]
@@ -34,20 +35,24 @@ def main():
         executable=os.environ.get('CHROMIUM_EXECUTABLE')
         browser=p.chromium.launch(**({'executable_path':executable} if executable else {}))
         context=browser.new_context(viewport={'width':1440,'height':1000},accept_downloads=True)
-        page=context.new_page();page.set_default_timeout(10000)
-        errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
+        page=context.new_page()
+        page.set_default_timeout(10000)
+        errors=[]
+        page.on('pageerror',lambda e:errors.append(str(e)))
         page.route('https://cdn.jsdelivr.net/**',lambda route:route.abort())
         if args.inline_preview:
             html=re.sub(r'<script[^>]+src=[^>]*>\s*</script>','',html)
             html=re.sub(r'<script type="module">.*?</script>','',html,flags=re.S)
             shim="<script>const store={};Object.defineProperty(window,'localStorage',{value:{getItem:k=>store[k]??null,setItem:(k,v)=>store[k]=String(v),removeItem:k=>delete store[k],clear:()=>Object.keys(store).forEach(k=>delete store[k])}});</script>"
             page.set_content(html.replace('<body>','<body>'+shim),wait_until='domcontentloaded')
-        else:page.goto(base,wait_until='domcontentloaded')
+        else:
+            page.goto(base,wait_until='domcontentloaded')
         def go(fragment):
             page.evaluate('(h)=>{if(location.hash===h)dispatchEvent(new HashChangeEvent("hashchange"));else location.hash=h;}',fragment)
             page.wait_for_timeout(25)
         def check(condition,name):
-            if not condition:raise AssertionError(name)
+            if not condition:
+                raise AssertionError(name)
             report['checks'].append(name)
         try:
             check(page.locator('header').count()==1,'one global navigation header')
@@ -60,7 +65,8 @@ def main():
                 report['routes']+=1
             check(not errors,'all content routes without runtime exceptions')
             for spec in payload['learning_map']['experiments']:
-                kind,ident=spec['entry'].split(':',1);go(f'#{kind}={ident}')
+                kind,ident=spec['entry'].split(':',1)
+                go(f'#{kind}={ident}')
                 widget=page.locator(f'[data-experiment="{spec["type"]}"]')
                 expect(widget).to_have_count(1)
                 check(widget.count()==1,'native experiment '+spec['type'])
@@ -72,7 +78,8 @@ def main():
                     check(widget.locator('.experiment-output').inner_text().strip()!='','updated model '+spec['type'])
                 report['experiments']+=1
             check(page.locator('iframe').count()==0,'interactions belong to article, not embedded web pages')
-            for fragment in ['#topic=tp-matrix-communication','#topic=pp-pipeline-bubble','#question=Q081','#topic=tp-matrix-communication']:go(fragment)
+            for fragment in ['#topic=tp-matrix-communication','#topic=pp-pipeline-bubble','#question=Q081','#topic=tp-matrix-communication']:
+                go(fragment)
             check(not errors,'interactive article lifecycle regression')
             go('#view=questions&kind=question')
             check('224' in page.locator('#questions .count').inner_text(),'question filter includes all 224')
@@ -86,7 +93,8 @@ def main():
             check(page.locator('#questions .entry').count()>0,'section-scoped questions are not empty')
             original={'version':1,'records':{'81':{'answer':'saved-draft','layers':{'c1':'saved-layer'},'note':'saved-note','rating':'hard','attempts':1,'streak':0,'due':'2026-01-01','bookmarked':True,'history':[{'rating':'hard','date':'2026-01-01T12:00:00Z'}]},'2':{'answer':'other-record'}}}
             page.evaluate('([key,value])=>localStorage.setItem(key,JSON.stringify(value))',[KEY,original])
-            go('#question=Q081');page.locator('[data-rating="good"]').click()
+            go('#question=Q081')
+            page.locator('[data-rating="good"]').click()
             stored=page.evaluate('(key)=>JSON.parse(localStorage.getItem(key))',KEY)
             check(stored['records']['81']['answer']=='saved-draft' and stored['records']['81']['layers']['c1']=='saved-layer','rating preserves legacy draft and layers')
             check(stored['records']['2']['answer']=='other-record','rating preserves other questions')
@@ -102,7 +110,8 @@ def main():
             page.locator('#questions input[type=file]').set_input_files({'name':'invalid.json','mimeType':'application/json','buffer':json.dumps(incoming).encode()})
             page.wait_for_timeout(80)
             check(page.evaluate('(key)=>JSON.parse(localStorage.getItem(key))',KEY)==stored,'invalid import is atomic and does not change stored data')
-            with page.expect_download() as download_info:page.locator('#questions .review-tools button').first.click()
+            with page.expect_download() as download_info:
+                page.locator('#questions .review-tools button').first.click()
             download_info.value.save_as(args.output/'review-roundtrip.json')
             backup=json.loads((args.output/'review-roundtrip.json').read_text())
             check(backup['records']==stored['records'],'export preserves records for old quiz import')
@@ -112,9 +121,11 @@ def main():
                 page.goto(base+'quiz/#q=81',wait_until='domcontentloaded')
                 check(page.evaluate('(key)=>JSON.parse(localStorage.getItem(key))',KEY)==stored,'legacy quiz reads unchanged storage')
                 page.goto(base,wait_until='domcontentloaded')
-            page.evaluate('(key)=>localStorage.setItem(key,"not-valid-json")',KEY);go('#question=Q081')
+            page.evaluate('(key)=>localStorage.setItem(key,"not-valid-json")',KEY)
+            go('#question=Q081')
             check(page.locator('[data-rating="good"]').is_disabled(),'corrupt storage cannot be overwritten by rating')
-            page.evaluate('(key)=>localStorage.removeItem(key)',KEY);go('#topic=rl-parallel-planning')
+            page.evaluate('(key)=>localStorage.removeItem(key)',KEY)
+            go('#topic=rl-parallel-planning')
             page.locator('[data-experiment=memory] input[type=number]').first.fill('')
             check(page.locator('[data-experiment=memory] .experiment-output').inner_text()=='','invalid numeric input clears stale result')
             for width in (375,768,1440):
@@ -124,19 +135,23 @@ def main():
                     check(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'),f'no viewport overflow {width}/{name}')
                     page.screenshot(path=str(args.output/f'{name}-{width}.png'),full_page=True)
                 report['viewports'].append(width)
-            page.set_viewport_size({'width':375,'height':812});page.locator('#menu-toggle').click()
+            page.set_viewport_size({'width':375,'height':812})
+            page.locator('#menu-toggle').click()
             check(page.locator('#mobile-directory').is_visible(),'mobile directory opens')
             page.keyboard.press('Escape')
             check(not page.locator('#mobile-directory').is_visible(),'mobile directory closes with Escape')
             check(page.locator('#menu-toggle').evaluate('(e)=>e===document.activeElement'),'modal returns keyboard focus to opener')
-            page.emulate_media(reduced_motion='reduce');go('#question=Q001')
-            page.locator('.mobile-toc summary').click();page.locator('#mobile-toc a').first.click()
+            page.emulate_media(reduced_motion='reduce')
+            go('#question=Q001')
+            page.locator('.mobile-toc summary').click()
+            page.locator('#mobile-toc a').first.click()
             check(page.locator('#article details').first.is_visible(),'mobile TOC opens answer section')
             check(page.evaluate('(()=>{const ids=[...document.querySelectorAll("[id]")].map(e=>e.id);return new Set(ids).size===ids.length})()'),'no duplicate DOM IDs')
             check(not errors,'no uncaught JavaScript errors in full smoke run')
             report['status']='passed'
         except Exception as error:
-            report['status']='failed';report['error']=str(error)
+            report['status']='failed'
+            report['error']=str(error)
             report['location']=page.url
             report['detail_title']=page.locator('#detail-title').inner_text()
             page.screenshot(path=str(args.output/'failure.png'),full_page=True)
@@ -145,7 +160,9 @@ def main():
             report['runtime_errors']=errors
             (args.output/'browser-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
             browser.close()
-            if server:server.shutdown()
+            if server:
+                server.shutdown()
     print(json.dumps({k:report[k] for k in ('mode','status','routes','experiments','viewports')},ensure_ascii=False))
 
-if __name__=='__main__':main()
+if __name__=='__main__':
+    main()
