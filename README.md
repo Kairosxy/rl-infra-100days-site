@@ -2,9 +2,9 @@
 
 一份面向 RL / LLM 训练工程的公开技术知识库：基础知识、实际工程问题和主流框架实现相互关联。知识可以按主题阅读，也可以从性能故障、FP8 数值差异、MoE Routing、异步训练等具体问题进入。
 
-**[知识库首页](https://kairosxy.github.io/rl-infra-100days-site/)** · [工程问题](https://kairosxy.github.io/rl-infra-100days-site/#view=questions&category=case) · [框架实现](https://kairosxy.github.io/rl-infra-100days-site/#view=library&kind=implementation) · [快速复习题](https://kairosxy.github.io/rl-infra-100days-site/quiz/)
+**[知识库首页](https://kairosxy.github.io/rl-infra-100days-site/)** · [工程问题](https://kairosxy.github.io/rl-infra-100days-site/#mode=issues&kind=case) · [框架实现](https://kairosxy.github.io/rl-infra-100days-site/#mode=implementation) · [快速复习题](https://kairosxy.github.io/rl-infra-100days-site/quiz/)
 
-简短判断和口头表达用来帮助恢复记忆，深入研究请读完整推导、源码和案例。
+目录选择技术领域、技术专题或框架范围；知识、Issues 和框架实现共享同一范围与搜索。正文、工程案例、关联问答和源码解析可直接切换。简短判断和口头表达用来帮助恢复记忆，深入研究请读完整推导、源码和案例。
 
 ## 仓库目录
 

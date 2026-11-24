@@ -1,25 +1,25 @@
-/* Public, read-only knowledge reader. Progress is kept in localStorage only. */
+/* Unified workspace: one directory, one result set, one reader. */
 (function () {
   'use strict';
-  const C = window.RLCore, X = window.RLExperiments;
+  const C = window.RLCore, X = window.RLExperiments, N = window.RLNavigation;
   const data = JSON.parse(document.getElementById('knowledge-data').textContent);
-  const graph = C.index(data), meta = data.learning_map || {}, $ = id => document.getElementById(id);
+  const graph = C.index(data), nav = N.create(data, graph), meta = data.learning_map || {}, $ = id => document.getElementById(id);
   const knownIds = new Set(graph.questions.map(q => q.id));
   const labels = {topic: '知识', case: 'Issue', implementation: '框架实现', question: '问答'};
-  let current = C.route(location.hash), lastList = '#view=questions', renderId = 0, searchTimer = null;
-  const state = {storageError: ''};
+  const modeLabels = {all: '全部', topic: '知识', issues: 'Issues', implementation: '框架实现'};
+  let current = nav.read(location.hash), renderId = 0, searchTimer = null, results;
   const el = (tag, cls, text) => {const out = document.createElement(tag); if (cls) out.className = cls; if (text !== undefined) out.textContent = text; return out;};
-  const a = (text, values, cls) => {const link = el('a', cls, text); link.href = typeof values === 'string' ? values : C.url(values); return link;};
+  const a = (text, href, cls) => {const link = el('a', cls, text); link.href = typeof href === 'string' ? href : C.url(href); return link;};
   const button = (text, fn, cls = '') => {const b = el('button', cls, text); b.type = 'button'; b.addEventListener('click', fn); return b;};
-  const values = p => Object.fromEntries(p.entries());
-  const detailURL = item => ({[item.type]: item.code || item.id});
-  const sectionOf = item => graph.sections.get(graph.topicSection.get(item.id));
+  const stateLink = (text, state, cls) => a(text, nav.href(state), cls);
+  const entryLink = (item, text = item.title, cls = '') => stateLink(text, nav.open(current, item), cls);
+  const selected = (node, value) => {if (value) node.setAttribute('aria-current', 'page'); else node.removeAttribute('aria-current');};
   function notice(text) {$('notice').textContent = text || '';}
-  function save(valuesToSet, replace = false, scroll = true) {
-    const hash = C.url(valuesToSet);
-    if (replace) {history.replaceState(null, '', hash); route(scroll);}
-    else if (location.hash === hash) route(scroll);
-    else location.hash = hash;
+  function navigate(state, replace = false, scroll = true) {
+    const hash = nav.href(state);
+    if (replace) history.replaceState(null, '', hash);
+    else if (location.hash !== hash && !(location.hash === '' && hash === '#')) history.pushState(null, '', hash);
+    route(scroll);
   }
   function field(label, choices, value, onChange, name) {
     const wrap = el('label', 'field'); wrap.append(el('span', '', label));
@@ -32,172 +32,174 @@
     const h = el('div', 'section-heading'); h.append(el('h2', '', title)); if (trailing) h.append(trailing); host.append(h);
   }
   function row(item, options = {}) {
-    const link = a('', detailURL(item), 'entry');
+    const link = entryLink(item, '', 'entry'); link.dataset.entry = C.key(item);
     const marker = item.type === 'question' ? item.code : labels[item.type];
     link.append(el('span', 'entry-meta', marker), el('strong', '', item.title));
     if (options.summary && item.type !== 'question') link.append(el('p', '', item.summary));
     if (item.type === 'question') link.append(el('span', 'caption', item.chapter + ' / ' + item.level));
+    if (item.type === 'implementation') link.append(el('span', 'caption', item.framework));
     return link;
   }
-  function sectionItems(section) {return graph.items.filter(item => graph.inSection(item, section.id));}
-  function scope(item) {
-    const topic = item?.type === 'topic' ? item : graph.lookup.get('topic:' + item?.topics?.[0]);
-    return {area: current.get('area') || current.get('chapter') || topic?.chapter || '', section: current.get('section') || (topic ? graph.topicSection.get(topic.id) : '') || '', ref: current.get('ref') || (item?.type === 'topic' ? item.id : '')};
-  }
-  function reveal(view, scroll) {
-    document.querySelectorAll('.view').forEach(v => {v.hidden = v.id !== view;});
-    $('mobile-directory').close();
-    document.querySelectorAll('[data-nav]').forEach(n => {
-      const detailKind = current.has('case') || current.has('question');
-      const active = (n.dataset.nav === 'map' && (['home', 'chapter', 'paths'].includes(view) || (view === 'detail' && !detailKind))) || (n.dataset.nav === 'questions' && view === 'detail' && detailKind) || n.dataset.nav === view;
-      if (active) n.setAttribute('aria-current', 'page'); else n.removeAttribute('aria-current');
-    });
-    if (scroll) window.scrollTo({top: 0, behavior: 'instant'});
-  }
-  function chapterGroups(chapter) {
-    if (chapter.id !== 'frameworks') return chapter.sections.map(s => ({
-      id: s.id, title: s.title, items: s.topics.map(id => graph.lookup.get('topic:' + id))
-    }));
-    const groups = new Map();
-    for (const item of graph.entries.filter(x => x.type === 'implementation')) {
-      const key = item.framework;
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(item);
-    }
-    return [...groups].map(([title, items]) => ({title, items}));
-  }
-  function directory(host, overview = false) {
-    host.replaceChildren();
-    for (const [i, chapter] of data.chapters.entries()) {
-      const group = el('details', overview ? 'directory-group' : 'tree-group');
-      group.dataset.area = chapter.id;
-      const groups = chapterGroups(chapter);
-      const count = groups.reduce((n, s) => n + s.items.length, 0);
-      const summary = el('summary', '', (i + 1) + '. ' + chapter.title);
-      if (overview) summary.append(el('span', 'directory-count', String(count) + ' 篇'));
-      group.append(summary, a('章节概览', {chapter: chapter.id}, 'tree-overview'));
-      for (const s of groups) {
-        const sub = el('details', 'tree-section'); if (s.id) sub.dataset.section = s.id;
-        sub.append(el('summary', 'tree-section-title', s.title));
-        if (s.id) sub.append(a('小节概览', {chapter: chapter.id, section: s.id}, 'tree-overview'));
-        for (const item of s.items) {
-          const link = a(item.title, detailURL(item), 'tree-topic');
-          link.dataset.entry = item.type + ':' + item.id;
-          sub.append(link);
+  // Directory disclosure and selection are independent controls. The same DOM moves into
+  // the mobile dialog; expansion state is never coupled to content type or search.
+  const treeRecords = [];
+  function buildDirectory() {
+    const host = $('chapter-list'); host.replaceChildren();
+    function append(parent, node, depth) {
+      const wrapper = el('div', 'directory-node'); wrapper.dataset.depth = String(depth);
+      const line = el('div', 'directory-line'); const key = nav.scopeKey(node.scope);
+      const link = a(node.title, '#', 'scope-link'); link.dataset.scope = key;
+      link.dataset.area = node.scope.area;
+      if (node.scope.section) link.dataset.section = node.scope.section;
+      if (node.scope.ref) link.dataset.ref = node.scope.ref;
+      if (node.scope.framework) link.dataset.framework = node.scope.framework;
+      if (node.scope.impl) link.dataset.impl = node.scope.impl;
+      const count = el('span', 'scope-count'); count.setAttribute('aria-hidden', 'true'); link.append(count);
+      let children, toggle;
+      if (node.children?.length) {
+        children = el('div', 'directory-children'); children.id = 'directory-branch-' + treeRecords.length;
+        children.hidden = true;
+        toggle = button('', () => setExpanded(!children.hidden ? false : true), 'directory-toggle');
+        toggle.setAttribute('aria-controls', children.id);
+        function setExpanded(open) {
+          children.hidden = !open; toggle.setAttribute('aria-expanded', String(open));
+          toggle.setAttribute('aria-label', (open ? '收起 ' : '展开 ') + node.title);
         }
-        group.append(sub);
+        setExpanded(false); line.append(toggle);
+        treeRecords.push({node, key, link, count, children, setExpanded});
+      } else {
+        line.append(el('span', 'directory-spacer')); treeRecords.push({node, key, link, count});
       }
-      host.append(group);
+      line.append(link); wrapper.append(line);
+      if (children) {node.children.forEach(child => append(children, child, depth + 1)); wrapper.append(children);}
+      parent.append(wrapper);
     }
-    host.append(a('学习路线', {view: 'paths'}, 'tree-overview'), a('工程 Issues', {view: 'questions', kind: 'case'}, 'tree-overview'), a('全部问答', {view: 'questions', kind: 'question'}, 'tree-overview'));
+    append(host, {title: '全部内容', scope: N.EMPTY}, 0);
+    nav.tree().forEach(node => append(host, node, 0));
   }
-  function tree(host) {directory(host);}
-  function updateTree(item) {
-    const area = current.get('chapter') || current.get('area') || (item?.type === 'implementation' ? 'frameworks' : item?.type === 'topic' ? item.chapter : graph.lookup.get('topic:' + item?.topics?.[0])?.chapter);
-    const selected = item?.type === 'implementation' ? 'implementation:' + item.id : item?.type === 'topic' ? 'topic:' + item.id : current.get('ref') ? 'topic:' + current.get('ref') : '';
-    document.querySelectorAll('.tree-group').forEach(group => {if (group.dataset.area === area) group.open = true;});
-    document.querySelectorAll('.tree-group [data-entry]').forEach(link => {
-      if (link.dataset.entry === selected) {
-        link.setAttribute('aria-current', 'page');
-        link.closest('.tree-section').open = true;
-      } else link.removeAttribute('aria-current');
-    });
-  }
-  function renderHome() {
-    const host = $('home'); host.replaceChildren();
-    head(host, 'RL Infra 技术手册');
-    const directoryHost = el('nav', 'directory-index');
-    directoryHost.setAttribute('aria-label', '章节目录');
-    directory(directoryHost, true); host.append(directoryHost);
-  }
-  function renderPaths() {
-    const host = $('paths'); host.replaceChildren();
-    head(host, '学习路线');
-    for (const path of meta.paths || []) {
-      const section = el('section', 'topic-section');
-      sectionHead(section, path.title); section.append(el('p', 'lead', path.goal));
-      for (const id of path.topics) section.append(row(graph.lookup.get('topic:' + id), {summary: true}));
-      host.append(section);
+  function updateDirectory() {
+    const active = nav.scopeKey(current.scope), ancestors = new Set(nav.trail(current.scope).map(x => nav.scopeKey(x.scope)));
+    for (const record of treeRecords) {
+      record.link.href = nav.href(nav.selectScope(current, record.node.scope));
+      const count = results.at(record.node.scope).length;
+      record.count.textContent = String(count);
+      record.link.setAttribute('aria-label', record.node.title + '，' + count + ' 项' + modeLabels[current.mode]);
+      selected(record.link, !current.paths && record.key === active);
+      if (record.children && ancestors.has(record.key)) record.setExpanded(true);
     }
   }
-  function renderChapter(id) {
-    const chapter = graph.chapters.get(id); if (!chapter) return missing();
-    const host = $('chapter'); host.replaceChildren(); head(host, chapter.title, chapter.description);
-    if (id === 'frameworks') {for (const group of chapterGroups(chapter)) {const section = el('section', 'topic-section'); sectionHead(section, group.title); group.items.forEach(x => section.append(row(x, {summary: true}))); host.append(section);} return;}
-    if (!chapter.sections.length) {host.append(el('p', 'caption', '待补充')); return;}
-    const selected = current.get('section');
-    if (selected && !chapter.sections.some(s => s.id === selected)) return missing();
-    for (const s of chapter.sections || []) {
-      if (selected && selected !== s.id) continue;
-      const section = el('section', 'topic-section'); section.id = 'group-' + s.id;
-      const items = sectionItems(s), problems = items.filter(x => ['case', 'question'].includes(x.type)), implementations = items.filter(x => x.type === 'implementation');
-      sectionHead(section, s.title, a(problems.length + ' 个问题 →', {view: 'questions', area: id, section: s.id}));
-      s.topics.forEach(id => section.append(row(graph.lookup.get('topic:' + id), {summary: true})));
-      if (implementations.length) {
-        const fold = el('details'); fold.open = true; fold.append(el('summary', '', '框架实现 / ' + implementations.length)); implementations.forEach(x => fold.append(row(x))); section.append(fold);
-      }
-      if (problems.length) {
-        const fold = el('details'); fold.open = true; fold.append(el('summary', '', 'Issues 与问答 / ' + problems.length)); const cases = problems.filter(x => x.type === 'case'), questions = problems.filter(x => x.type === 'question'); cases.forEach(x => fold.append(row(x))); questions.slice(0, 4).forEach(x => fold.append(row(x))); fold.append(a('查看全部问题', {view: 'questions', area: id, section: s.id}, 'more')); section.append(fold);
-      }
-      host.append(section);
+  const mobile = matchMedia('(max-width: 900px)');
+  function placeDirectory() {
+    if (mobile.matches) $('mobile-tree').append($('chapter-list'));
+    else {if ($('mobile-directory').open) $('mobile-directory').close(); $('desktop-tree').append($('chapter-list'));}
+  }
+  function renderContext() {
+    const trail = nav.trail(current.scope), last = trail[trail.length - 1];
+    const bc = $('scope-breadcrumbs'); bc.replaceChildren();
+    for (const [i, node] of trail.entries()) {
+      if (i) bc.append(el('span', 'breadcrumb-separator', '/'));
+      if (i === trail.length - 1) {const here = el('span', 'breadcrumb-current', node.title); here.setAttribute('aria-current', 'location'); bc.append(here);}
+      else bc.append(stateLink(node.title, nav.selectScope(current, node.scope)));
     }
+    $('scope-name').textContent = current.scope.area ? last.title : 'RL Infra 技术手册';
+    const chapter = graph.chapters.get(current.scope.area);
+    $('scope-description').textContent = !current.scope.area ? '模型、算法与训练基础设施' : current.scope.ref ? graph.lookup.get('topic:' + current.scope.ref).summary : current.scope.impl ? graph.lookup.get('implementation:' + current.scope.impl).summary : current.scope.area === 'frameworks' ? '按框架组织实现，并关联涉及的原理与 Issues。' : current.scope.section ? '' : (chapter?.description || '');
+    const counts = results.counts(current.scope);
+    for (const link of $('content-tabs').querySelectorAll('[data-mode]')) {
+      const mode = link.dataset.mode;
+      link.href = nav.href(nav.selectMode(current, mode));
+      link.querySelector('.tab-count').textContent = counts[mode];
+      selected(link, current.mode === mode);
+    }
+    const query = $('query-state'); query.replaceChildren(); query.hidden = !current.q;
+    if (current.q) {
+      query.append(el('span', '', '搜索：' + current.q), stateLink('清除', nav.search(current, '')));
+      if (current.scope.area) query.append(stateLink('搜索全部领域', nav.selectScope(current, {}), 'query-global'));
+    }
+    $('search').placeholder = current.scope.area ? '搜索当前范围…' : '搜索知识、Issues、框架实现…';
+    $('workspace-context').classList.toggle('reading-context', !!current.entry);
+  }
+  function overview(host) {
+    const chapters = el('section', 'chapter-overview');
+    sectionHead(chapters, '领域目录');
+    for (const [i, chapter] of data.chapters.entries()) {
+      const scope = nav.normalizeScope({area: chapter.id}), counts = results.counts(scope);
+      const line = el('div', 'chapter-overview-row'); line.dataset.chapter = chapter.id;
+      const title = el('div', 'chapter-identity'); title.append(el('span', 'chapter-number', String(i + 1).padStart(2, '0')), stateLink(chapter.title, nav.selectScope(current, scope), 'chapter-name'));
+      const modes = el('div', 'chapter-modes');
+      for (const m of ['topic', 'issues', 'implementation']) {
+        const link = stateLink(modeLabels[m] + ' ' + counts[m], nav.selectMode(nav.selectScope(current, scope), m));
+        link.dataset.mode = m; modes.append(link);
+      }
+      line.append(title, modes); chapters.append(line);
+    }
+    const lineage = graph.lookup.get('topic:technology-lineage');
+    if (lineage) {const intro = el('div', 'overview-intro'); intro.append(entryLink(lineage, '技术谱系与演进', 'overview-link'), el('p', 'caption', '技术家族、演进关系与建设路线。')); host.append(intro);}
+    host.append(chapters);
   }
   function reviewState() {
     let result;
     try {result = C.readProgress(localStorage, knownIds);} catch (error) {result = {state: {version: 1, records: {}}, error: error.message};}
-    if (result.error) notice('复习记录暂不可读。未覆盖原记录\uff1b请先导出备份。');
+    if (result.error) notice('复习记录暂不可读。未覆盖原记录；请先导出备份。');
     return result;
   }
-  function scopeHeading(host) {
-    const p = current, topic = graph.lookup.get('topic:' + p.get('ref'));
-    const chapter = graph.chapters.get(p.get('area'));
-    const section = graph.sections.get(p.get('section'));
-    const strip = el('nav', 'scope-heading'); strip.setAttribute('aria-label', '当前筛选范围');
-    strip.append(el('span', 'caption', '范围'), a('全部知识', {...values(p), area: '', section: '', ref: '', page: ''}));
-    if (chapter) strip.append(el('span', '', '/'), a(chapter.title, {...values(p), section: '', ref: '', page: ''}));
-    if (section) strip.append(el('span', '', '/'), a(section.title, {...values(p), ref: '', page: ''}));
-    if (topic) strip.append(el('span', '', '/'), a(topic.title, {topic: topic.id}));
-    host.append(strip);
-  }
-  function filters(host, kind) {
-    scopeHeading(host);
-    const form = el('div', 'filters'); const p = values(current);
-    const set = (key, value) => {const next = {...p, [key]: value, page: ''}; if (key === 'area') next.section = ''; if (key === 'area' || key === 'section') next.ref = ''; save(next, true, false);};
-    form.append(field('章节', [['', '全部'], ...data.chapters.map(c => [c.id, c.title])], p.area, v => set('area', v), 'area'));
-    const sections = [...graph.sections.values()].filter(s => !p.area || s.chapter === p.area);
-    form.append(field('小节', [['', '全部'], ...sections.map(s => [s.id, s.title])], p.section, v => set('section', v), 'section'));
-    if (kind === 'questions') {
-      form.append(field('类型', [['', '全部'], ['question', '问答'], ['case', 'Issue']], p.kind, v => set('kind', v), 'kind'));
-      form.append(field('难度', [['', '全部'], ['基础', '基础'], ['进阶', '进阶']], p.level, v => set('level', v), 'level'));
-      form.append(field('复习', [['', '全部'], ['due', '待复习'], ['weak', '需巩固'], ['bookmarked', '收藏'], ['new', '未自评']], p.review, v => set('review', v), 'review'));
-    } else form.append(field('类型', [['', '全部'], ...Object.entries(labels)], p.kind, v => set('kind', v), 'kind'));
-    host.append(form);
-  }
-  function filtered(items, progress) {
-    const p = current;
-    return graph.search(items, p.get('q') || '').filter(x => {
-      if (p.get('kind') && x.type !== p.get('kind')) return false;
-      if (!graph.inChapter(x, p.get('area')) || !graph.inSection(x, p.get('section'))) return false;
-      if (p.get('ref') && !graph.topicsOf(x).includes(p.get('ref'))) return false;
-      if (p.get('level') && x.level !== p.get('level')) return false;
-      const mode = p.get('review'), record = progress?.records[x.id] || {};
-      if (mode && x.type !== 'question') return false;
-      if (mode === 'due') return record.due && record.due <= C.dateAfter();
-      if (mode === 'weak') return ['again', 'hard'].includes(record.rating);
-      if (mode === 'bookmarked') return !!record.bookmarked;
-      if (mode === 'new') return !record.attempts;
-      return true;
-    });
+  function issueFilters(host, loaded) {
+    const switcher = el('nav', 'issue-switch'); switcher.setAttribute('aria-label', 'Issues 类型');
+    for (const [kind, title] of [['', '全部 Issues'], ['case', '工程案例'], ['question', '关联问答']]) {
+      const link = stateLink(title, nav.list(current, {kind, level: '', review: '', page: 1}));
+      link.dataset.kind = kind || 'all'; selected(link, current.kind === kind); switcher.append(link);
+    }
+    host.append(switcher);
+    const form = el('div', 'filters');
+    const set = (key, value) => navigate(nav.list(current, {[key]: value, page: 1}), false, false);
+    if (current.kind !== 'case') {
+      form.append(field('难度', [['', '全部'], ['基础', '基础'], ['进阶', '进阶']], current.level, v => set('level', v), 'level'));
+      form.append(field('复习', [['', '全部'], ['due', '待复习'], ['weak', '需巩固'], ['bookmarked', '收藏'], ['new', '未自评']], current.review, v => set('review', v), 'review'));
+      host.append(form);
+    }
+    const review = el('details', 'review-panel'); review.append(el('summary', '', '学习记录')); progressControls(review, loaded); host.append(review);
   }
   function paginate(host, items) {
-    const size = 24, pages = Math.max(1, Math.ceil(items.length / size));
-    const page = Math.min(pages, Math.max(1, Math.floor(Number(current.get('page'))) || 1));
-    host.append(el('p', 'count', items.length + ' 项结果 / ' + page + ' · ' + pages));
-    if (!items.length) host.append(el('p', 'empty', '没有匹配内容。可以减少关键词或放宽筛选。'));
+    const size = 24, pages = Math.max(1, Math.ceil(items.length / size)), page = Math.min(pages, current.page);
+    host.append(el('p', 'count', items.length + ' 项结果' + (pages > 1 ? ' · 第 ' + page + ' / ' + pages + ' 页' : '')));
+    if (!items.length) {
+      host.append(el('p', 'empty', '当前范围没有匹配内容。'));
+      if (current.q) host.append(stateLink('清除搜索', nav.search(current, ''), 'more'));
+      if (current.scope.area) host.append(stateLink('查看全部领域', nav.selectScope(current, {}), 'more'));
+    }
     items.slice((page - 1) * size, page * size).forEach(x => host.append(row(x, {summary: true})));
-    const pager = el('nav', 'pager'); pager.setAttribute('aria-label', '分页');
-    if (page > 1) pager.append(a('上一页', {...values(current), page: page - 1}));
-    if (page < pages) pager.append(a('下一页', {...values(current), page: page + 1})); host.append(pager);
+    if (pages > 1) {
+      const pager = el('nav', 'pager'); pager.setAttribute('aria-label', '分页');
+      if (page > 1) pager.append(stateLink('上一页', nav.list(current, {page: page - 1})));
+      if (page < pages) pager.append(stateLink('下一页', nav.list(current, {page: page + 1}))); host.append(pager);
+    }
+  }
+  function renderCollection(loaded) {
+    const host = $('collection'); host.replaceChildren();
+    if (current.invalid) {
+      head(host, '找不到该内容', '链接可能已过期。返回目录或搜索其他内容。');
+      host.append(a('全部内容', '#')); return;
+    }
+    if (current.mode === 'all' && !current.scope.area && !current.q) {overview(host); return;}
+    if (current.mode === 'issues') issueFilters(host, loaded);
+    if (current.mode !== 'all') {paginate(host, results.at(current.scope)); return;}
+    const counts = results.counts(current.scope);
+    host.append(el('p', 'count', counts.all + ' 项结果'));
+    if (!counts.all) {host.append(el('p', 'empty', '当前范围没有匹配内容。')); return;}
+    for (const mode of ['topic', 'issues', 'implementation']) {
+      const items = results.at(current.scope, mode); if (!items.length) continue;
+      const section = el('section', 'collection-group'); section.dataset.group = mode;
+      sectionHead(section, modeLabels[mode], stateLink('查看全部 ' + items.length, nav.selectMode(current, mode)));
+      items.slice(0, 4).forEach(x => section.append(row(x, {summary: true}))); host.append(section);
+    }
+  }
+  function renderPaths() {
+    const host = $('paths'); host.replaceChildren(); head(host, '学习路线');
+    for (const path of meta.paths || []) {
+      const section = el('section', 'topic-section');
+      sectionHead(section, path.title); section.append(el('p', 'lead', path.goal));
+      for (const id of path.topics) section.append(row(graph.lookup.get('topic:' + id), {summary: true})); host.append(section);
+    }
   }
   function download(text, name) {
     const href = URL.createObjectURL(new Blob([text], {type: 'application/json'})); const link = a('', href); link.download = name; document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(href), 1000);
@@ -205,7 +207,7 @@
   function progressControls(host, loaded) {
     const state = loaded.state, records = Object.values(state.records), strip = el('div', 'review-tools');
     const reviewed = records.filter(r => r.attempts).length, due = records.filter(r => r.due && r.due <= C.dateAfter()).length;
-    strip.append(el('span', '', '已练习 ' + reviewed + ' / ' + graph.questions.length), a('待复习 ' + due, {view: 'questions', review: 'due'}));
+    strip.append(el('span', '', '已练习 ' + reviewed + ' / ' + graph.questions.length), a('待复习 ' + due, nav.href(nav.list(current, {mode: 'issues', kind: 'question', level: '', review: 'due', page: 1}))));
     strip.append(button('导出记录', () => {
       try {
         const raw = localStorage.getItem(C.KEY);
@@ -226,19 +228,6 @@
       } catch (error) {notice('导入未执行\uff0c原记录未改动。 ' + error.message);}
     });
     host.append(strip, el('p', 'caption', '记录只保存在当前浏览器\uff0c不上传。换设备或域名前请导出。导入时保留本机已有记录。'));
-  }
-  function renderQuestions() {
-    const host = $('questions'); host.replaceChildren();
-    head(host, 'Issues', data.cases.length + ' 个工程问题 · ' + graph.questions.length + ' 道关联问答');
-    const kinds = el('nav', 'issue-switch'); kinds.setAttribute('aria-label', '问题类别');
-    for (const [kind, label] of [['', '全部'], ['case', '工程 Issues'], ['question', '关联问答']]) {const link = a(label, {...values(current), kind, page: ''}); if ((current.get('kind') || '') === kind) link.setAttribute('aria-current', 'page'); kinds.append(link);} host.append(kinds);
-    const loaded = reviewState(); filters(host, 'questions');
-    const review = el('details', 'review-panel'); review.append(el('summary', '', '学习记录')); progressControls(review, loaded); host.append(review);
-    
-    paginate(host, filtered(graph.items.filter(x => ['case', 'question'].includes(x.type)), loaded.state));
-  }
-  function renderLibrary() {
-    const host = $('library'); host.replaceChildren(); head(host, '搜索'); filters(host, 'library'); paginate(host, filtered(graph.items));
   }
   function paragraphs(host, text) {
     String(text || '').split(/\n\s*\n/).forEach(part => host.append(el('p', 'source-text', part.replace(/\\([|\[\]_])/g, '$1'))));
@@ -294,26 +283,20 @@
     for (const [i, heading] of [...article.querySelectorAll('h2,h3')].entries()) {
       if (!heading.id) heading.id = 's-' + i;
       for (const host of [$('toc'), $('mobile-toc')]) {
-        const link = a(heading.textContent, {...detailURL(item), anchor: heading.id}, heading.tagName === 'H3' ? 'sub' : '');
-        link.addEventListener('click', event => {event.preventDefault(); history.replaceState(null, '', link.href); current = C.route(location.hash); const fold = heading.closest('details'); if (fold) fold.open = true; heading.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});}); host.append(link);
+        const link = stateLink(heading.textContent, {...current, anchor: heading.id}, heading.tagName === 'H3' ? 'sub' : '');
+        link.addEventListener('click', event => {event.preventDefault(); history.replaceState(null, '', link.href); current = nav.read(location.hash); const fold = heading.closest('details'); if (fold) fold.open = true; heading.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});}); host.append(link);
       }
     }
   }
-  function renderDetail(type, id) {
-    const item = graph.lookup.get(type + ':' + id); if (!item) return missing();
+  function renderDetail(item) {
+    const type = item.type, id = item.id;
     const article = $('article'); if (window.MathJax?.typesetClear) window.MathJax.typesetClear([article]);
     // The article owns its figures. Navigation discards the entire previous subtree.
     article.replaceChildren(); $('detail-title').textContent = item.title; $('detail-type').textContent = labels[type] + (item.code ? ' / ' + item.code : item.framework ? ' / ' + item.framework : '');
     $('detail-summary').textContent = type === 'question' ? item.chapter + ' / ' + item.level : item.summary;
-    const bc = $('breadcrumbs'); bc.replaceChildren(a('知识库', {}));
-    const topic = type === 'topic' ? item : graph.lookup.get('topic:' + item.topics?.[0]);
-    if (topic) {
-      bc.append(el('span', '', '/'), a(graph.chapters.get(topic.chapter).title, {chapter: topic.chapter}));
-      const section = sectionOf(topic); if (section) bc.append(el('span', '', '/'), a(section.title, {chapter: topic.chapter, section: section.id}));
-    }
-    if (type === 'question' || type === 'case') bc.append(a('返回问题列表', lastList, 'back'));
+    const bc = $('breadcrumbs'); bc.replaceChildren(a('返回列表', nav.back(current), 'back'));
     const req = $('prerequisites'); req.replaceChildren(); const pre = type === 'topic' ? (meta.prerequisites?.[id] || []) : [];
-    req.hidden = !pre.length; if (pre.length) {req.append(el('span', 'caption', '阅读前可先看')); pre.forEach(id => req.append(a(graph.lookup.get('topic:' + id).title, {topic: id})));}
+    req.hidden = !pre.length; if (pre.length) {req.append(el('span', 'caption', '阅读前可先看')); pre.forEach(id => req.append(entryLink(graph.lookup.get('topic:' + id))));}
     if (type === 'question') {
       if (item.doc_title && C.normalized(item.doc_title) !== C.normalized(item.question)) article.append(el('p', 'model-note', '另一来源的问法\uff1a' + item.doc_title));
       article.append(el('p', 'source-warning', data.question_note || '原稿提取内容\uff0c部分公式需对照原文核对。'));
@@ -322,6 +305,13 @@
       article.append(reference);
     } else {
       article.innerHTML = item.html || '<p>Content unavailable.</p>';
+      for (const link of article.querySelectorAll('a[href^="#"]')) {
+        const raw = link.getAttribute('href'), target = nav.read(raw);
+        if (target.entry && !target.invalid) link.href = nav.href({...nav.open(current, target.entry), anchor: target.anchor});
+        else if (article.querySelectorAll('[id]').length && [...article.querySelectorAll('[id]')].some(node => '#' + node.id === raw)) {
+          link.href = nav.href({...current, anchor: raw.slice(1)});
+        }
+      }
       renderExperiments(item, article);
     }
     const related = $('related'); related.replaceChildren();
@@ -330,53 +320,56 @@
     const cases = problems.filter(x => x.type === 'case'), questions = problems.filter(x => x.type === 'question');
     if (cases.length) {sectionHead(related, '相关 Issues'); cases.forEach(x => related.append(row(x)));}
     if (questions.length) {sectionHead(related, '关联问答'); questions.slice(0, 6).forEach(x => related.append(row(x)));}
-    if (type === 'topic' && problems.length) related.append(a('查看全部 ' + problems.length + ' 个关联问题', {view: 'questions', ref: id}, 'more'));
+    if (type === 'topic' && problems.length) related.append(stateLink('查看全部 ' + problems.length + ' 个关联问题', nav.selectMode(nav.selectScope(current, {ref: id}), 'issues'), 'more'));
     if (type === 'topic') {
       const order = graph.chapters.get(item.chapter).sections.flatMap(s => s.topics), pos = order.indexOf(id), pager = el('nav', 'pager');
-      if (pos > 0) pager.append(a('上一篇\uff1a' + graph.lookup.get('topic:' + order[pos - 1]).title, {topic: order[pos - 1]}));
-      if (pos < order.length - 1) pager.append(a('下一篇\uff1a' + graph.lookup.get('topic:' + order[pos + 1]).title, {topic: order[pos + 1]})); related.append(pager);
+      if (pos > 0) pager.append(entryLink(graph.lookup.get('topic:' + order[pos - 1]), '上一篇：' + graph.lookup.get('topic:' + order[pos - 1]).title));
+      if (pos < order.length - 1) pager.append(entryLink(graph.lookup.get('topic:' + order[pos + 1]), '下一篇：' + graph.lookup.get('topic:' + order[pos + 1]).title)); related.append(pager);
     }
-    renderReview(item); toc(article, item); updateTree(item);
+    renderReview(item); toc(article, item);
     if (type !== 'question') renderDiagrams(article, renderId);
     if (window.MathJax?.typesetPromise) window.MathJax.typesetPromise([article]).catch(() => {});
     return item;
   }
-  function missing() {
-    const host = $('library'); host.replaceChildren(); head(host, '找不到该内容', '链接可能已过期。可以用顶部搜索或返回目录。'); host.append(a('返回知识库', {})); reveal('library', true); return null;
-  }
   function route(scroll = true) {
-    renderId++; current = C.route(location.hash); notice(''); $('search').value = current.get('q') || '';
-    if (current.has('category') && current.get('category') !== 'all') current.set('kind', current.get('category'));
-    if (current.has('q') && /^\d+$/.test(current.get('q')) && !current.has('view')) current.set('question', 'Q' + current.get('q').padStart(3, '0'));
-    let view = current.get('view'), title = 'RL Infra', detail = null;
-    if (view === 'questions') {lastList = location.hash; renderQuestions();}
-    else if (view === 'library') renderLibrary();
-    else if (view === 'paths') renderPaths();
-    else if (['topic', 'case', 'implementation', 'question'].some(k => current.has(k))) {
-      const type = ['topic', 'case', 'implementation', 'question'].find(k => current.has(k));
-      detail = renderDetail(type, current.get(type)); if (!detail) return; view = 'detail'; title = detail.title + ' / RL Infra';
-    } else if (current.has('chapter')) {if (!graph.chapters.has(current.get('chapter'))) return missing(); if (current.get('section') && !graph.chapters.get(current.get('chapter')).sections.some(s => s.id === current.get('section'))) return missing(); view = 'chapter'; renderChapter(current.get('chapter'));}
-    else {view = 'home'; renderHome();}
-    reveal(view, scroll); updateTree(detail); document.title = title;
-    const context = scope(detail);
-    document.querySelector('[data-nav="map"]').href = C.url(context.ref ? {topic: context.ref} : context.area ? {chapter: context.area, section: context.section} : {});
-    for (const mode of ['questions', 'library']) document.querySelector('[data-nav="' + mode + '"]').href = C.url({view: mode, ...context});
-    if (view === 'detail' && current.get('anchor')) {
-      const anchor = document.getElementById(current.get('anchor')); if (anchor && $('article').contains(anchor)) {
-        const parentDetails = anchor.closest('details'); if (parentDetails) parentDetails.open = true; anchor.scrollIntoView();
-      }
+    clearTimeout(searchTimer); renderId++; current = nav.read(location.hash); notice('');
+    if ($('search').value !== current.q) $('search').value = current.q;
+    const loaded = reviewState(); results = nav.resultSet(current, loaded.state.records);
+    updateDirectory(); renderContext();
+    const detail = current.entry && !current.invalid;
+    if (!detail && $('article').childNodes.length) {
+      if (window.MathJax?.typesetClear) window.MathJax.typesetClear([$('article')]);
+      $('article').replaceChildren(); $('related').replaceChildren(); $('question-review').replaceChildren();
+      $('toc').replaceChildren(); $('mobile-toc').replaceChildren();
+    }
+    $('workspace-context').hidden = current.paths;
+    $('collection').hidden = !!detail || current.paths;
+    $('detail').hidden = !detail || current.paths;
+    $('paths').hidden = !current.paths;
+    if (current.paths) renderPaths();
+    else if (detail) renderDetail(current.entry);
+    else renderCollection(loaded);
+    document.title = (detail ? current.entry.title : current.paths ? '学习路线' : $('scope-name').textContent) + ' / RL Infra';
+    if ($('mobile-directory').open) $('mobile-directory').close();
+    if (scroll) window.scrollTo({top: 0, behavior: 'instant'});
+    if (detail && current.anchor) {
+      const anchor = document.getElementById(current.anchor);
+      if (anchor && $('article').contains(anchor)) {const fold = anchor.closest('details'); if (fold) fold.open = true; anchor.scrollIntoView();}
     }
   }
-  function search(replace) {
-    const target = current.get('view') === 'questions' ? {...values(current), q: $('search').value.trim(), page: ''} : {view: 'library', ...scope(['topic','case','implementation','question'].map(k => graph.lookup.get(k + ':' + current.get(k))).find(Boolean)), q: $('search').value.trim()};
-    save(target, replace, false);
+  function doSearch(replace) {
+    const next = nav.search(current, $('search').value);
+    navigate(next, replace && !current.entry && !!current.q, false);
   }
-  tree($('chapter-list')); tree($('mobile-tree'));
+  buildDirectory(); placeDirectory(); mobile.addEventListener('change', placeDirectory);
   $('menu-toggle').addEventListener('click', () => $('mobile-directory').showModal());
   $('close-menu').addEventListener('click', () => $('mobile-directory').close());
-  $('mobile-tree').addEventListener('click', event => {if (event.target.closest('a')) $('mobile-directory').close();});
-  $('search-form').addEventListener('submit', event => {event.preventDefault(); clearTimeout(searchTimer); search(false);});
-  $('search').addEventListener('input', () => {clearTimeout(searchTimer); searchTimer = setTimeout(() => search(true), 160);});
+  $('chapter-list').addEventListener('click', event => {
+    if (!event.target.closest('a.scope-link')) return;
+    if ($('mobile-directory').open) $('mobile-directory').close();
+  });
+  $('search-form').addEventListener('submit', event => {event.preventDefault(); clearTimeout(searchTimer); doSearch(false);});
+  $('search').addEventListener('input', () => {clearTimeout(searchTimer); searchTimer = setTimeout(() => doSearch(true), 160);});
   document.addEventListener('keydown', event => {
     if (event.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName) && !event.metaKey && !event.ctrlKey && !event.altKey) {event.preventDefault(); $('search').focus();}
   });

@@ -33,3 +33,5 @@ test('Review writes preserve other records, drafts and legacy format',()=>{
 test('Import validates first and never replaces existing local records',()=>{assert.throws(()=>M.validateProgress({version:1,records:{999:{}}},new Set([1])));assert.throws(()=>M.validateProgress({version:1,records:[]}));const a={version:1,records:{1:M.blankRecord()}},b={version:1,records:{1:{...M.blankRecord(),note:'conflict'},2:M.blankRecord()}};const r=M.mergeProgress(a,b);assert.equal(r.added,1);assert.equal(r.conflicts,1);assert.equal(r.state.records[1].note,'');});
 test('Storage read failure cannot be mistaken for empty valid storage',()=>{const st={getItem:()=>'{broken',setItem:()=>assert.fail('must not overwrite')};assert.ok(M.readProgress(st).error);assert.throws(()=>M.saveRecord(st,1,{rating:'good'},new Set([1])));});
 console.log(`Mechanism checks passed: ${checks}`);
+
+require("./test_navigation.js");

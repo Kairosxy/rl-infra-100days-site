@@ -8,7 +8,7 @@
 
 `catalog.json` 是目录与关联关系的唯一索引。每个条目拥有稳定的 `id`；`topics` 归属一个 Chapter，`cases` 和 `implementations` 通过双向引用与核心主题关联。每个条目必须声明相对 `knowledge/` 的 `source`，文件名须与 ID 一致。Topic 的目录与 Chapter 一致；Case 选择一个主要领域；Implementation 使用框架英文 slug，跨框架放 `cross-framework/`。构建器检查规范路径、重复或未登记正文、缺失文件和损坏关联。站内链接按 catalog 的稳定 ID 生成，不按物理路径生成。
 
-新增或移动文章时同步修改 `source` 及 Markdown 相对链接，保持 ID、题目映射和其他关系不变。技术家族未有实质正文前，只在谱系文档登记覆盖目标，不预建空目录。
+新增或移动文章时同步修改 `source` 及 Markdown 相对链接，保持 ID、题目映射和其他关系不变。网站使用统一范围与内容类型，知识、Issues（工程案例和关联问答）、框架实现由同一个 catalog/learning-map 关系索引派生；不要为新技术家族增加独立页面或导航分支逻辑。技术家族未有实质正文前，只在谱系文档登记覆盖目标，不预建空目录。
 
 [技术谱系与演进](topics/research/technology-lineage.md) 维护十一章的长期覆盖目标与分类规则。先补技术家族的上位问题和机制分支，再按需新增具体方法；计划节点不注册为空正文，既有稳定 ID 不变。
 

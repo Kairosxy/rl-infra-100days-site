@@ -32,8 +32,8 @@ class ReaderDocument(HTMLParser):
             self.element_ids.append(element_id)
         if tag == "header":
             self.header_count += 1
-        if tag == "a" and attributes.get("data-nav"):
-            self.navigation[attributes["data-nav"]] = attributes.get("href")
+        if tag == "a" and attributes.get("data-mode"):
+            self.navigation[attributes["data-mode"]] = attributes.get("href")
         if tag == "script" and element_id == "knowledge-data":
             self.in_payload = True
 
@@ -72,14 +72,16 @@ class KnowledgeReaderTest(unittest.TestCase):
             document = ReaderDocument()
             document.feed(html)
             document.close()
-            for element_id in ("knowledge-data", "home", "chapter", "questions", "detail", "search", "article"):
+            for element_id in ("knowledge-data", "chapter-list", "workspace-context", "content-tabs", "collection", "detail", "search", "article"):
                 self.assertIn(element_id, document.element_ids)
             duplicates = [key for key, value in Counter(document.element_ids).items() if value > 1]
             self.assertEqual(duplicates, [], "Duplicate IDs can break reader navigation")
             self.assertEqual(document.header_count, 1, "The root reader must have one header")
-            self.assertEqual(document.navigation.get("map"), "#")
-            self.assertEqual(document.navigation.get("questions"), "#view=questions")
-            self.assertEqual(document.navigation.get("library"), "#view=library")
+            self.assertEqual(document.navigation, {"all": "#", "topic": "#mode=topic",
+                                                   "issues": "#mode=issues",
+                                                   "implementation": "#mode=implementation"})
+            for old_id in ("home", "chapter", "questions", "library"):
+                self.assertNotIn(old_id, document.element_ids)
 
             self.assertTrue(document.payload_chunks, "Missing embedded knowledge data")
             payload = json.loads("".join(document.payload_chunks))
