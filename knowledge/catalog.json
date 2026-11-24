@@ -303,7 +303,9 @@
         "pipeline",
         "expert"
       ],
-      "cases": [],
+      "cases": [
+        "fsdp2-root-forward-oom"
+      ],
       "implementations": [
         "verl-hybridflow",
         "te-megatron-fp8",
@@ -579,7 +581,9 @@
         "sharding",
         "megatron"
       ],
-      "cases": [],
+      "cases": [
+        "fsdp2-root-forward-oom"
+      ],
       "implementations": [
         "parallel-config-workbook"
       ]
@@ -703,6 +707,18 @@
         "sglang-scheduler",
         "vllm-kv"
       ]
+    },
+    {
+      "id": "fsdp2-root-forward-oom",
+      "title": "FSDP2 分片之后，Forward 仍在 All-Gather 时 OOM",
+      "summary": "通过参数组边界和同时存活对象识别参数展开峰值",
+      "topics": [
+        "training-sharding",
+        "parallel-topology"
+      ],
+      "implementations": [
+        "fsdp2-sharding"
+      ]
     }
   ],
   "implementations": [
@@ -795,7 +811,8 @@
         "rl-throughput"
       ],
       "cases": [
-        "rl-step-longtail"
+        "rl-step-longtail",
+        "fsdp2-root-forward-oom"
       ]
     },
     {

@@ -5,7 +5,7 @@
   const data = JSON.parse(document.getElementById('knowledge-data').textContent);
   const graph = C.index(data), meta = data.learning_map || {}, $ = id => document.getElementById(id);
   const knownIds = new Set(graph.questions.map(q => q.id));
-  const labels = {topic: '知识', case: '工程问题', implementation: '框架实现', question: '面试题'};
+  const labels = {topic: '知识', case: 'Issue', implementation: '框架实现', question: '问答'};
   let current = C.route(location.hash), lastList = '#view=questions', renderId = 0, searchTimer = null;
   const state = {storageError: ''};
   const el = (tag, cls, text) => {const out = document.createElement(tag); if (cls) out.className = cls; if (text !== undefined) out.textContent = text; return out;};
@@ -76,20 +76,8 @@
   function renderHome() {
     const host = $('home'); host.replaceChildren();
     head(host, 'RL 训练系统', '算法、训练引擎、推理引擎与调度。按系统环节找内容\uff0c也可以从具体问题进入。');
-    host.append(el('p', 'inventory', graph.entries.length + ' 篇文档 / ' + graph.questions.length + ' 道面试题 / ' + graph.sections.size + ' 个专题'));
-    sectionHead(host, '一次训练迭代');
-    const flow = el('ol', 'system-flow');
-    for (const stage of meta.system_flow || []) {
-      const li = el('li'); const link = a('', {topic: stage.topic}); link.append(el('strong', '', stage.title), el('span', '', stage.detail)); li.append(link); flow.append(li);
-    }
-    host.append(flow, el('p', 'caption', '更新后的权重返回 Rollout。数据依赖与资源条件满足时\uff0c部分阶段可重叠执行。'));
-    const cross = el('div', 'link-strip'); for (const [id, label] of [['parallel', '并行与通信'], ['async', '数据供给与版本'], ['diagnosis', '可观测与排障']]) cross.append(a(label, {chapter: id})); host.append(cross);
-    sectionHead(host, '阅读路径');
-    for (const path of meta.paths || []) {
-      const group = el('details', 'learning-path'); group.append(el('summary', '', path.title), el('p', 'caption', path.goal));
-      const ol = el('ol'); path.topics.forEach(id => {const item = graph.lookup.get('topic:' + id); if (item) {const li = el('li'); li.append(a(item.title, {topic: id})); ol.append(li);}}); group.append(ol); host.append(group);
-    }
-    sectionHead(host, '目录');
+    host.append(el('p', 'inventory', graph.entries.length + ' 篇文档 / ' + graph.questions.length + ' 道问答 / ' + graph.sections.size + ' 个专题'));
+    sectionHead(host, '知识目录');
     for (const [i, chapter] of data.chapters.entries()) {
       const line = el('section', 'area-row');
       line.append(el('span', 'index', String(i + 1).padStart(2, '0')), a(chapter.title, {chapter: chapter.id}, 'area-title'));
@@ -98,6 +86,19 @@
       desc.append(el('span', 'caption', topics.length + ' 篇知识 / ' + questions.length + ' 道关联题'));
       const links = el('div', 'section-links'); (chapter.sections || []).forEach(s => links.append(a(s.title, {chapter: chapter.id, section: s.id}))); desc.append(links); line.append(desc); host.append(line);
     }
+    sectionHead(host, '一次训练迭代');
+    const flow = el('ol', 'system-flow');
+    for (const stage of meta.system_flow || []) {
+      const li = el('li'); const link = a('', {topic: stage.topic}); link.append(el('strong', '', stage.title), el('span', '', stage.detail)); li.append(link); flow.append(li);
+    }
+    host.append(flow, el('p', 'caption', '更新后的权重返回 Rollout。数据依赖与资源条件满足时\uff0c部分阶段可重叠执行。'));
+    const cross = el('div', 'link-strip'); for (const [id, label] of [['parallel', '并行与通信'], ['async', '数据供给与版本'], ['diagnosis', '可观测与排障']]) cross.append(a(label, {chapter: id})); host.append(cross);
+    sectionHead(host, '阅读顺序');
+    for (const path of meta.paths || []) {
+      const group = el('details', 'learning-path'); group.append(el('summary', '', path.title), el('p', 'caption', path.goal));
+      const ol = el('ol'); path.topics.forEach(id => {const item = graph.lookup.get('topic:' + id); if (item) {const li = el('li'); li.append(a(item.title, {topic: id})); ol.append(li);}}); group.append(ol); host.append(group);
+    }
+
   }
   function renderChapter(id) {
     const chapter = graph.chapters.get(id); if (!chapter) return missing();
@@ -111,10 +112,10 @@
       sectionHead(section, s.title, a(problems.length + ' 个问题 →', {view: 'questions', area: id, section: s.id}));
       s.topics.forEach(id => section.append(row(graph.lookup.get('topic:' + id), {summary: true})));
       if (implementations.length) {
-        const fold = el('details'); fold.append(el('summary', '', '框架实现 / ' + implementations.length)); implementations.forEach(x => fold.append(row(x))); section.append(fold);
+        const fold = el('details'); fold.open = true; fold.append(el('summary', '', '框架实现 / ' + implementations.length)); implementations.forEach(x => fold.append(row(x))); section.append(fold);
       }
       if (problems.length) {
-        const fold = el('details'); fold.append(el('summary', '', '相关问题 / ' + problems.length)); problems.slice(0, 6).forEach(x => fold.append(row(x))); fold.append(a('查看全部问题', {view: 'questions', area: id, section: s.id}, 'more')); section.append(fold);
+        const fold = el('details'); fold.open = true; fold.append(el('summary', '', 'Issues 与问答 / ' + problems.length)); const cases = problems.filter(x => x.type === 'case'), questions = problems.filter(x => x.type === 'question'); cases.forEach(x => fold.append(row(x))); questions.slice(0, 4).forEach(x => fold.append(row(x))); fold.append(a('查看全部问题', {view: 'questions', area: id, section: s.id}, 'more')); section.append(fold);
       }
       host.append(section);
     }
@@ -132,7 +133,7 @@
     const sections = [...graph.sections.values()].filter(s => !p.area || s.chapter === p.area);
     form.append(field('专题', [['', '全部'], ...sections.map(s => [s.id, s.title])], p.section, v => set('section', v), 'section'));
     if (kind === 'questions') {
-      form.append(field('类型', [['', '全部'], ['question', '面试题'], ['case', '工程问题']], p.kind, v => set('kind', v), 'kind'));
+      form.append(field('类型', [['', '全部'], ['question', '问答'], ['case', 'Issue']], p.kind, v => set('kind', v), 'kind'));
       form.append(field('难度', [['', '全部'], ['基础', '基础'], ['进阶', '进阶']], p.level, v => set('level', v), 'level'));
       form.append(field('复习', [['', '全部'], ['due', '待复习'], ['weak', '需巩固'], ['bookmarked', '收藏'], ['new', '未自评']], p.review, v => set('review', v), 'review'));
     } else form.append(field('类型', [['', '全部'], ...Object.entries(labels)], p.kind, v => set('kind', v), 'kind'));
@@ -194,7 +195,7 @@
   }
   function renderQuestions() {
     const host = $('questions'); host.replaceChildren();
-    head(host, '问题', graph.questions.length + ' 道面试题与 ' + data.cases.length + ' 个工程案例。保留原题号、问法、答案和追问。');
+    head(host, 'Issues', data.cases.length + ' 个工程问题 · ' + graph.questions.length + ' 道关联问答');
     const loaded = reviewState(); progressControls(host, loaded); filters(host, 'questions');
     if (current.get('ref')) host.append(a('取消知识点限定', {...values(current), ref: ''}, 'more'));
     paginate(host, filtered(graph.items.filter(x => ['case', 'question'].includes(x.type)), loaded.state));
@@ -289,7 +290,10 @@
     const related = $('related'); related.replaceChildren();
     const linked = graph.related(item), docs = linked.filter(x => !['case', 'question'].includes(x.type)), problems = linked.filter(x => ['case', 'question'].includes(x.type));
     if (docs.length) {sectionHead(related, '相关文档'); docs.forEach(x => related.append(row(x)));}
-    if (problems.length) {sectionHead(related, '相关问题'); problems.slice(0, 6).forEach(x => related.append(row(x))); if (type === 'topic') related.append(a('查看全部 ' + problems.length + ' 个问题', {view: 'questions', ref: id}, 'more'));}
+    const cases = problems.filter(x => x.type === 'case'), questions = problems.filter(x => x.type === 'question');
+    if (cases.length) {sectionHead(related, '相关 Issues'); cases.forEach(x => related.append(row(x)));}
+    if (questions.length) {sectionHead(related, '关联问答'); questions.slice(0, 6).forEach(x => related.append(row(x)));}
+    if (type === 'topic' && problems.length) related.append(a('查看全部 ' + problems.length + ' 个关联问题', {view: 'questions', ref: id}, 'more'));
     if (type === 'topic') {
       const order = graph.chapters.get(item.chapter).sections.flatMap(s => s.topics), pos = order.indexOf(id), pager = el('nav', 'pager');
       if (pos > 0) pager.append(a('上一篇\uff1a' + graph.lookup.get('topic:' + order[pos - 1]).title, {topic: order[pos - 1]}));

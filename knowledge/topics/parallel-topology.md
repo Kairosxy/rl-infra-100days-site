@@ -39,7 +39,9 @@ flowchart TD
 
 **直觉**：每张 GPU 放一份模型，处理不同样本。**不变量**：同步更新前，各副本聚合后的梯度应对应约定的全局 Batch 归约方式；梯度平均与 Loss Reduction 必须匹配。
 
-**机制**：各 Rank Forward/Backward 后按 Bucket All-Reduce 梯度；模型参数与优化器状态仍按副本完整存储。若有 P 个参数、BF16 梯度，Ring All-Reduce 的每卡近似字节量为 `2(P-1)/P × 2×参数量`，不含协议开销。注意 DDP 可能与 Backward 重叠通信。
+**机制与勘误（PyTorch v2.10.0）**：普通 DDP 按 Bucket 同步梯度，不对参数或优化器状态做分片；数据划分仍由调用者负责。原式用同一个 `P` 同时表示参数量和 Rank 数，量纲含混，不能直接用来估算网络流量。设 `N` 为梯度元素数、`p` 为 DP Group 的 Rank 数、`b` 为通信 dtype 的字节数，`S=N×b` 为待归约张量字节数。采用**理想 Ring All-Reduce 教学模型**时，每 Rank 的累计发送量为 `2(p−1)S/p`，接收量相同；这不是对 NCCL 实际算法或端到端时间的断言。
+
+沿用本文两个 BF16 MLP 权重：`N=2×4096×8192=67,108,864`，假设梯度也以 BF16 通信，`S=128 MiB`。DP=4 时，每 Rank 理想 Ring 累计发送 `2×3/4×128=192 MiB`、接收 `192 MiB`；如果实际通信梯度为 FP32，则每方向变为 `384 MiB`。注意两者都是**公式推导**，不是 GPU/NCCL 实测，也不包含 Bucket 启动、网络拓扑或 Backward Overlap。DP=4 不会把每副本 128 MiB 的这两个权重降到 32 MiB；要减少参数常驻量需要 TP、FSDP 等实际分片机制。源码依据：[PyTorch v2.10.0 `DistributedDataParallel`](https://github.com/pytorch/pytorch/blob/v2.10.0/torch/nn/parallel/distributed.py)，其中明确说明梯度同步、输入不自动切分以及副本参数更新约定。
 
 **实现**：PyTorch DDP 的 Bucket、`no_sync`、Process Group；记录 global/micro batch、梯度归约时机、Bucket 时间。**故障**：Loss 与单卡不符→检查归约/梯度累积；NCCL Hang→检查不同 Rank 的 Collective 顺序与未使用参数；慢→看 Bucket overlap。验证时锁定有效 Global Batch 与随机种子。
 

@@ -37,3 +37,10 @@ $$
 
 工程上，可以对同一批固定 Token、Reward 和 Old/Current Logprob 实现两个 Reduction，对比每个 Token 的梯度；比“跑一次大模型看 Reward 是否上涨”更直接。
 
+
+
+## Reduction 如何改变实际梯度
+
+固定两个 response，长度分别为 1 和 9，所有 action 的 advantage 为 +1，ratio 初始为 1，且未触发 clip。以最小化负 surrogate 为例，对每个 action 的 current logprob 求局部导数，Token Mean 给出 -1/10；Sequence Mean 则给短回答 -1/2、长回答每个 token -1/18。两种目标的总系数均为 -1，但分配不同。模型参数梯度还需乘上各 action 的 logprob 对参数的梯度，不能从标量 logprob 本身恢复参数梯度。
+
+最小验证可把 logprob 设为独立可求导变量，固定 old logprob、advantage 和 mask，分别执行两种 reduction 并检查梯度。随后用真实模型重复，比较共享参数梯度范数与方向。这个例子不绑定任何框架默认配置，也不证明某种 reduction 一定更优。
