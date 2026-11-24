@@ -8,6 +8,8 @@
 
 `catalog.json` 是目录与关联关系的唯一索引。每个条目拥有稳定的 `id`；`topics` 归属一个 Chapter，`cases` 和 `implementations` 通过双向引用与核心主题关联。构建器检查重复 ID、缺失正文和损坏关联，失败时阻止发布。
 
+[技术谱系与演进](topics/technology-lineage.md) 维护十一章的长期覆盖目标与分类规则。先补技术家族的上位问题和机制分支，再按需新增具体方法；计划节点不注册为空正文，既有稳定 ID 不变。
+
 论文/框架不构成第四份重复讲义：直接作为对应 Topic、Case、Implementation 的证据，并标注论文声称、源码已核实、推导示意、实测结果的差别。具体 API/源码结论应有 Commit/Release 依据。
 
 ## 面向读者
