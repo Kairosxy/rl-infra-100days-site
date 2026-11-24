@@ -13,7 +13,7 @@ $$
 
 E4M3 具有指数和尾数，**相邻可表示值的间隔不是常数**。例如固定 $a=1$，在 PyTorch 2.10.0 CPU 上，`1.03 -> 1.0`、`1.10 -> 1.125`、`0.90 -> 0.875`。这是一次可复算的 dtype 投影，不代表 TransformerEngine 会把最终 Logits 直接转为 FP8，更不是任何实际模型的 Logprob 误差测量。
 
-![E4M3 非等距格点与舍入](../assets/fp8-numerics/e4m3-grid.svg)
+![E4M3 非等距格点与舍入](../../assets/fp8-numerics/e4m3-grid.svg)
 
 一个具体的 Scale 约定来自 TransformerEngine 的 `DelayedScaling`：在其默认 Scale 计算策略下，E4M3 的最大有限值为 448，若用于缩放的 `amax=2`、`margin=0`，则下一缩放系数为 $a=448/2=224$；`margin=1` 则为 112：
 
@@ -64,4 +64,4 @@ FP8 的潜在收益主要取决于实际落在低精度 Tensor Core GEMM 上的�
 
 随后才在固定 Prompt 分布、多 Seed 的采样实验中统计 EOS Probability、Stop Reason、Response Length P50/P95 和质量；按每个 Input/Output 长度区间分开对照。能够稳定复现同 Token 的数值误差，并追到具体量化 Tensor/Recipe，才有理由尝试该层 BF16 回退或调整 Scale。若误差只出现在采样路径，先检查 Stop/Temperature/Top-p；若 Token 或 Version 不同，不能把数值差异归因于 FP8。
 
-这条排查路径与 [FP8 生成长度/Logprob 漂移案例](../cases/fp8-logprob-drift.md)、[Logprob 的概率契约](logprob-contract.md) 及 [TransformerEngine + Megatron 实现边界](../implementations/te-megatron-fp8.md) 相互衔接。完整 GPU 对照和不同 Scale 策略的实际精度/吞吐尚未运行。
+这条排查路径与 [FP8 生成长度/Logprob 漂移案例](../../cases/optimization/fp8-logprob-drift.md)、[Logprob 的概率契约](../learner/logprob-contract.md) 及 [TransformerEngine + Megatron 实现边界](../../implementations/transformerengine/te-megatron-fp8.md) 相互衔接。完整 GPU 对照和不同 Scale 策略的实际精度/吞吐尚未运行。

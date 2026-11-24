@@ -22,7 +22,7 @@
 
 ## 从一个矩阵开始
 
-![TP4 MLP：列并行输出分片，行并行局部和经 All-Reduce 归约](../assets/tensor-parallel/mlp-forward.svg)
+![TP4 MLP：列并行输出分片，行并行局部和经 All-Reduce 归约](../../assets/tensor-parallel/mlp-forward.svg)
 
 **直觉**：W1 按列拆，每卡算不同输出列；W2 按输入行拆，每卡算相同输出位置的部分贡献。前者的输出可以保留分片，后者需要求和，不能把两种结果都当作拼接。
 

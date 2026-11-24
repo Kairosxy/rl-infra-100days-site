@@ -16,8 +16,7 @@ from pathlib import Path
 
 from markdown_render import render_markdown
 from product_data import enrich_payload
-
-GROUPS = ("topics", "cases", "implementations")
+from source_layout import GROUPS, source_path, source_routes
 RELATIONS = {
     "topics": {"cases": "cases", "implementations": "implementations"},
     "cases": {"topics": "topics", "implementations": "implementations"},
@@ -30,6 +29,8 @@ def knowledge_payload(root: Path) -> dict:
     if payload.get("schema") != "rl-infra-knowledge-v1":
         raise ValueError("Unknown knowledge catalog schema")
 
+    chapter_ids = {chapter["id"] for chapter in payload["chapters"]}
+    routes = source_routes(root, payload)
     ids_by_group: dict[str, set[str]] = {}
     for group in GROUPS:
         items = payload.get(group)
@@ -42,12 +43,10 @@ def knowledge_payload(root: Path) -> dict:
             raise ValueError(f"Duplicate ID in {group}")
         ids_by_group[group] = set(identifiers)
         for item in items:
-            source = root / "knowledge" / group / f'{item["id"]}.md'
-            if not source.is_file():
-                raise FileNotFoundError(source)
+            source = source_path(root, group, item, chapter_ids)
             if not item.get("title") or not item.get("summary"):
                 raise ValueError(f"Missing description: {source}")
-            item["html"] = render_markdown(source, root)
+            item["html"] = render_markdown(source, root, knowledge_routes=routes)
 
     chapter_ids = [item["id"] for item in payload.get("chapters", [])]
     if not chapter_ids or len(set(chapter_ids)) != len(chapter_ids):

@@ -1,6 +1,6 @@
 # 参考系统：从 Prompt 到 Policy Version
 
-本文件定义贯穿课程的最小 RL training system。初期用 CPU 和小型离散环境验证语义，再逐步替换成真实 LLM、GPU 和分布式执行。这里是设计基线，不代表所有组件已经实现。前四课已有一个 [CPU Toy Bandit 参考实现](../reference_system/README.md)，覆盖采样、Reward Join、基础 REINFORCE、版本递增和 Checkpoint；图中的 Sampler、完整多轮 Trajectory、PPO/GRPO 仍属于后续扩展。
+本文件定义贯穿课程的最小 RL training system。初期用 CPU 和小型离散环境验证语义，再逐步替换成真实 LLM、GPU 和分布式执行。这里是设计基线，不代表所有组件已经实现。前四课已有一个 [CPU Toy Bandit 参考实现](../../reference_system/README.md)，覆盖采样、Reward Join、基础 REINFORCE、版本递增和 Checkpoint；图中的 Sampler、完整多轮 Trajectory、PPO/GRPO 仍属于后续扩展。
 
 ~~~mermaid
 flowchart TD

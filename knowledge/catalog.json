@@ -230,7 +230,8 @@
         "KV Cache"
       ],
       "cases": [],
-      "implementations": []
+      "implementations": [],
+      "source": "topics/model/transformer-attention.md"
     },
     {
       "id": "policy-gradient",
@@ -250,7 +251,8 @@
         "expectation"
       ],
       "cases": [],
-      "implementations": []
+      "implementations": [],
+      "source": "topics/rl/policy-gradient.md"
     },
     {
       "id": "ppo-grpo",
@@ -275,7 +277,8 @@
       ],
       "implementations": [
         "verl-hybridflow"
-      ]
+      ],
+      "source": "topics/rl/ppo-grpo.md"
     },
     {
       "id": "logprob-contract",
@@ -302,7 +305,8 @@
       ],
       "implementations": [
         "nemo-router-replay"
-      ]
+      ],
+      "source": "topics/learner/logprob-contract.md"
     },
     {
       "id": "fp8-numerics",
@@ -326,7 +330,8 @@
       ],
       "implementations": [
         "te-megatron-fp8"
-      ]
+      ],
+      "source": "topics/optimization/fp8-numerics.md"
     },
     {
       "id": "moe-router",
@@ -351,7 +356,8 @@
       ],
       "implementations": [
         "nemo-router-replay"
-      ]
+      ],
+      "source": "topics/learner/moe-router.md"
     },
     {
       "id": "parallel-topology",
@@ -379,7 +385,8 @@
         "te-megatron-fp8",
         "fsdp2-sharding",
         "megatron-parallel-groups"
-      ]
+      ],
+      "source": "topics/parallel/parallel-topology.md"
     },
     {
       "id": "kv-scheduling",
@@ -405,7 +412,8 @@
       "implementations": [
         "sglang-scheduler",
         "vllm-kv"
-      ]
+      ],
+      "source": "topics/serving/kv-scheduling.md"
     },
     {
       "id": "agent-action",
@@ -429,7 +437,8 @@
       ],
       "implementations": [
         "slime-data-buffer"
-      ]
+      ],
+      "source": "topics/agent/agent-action.md"
     },
     {
       "id": "async-rollout",
@@ -458,7 +467,8 @@
         "slime-data-buffer",
         "areal-service",
         "sglang-scheduler"
-      ]
+      ],
+      "source": "topics/async/async-rollout.md"
     },
     {
       "id": "opd-kl",
@@ -479,7 +489,8 @@
         "student"
       ],
       "cases": [],
-      "implementations": []
+      "implementations": [],
+      "source": "topics/rl/opd-kl.md"
     },
     {
       "id": "rl-throughput",
@@ -507,7 +518,8 @@
       "implementations": [
         "areal-service",
         "fsdp2-sharding"
-      ]
+      ],
+      "source": "topics/optimization/rl-throughput.md"
     },
     {
       "id": "evidence-standards",
@@ -526,7 +538,8 @@
         "analysis"
       ],
       "cases": [],
-      "implementations": []
+      "implementations": [],
+      "source": "topics/research/evidence-standards.md"
     },
     {
       "id": "tp-matrix-communication",
@@ -547,7 +560,8 @@
       "cases": [],
       "implementations": [
         "megatron-parallel-groups"
-      ]
+      ],
+      "source": "topics/parallel/tp-matrix-communication.md"
     },
     {
       "id": "pp-pipeline-bubble",
@@ -568,7 +582,8 @@
       "cases": [],
       "implementations": [
         "megatron-parallel-groups"
-      ]
+      ],
+      "source": "topics/parallel/pp-pipeline-bubble.md"
     },
     {
       "id": "ep-token-routing",
@@ -590,7 +605,8 @@
       "implementations": [
         "megatron-parallel-groups",
         "sglang-vllm-parallel"
-      ]
+      ],
+      "source": "topics/parallel/ep-token-routing.md"
     },
     {
       "id": "distributed-collectives",
@@ -611,7 +627,8 @@
       "cases": [],
       "implementations": [
         "parallel-config-workbook"
-      ]
+      ],
+      "source": "topics/compute/distributed-collectives.md"
     },
     {
       "id": "cp-sp-attention",
@@ -632,7 +649,8 @@
       "cases": [],
       "implementations": [
         "megatron-parallel-groups"
-      ]
+      ],
+      "source": "topics/parallel/cp-sp-attention.md"
     },
     {
       "id": "training-sharding",
@@ -654,7 +672,8 @@
       ],
       "implementations": [
         "parallel-config-workbook"
-      ]
+      ],
+      "source": "topics/parallel/training-sharding.md"
     },
     {
       "id": "serving-parallelism",
@@ -675,7 +694,8 @@
       "cases": [],
       "implementations": [
         "sglang-vllm-parallel"
-      ]
+      ],
+      "source": "topics/serving/serving-parallelism.md"
     },
     {
       "id": "rl-parallel-planning",
@@ -697,7 +717,8 @@
       "implementations": [
         "sglang-vllm-parallel",
         "parallel-config-workbook"
-      ]
+      ],
+      "source": "topics/async/rl-parallel-planning.md"
     },
     {
       "id": "technology-lineage",
@@ -724,7 +745,8 @@
         "post-training"
       ],
       "cases": [],
-      "implementations": []
+      "implementations": [],
+      "source": "topics/research/technology-lineage.md"
     }
   ],
   "cases": [
@@ -736,7 +758,8 @@
         "ppo-grpo",
         "logprob-contract"
       ],
-      "implementations": []
+      "implementations": [],
+      "source": "cases/rl/ppo-clip-kl.md"
     },
     {
       "id": "fp8-logprob-drift",
@@ -749,7 +772,8 @@
       ],
       "implementations": [
         "te-megatron-fp8"
-      ]
+      ],
+      "source": "cases/optimization/fp8-logprob-drift.md"
     },
     {
       "id": "moe-router-mismatch",
@@ -761,7 +785,8 @@
       ],
       "implementations": [
         "nemo-router-replay"
-      ]
+      ],
+      "source": "cases/learner/moe-router-mismatch.md"
     },
     {
       "id": "rl-step-longtail",
@@ -774,7 +799,8 @@
       "implementations": [
         "areal-service",
         "fsdp2-sharding"
-      ]
+      ],
+      "source": "cases/optimization/rl-step-longtail.md"
     },
     {
       "id": "async-group-drain",
@@ -788,7 +814,8 @@
       "implementations": [
         "verl-hybridflow",
         "slime-data-buffer"
-      ]
+      ],
+      "source": "cases/async/async-group-drain.md"
     },
     {
       "id": "kv-oom",
@@ -801,7 +828,8 @@
       "implementations": [
         "sglang-scheduler",
         "vllm-kv"
-      ]
+      ],
+      "source": "cases/serving/kv-oom.md"
     },
     {
       "id": "fsdp2-root-forward-oom",
@@ -813,7 +841,8 @@
       ],
       "implementations": [
         "fsdp2-sharding"
-      ]
+      ],
+      "source": "cases/parallel/fsdp2-root-forward-oom.md"
     }
   ],
   "implementations": [
@@ -829,7 +858,8 @@
       ],
       "cases": [
         "async-group-drain"
-      ]
+      ],
+      "source": "implementations/verl/verl-hybridflow.md"
     },
     {
       "id": "slime-data-buffer",
@@ -842,7 +872,8 @@
       ],
       "cases": [
         "async-group-drain"
-      ]
+      ],
+      "source": "implementations/slime/slime-data-buffer.md"
     },
     {
       "id": "areal-service",
@@ -855,7 +886,8 @@
       ],
       "cases": [
         "rl-step-longtail"
-      ]
+      ],
+      "source": "implementations/areal/areal-service.md"
     },
     {
       "id": "te-megatron-fp8",
@@ -868,7 +900,8 @@
       ],
       "cases": [
         "fp8-logprob-drift"
-      ]
+      ],
+      "source": "implementations/transformerengine/te-megatron-fp8.md"
     },
     {
       "id": "nemo-router-replay",
@@ -881,7 +914,8 @@
       ],
       "cases": [
         "moe-router-mismatch"
-      ]
+      ],
+      "source": "implementations/nemo-rl/nemo-router-replay.md"
     },
     {
       "id": "sglang-scheduler",
@@ -894,7 +928,8 @@
       ],
       "cases": [
         "kv-oom"
-      ]
+      ],
+      "source": "implementations/sglang/sglang-scheduler.md"
     },
     {
       "id": "fsdp2-sharding",
@@ -908,7 +943,8 @@
       "cases": [
         "rl-step-longtail",
         "fsdp2-root-forward-oom"
-      ]
+      ],
+      "source": "implementations/pytorch/fsdp2-sharding.md"
     },
     {
       "id": "vllm-kv",
@@ -920,7 +956,8 @@
       ],
       "cases": [
         "kv-oom"
-      ]
+      ],
+      "source": "implementations/vllm/vllm-kv.md"
     },
     {
       "id": "megatron-parallel-groups",
@@ -940,7 +977,8 @@
         "parallel",
         "gpu",
         "topology"
-      ]
+      ],
+      "source": "implementations/megatron/megatron-parallel-groups.md"
     },
     {
       "id": "sglang-vllm-parallel",
@@ -958,7 +996,8 @@
         "parallel",
         "gpu",
         "topology"
-      ]
+      ],
+      "source": "implementations/cross-framework/sglang-vllm-parallel.md"
     },
     {
       "id": "parallel-config-workbook",
@@ -976,7 +1015,8 @@
         "parallel",
         "gpu",
         "topology"
-      ]
+      ],
+      "source": "implementations/cross-framework/parallel-config-workbook.md"
     }
   ],
   "releases": [

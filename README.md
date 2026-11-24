@@ -2,26 +2,46 @@
 
 一份面向 RL / LLM 训练工程的公开技术知识库：基础知识、实际工程问题和主流框架实现相互关联。知识可以按主题阅读，也可以从性能故障、FP8 数值差异、MoE Routing、异步训练等具体问题进入。
 
-**[知识库首页](https://kairosxy.github.io/rl-infra-100days-site/)** · [工程问题](https://kairosxy.github.io/rl-infra-100days-site/#category=case) · [框架实现](https://kairosxy.github.io/rl-infra-100days-site/#category=implementation) · [快速复习题](https://kairosxy.github.io/rl-infra-100days-site/quiz/)
+**[知识库首页](https://kairosxy.github.io/rl-infra-100days-site/)** · [工程问题](https://kairosxy.github.io/rl-infra-100days-site/#view=questions&category=case) · [框架实现](https://kairosxy.github.io/rl-infra-100days-site/#view=library&kind=implementation) · [快速复习题](https://kairosxy.github.io/rl-infra-100days-site/quiz/)
 
 简短判断和口头表达用来帮助恢复记忆，深入研究请读完整推导、源码和案例。
 
-## 内容组织
+## 仓库目录
 
-- `knowledge/topics/` — 基础机制和数学/计算模型
-- `knowledge/cases/` — 真实现象、排查顺序、方案取舍和验证方式
-- `knowledge/implementations/` — 主流框架的核心设计、工程边界与实现参考
-- `knowledge/catalog.json` — 章节目录及 Topic / Case / Implementation 之间的关联
-- `knowledge/roadmap.md` — 每日编辑重点，不再规定每天产出固定文件
-- `knowledge/site/` — 知识库静态阅读页面
+```text
+knowledge/
+  topics/<chapter>/<id>.md          # 原理、算法与技术家族
+  cases/<domain>/<id>.md            # 工程问题与可验证案例
+  implementations/<framework>/<id>.md
+  assets/<topic>/                  # 正文机制图
+  catalog.json                     # 稳定 ID、source、目录与关联
+  learning-map.json                # 先修 DAG、学习路径和问题映射
+  roadmap.md                       # 持续建设计划
+  site/                            # 静态阅读器（不存正文）
+docs/
+  architecture/                    # 系统设计与契约
+  learning/                        # 历史学习计划
+  design/                          # 产品设计记录
+  benchmarks/                      # 实验规范与结果 schema
+  diagnostics/                     # 故障记录
+  references/                      # 阅读资料
+scripts/                           # 构建、校验、回归与部署工具
+examples/                          # 可运行工程实验
+reference_system/                  # CPU 参考实现
+quiz/                              # 原始 224 题及历史入口
+labs/                              # 兼容旧实验链接
+.github/workflows/                 # CI / Pages
+```
 
-首批已经收录 Policy Gradient、PPO/GRPO、FP8、R3、并行策略、KV、Async RL、OPD 等基础主题，含“Logprob Drift”“Group 达标但尚未 Drain”“RL Step 变慢”等案例，以及 verl、slime、AReaL、SGLang、Megatron/TransformerEngine、NeMo RL、FSDP2、vLLM 的工程说明。具体源码与实验版本仍需按每篇资料核对。
+每个知识条目的 `id` 保持不变，`source` 是相对 `knowledge/` 的规范路径。Topic 按 Chapter、Case 按主要领域、Implementation 按框架归档；跨框架实现放在 `cross-framework/`，其他关联由 catalog 表达，不复制正文。新增文章必须更新 catalog 及必要的 learning-map；目录调整不改变网站 hash 路由或浏览器学习记录。技术家族覆盖见 [RL Infra 技术谱系与演进](knowledge/topics/research/technology-lineage.md)。
+
+现有 Git 历史保留旧源文件；站内稳定路由保持不变。直接引用旧 GitHub main 文件路径的外部文档应改用新路径或历史 commit。
 
 ## 相关内容
 
 - [交互实验](https://kairosxy.github.io/rl-infra-100days-site/labs/) — 五个 Toy 模型实验，对应 Policy Gradient、Logprob 契约和 PPO/GRPO
 - [224 道复习题](https://kairosxy.github.io/rl-infra-100days-site/quiz/) — 搜索、短回答、详细解释、收藏、导入导出，数据保存在本地
-- [CPU 参考系统](reference_system/) · [工程实验](examples/) · [阅读资料](references/reading_list.md)
+- [CPU 参考系统](reference_system/) · [工程实验](examples/) · [阅读资料](docs/references/reading_list.md)
 
 ## 本地运行
 

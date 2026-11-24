@@ -11,7 +11,7 @@ flowchart LR
  S3 --> L["Loss / Backward"]
 ```
 
-![4 Stage、8 Micro-batch 的理想前向时间线](../assets/pp-pipeline-bubble/pipeline-forward.svg)
+![4 Stage、8 Micro-batch 的理想前向时间线](../../assets/pp-pipeline-bubble/pipeline-forward.svg)
 
 ## 为什么拆层不能自动获得线性加速？
 
