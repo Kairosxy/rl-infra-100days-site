@@ -192,6 +192,13 @@
       "description": "",
       "sections": [
         {
+          "id": "technology-lineage",
+          "title": "技术谱系与演进",
+          "topics": [
+            "technology-lineage"
+          ]
+        },
+        {
           "id": "research-1",
           "title": "实验与证据",
           "topics": [
@@ -691,6 +698,33 @@
         "sglang-vllm-parallel",
         "parallel-config-workbook"
       ]
+    },
+    {
+      "id": "technology-lineage",
+      "title": "RL Infra 技术谱系与演进",
+      "chapter": "research",
+      "summary": "按十一章审查 50 个技术家族，明确上位问题、演进分支、当前正文和覆盖缺口。",
+      "recall": {
+        "question": "为什么技术谱系不能按热门论文名称平铺？",
+        "answer": "模型结构、训练目标、估计器和运行时实现属于不同层级；先确定共同问题，再比较机制和证据。",
+        "spoken": "先找到技术家族，再理解各分支为何出现。"
+      },
+      "keywords": [
+        "知识谱系",
+        "技术演进",
+        "技术家族",
+        "omni",
+        "vit",
+        "dit",
+        "vla",
+        "world model",
+        "RSI",
+        "speculative decoding",
+        "policy correction",
+        "post-training"
+      ],
+      "cases": [],
+      "implementations": []
     }
   ],
   "cases": [
