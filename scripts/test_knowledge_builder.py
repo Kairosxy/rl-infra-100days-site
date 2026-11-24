@@ -98,18 +98,21 @@ class KnowledgeReaderTest(unittest.TestCase):
             for forbidden in ("legacy.html", 'id="answer-q1"', "RL_INFRA_ANSWER_V1", "\u6211\u7684\u4f5c\u7b54"):
                 self.assertFalse(forbidden in html, f"Unexpected legacy or personal content: {forbidden}")
 
-    def test_build_creates_missing_output_directories_and_copies_labs(self):
+    def test_build_creates_reader_and_legacy_redirects(self):
         with tempfile.TemporaryDirectory() as folder:
             output = Path(folder) / "fresh" / "dist" / "index.html"
             self.assertFalse(output.parent.exists())
             generate_knowledge(ROOT, output)
             self.assertTrue(output.is_file())
-            for asset in ("index.html", "style.css", "app.js", "parallel.html", "parallel-performance.html", "rl-memory.html", "workbench.css"):
+            for asset in ("index.html", "parallel.html", "parallel-performance.html", "rl-memory.html"):
                 path = output.parent / "labs" / asset
                 self.assertTrue(path.is_file(), f"Missing published lab asset: {asset}")
                 self.assertGreater(path.stat().st_size, 0)
             lab_html = (output.parent / "labs" / "index.html").read_text(encoding="utf-8")
-            self.assertFalse("{{SITE_NAV}}" in lab_html, "Lab navigation was not rendered")
+            self.assertIn("location.replace", lab_html)
+            self.assertIn("location.replace", (output.parent / "quiz" / "index.html").read_text(encoding="utf-8"))
+            for asset in ("app.js", "style.css", "workbench.css"):
+                self.assertFalse((output.parent / "labs" / asset).exists())
 
     def test_no_filler_questions_and_all_three_content_types(self):
         data = knowledge_payload(ROOT)

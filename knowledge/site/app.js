@@ -49,57 +49,81 @@
     $('mobile-directory').close();
     document.querySelectorAll('[data-nav]').forEach(n => {
       const detailKind = current.has('case') || current.has('question');
-      const active = (n.dataset.nav === 'map' && (['home', 'chapter'].includes(view) || (view === 'detail' && !detailKind))) || (n.dataset.nav === 'questions' && view === 'detail' && detailKind) || n.dataset.nav === view;
+      const active = (n.dataset.nav === 'map' && (['home', 'chapter', 'paths'].includes(view) || (view === 'detail' && !detailKind))) || (n.dataset.nav === 'questions' && view === 'detail' && detailKind) || n.dataset.nav === view;
       if (active) n.setAttribute('aria-current', 'page'); else n.removeAttribute('aria-current');
     });
     if (scroll) window.scrollTo({top: 0, behavior: 'instant'});
   }
-  function tree(host) {
+  function chapterGroups(chapter) {
+    if (chapter.id !== 'frameworks') return chapter.sections.map(s => ({
+      id: s.id, title: s.title, items: s.topics.map(id => graph.lookup.get('topic:' + id))
+    }));
+    const groups = new Map();
+    for (const item of graph.entries.filter(x => x.type === 'implementation')) {
+      const key = item.framework;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(item);
+    }
+    return [...groups].map(([title, items]) => ({title, items}));
+  }
+  function directory(host, overview = false) {
     host.replaceChildren();
     for (const [i, chapter] of data.chapters.entries()) {
-      const group = el('details', 'tree-group'); group.dataset.area = chapter.id;
-      const summary = el('summary', '', (i + 1) + '. ' + chapter.title); group.append(summary, a('概览', {chapter: chapter.id}, 'tree-overview'));
-      for (const section of chapter.sections || []) {
-        const sub = el('div', 'tree-section'); sub.append(a(section.title, {chapter: chapter.id, section: section.id}, 'tree-section-title'));
-        for (const id of section.topics) {
-          const topic = graph.lookup.get('topic:' + id); if (!topic) continue;
-          const link = a(topic.title, {topic: id}, 'tree-topic'); link.dataset.topic = id; sub.append(link);
+      const group = el('details', overview ? 'directory-group' : 'tree-group');
+      group.dataset.area = chapter.id;
+      const groups = chapterGroups(chapter);
+      const count = groups.reduce((n, s) => n + s.items.length, 0);
+      const summary = el('summary', '', (i + 1) + '. ' + chapter.title);
+      if (overview) summary.append(el('span', 'directory-count', String(count) + ' 篇'));
+      group.append(summary, a('章节概览', {chapter: chapter.id}, 'tree-overview'));
+      for (const s of groups) {
+        const sub = el('details', 'tree-section'); if (s.id) sub.dataset.section = s.id;
+        sub.append(el('summary', 'tree-section-title', s.title));
+        if (s.id) sub.append(a('小节概览', {chapter: chapter.id, section: s.id}, 'tree-overview'));
+        for (const item of s.items) {
+          const link = a(item.title, detailURL(item), 'tree-topic');
+          link.dataset.entry = item.type + ':' + item.id;
+          sub.append(link);
         }
         group.append(sub);
       }
-      if (chapter.id === 'frameworks') graph.entries.filter(x => x.type === 'implementation').forEach(x => group.append(a(x.title, detailURL(x), 'tree-topic')));
       host.append(group);
     }
+    host.append(a('学习路线', {view: 'paths'}, 'tree-overview'), a('工程 Issues', {view: 'questions', kind: 'case'}, 'tree-overview'), a('全部问答', {view: 'questions', kind: 'question'}, 'tree-overview'));
   }
+  function tree(host) {directory(host);}
   function updateTree(item) {
     const area = current.get('chapter') || current.get('area') || (item?.type === 'implementation' ? 'frameworks' : item?.type === 'topic' ? item.chapter : graph.lookup.get('topic:' + item?.topics?.[0])?.chapter);
+    const selected = item?.type === 'implementation' ? 'implementation:' + item.id : item?.type === 'topic' ? 'topic:' + item.id : current.get('ref') ? 'topic:' + current.get('ref') : '';
     document.querySelectorAll('.tree-group').forEach(group => {if (group.dataset.area === area) group.open = true;});
-    document.querySelectorAll('[data-topic]').forEach(link => {
-      if (link.dataset.topic === (item?.type === 'topic' ? item.id : current.get('ref'))) link.setAttribute('aria-current', 'page');
-      else link.removeAttribute('aria-current');
+    document.querySelectorAll('.tree-group [data-entry]').forEach(link => {
+      if (link.dataset.entry === selected) {
+        link.setAttribute('aria-current', 'page');
+        link.closest('.tree-section').open = true;
+      } else link.removeAttribute('aria-current');
     });
   }
   function renderHome() {
     const host = $('home'); host.replaceChildren();
     head(host, 'RL Infra 技术手册');
-    for (const [i, chapter] of data.chapters.entries()) {
+    const directoryHost = el('nav', 'directory-index');
+    directoryHost.setAttribute('aria-label', '章节目录');
+    directory(directoryHost, true); host.append(directoryHost);
+  }
+  function renderPaths() {
+    const host = $('paths'); host.replaceChildren();
+    head(host, '学习路线');
+    for (const path of meta.paths || []) {
       const section = el('section', 'topic-section');
-      sectionHead(section, (i + 1) + '. ' + chapter.title);
-      if (chapter.id === 'frameworks') {
-        graph.entries.filter(x => x.type === 'implementation').forEach(x => section.append(row(x)));
-      } else if (!chapter.sections.length) {
-        section.append(el('p', 'caption', '待补充'));
-      } else for (const s of chapter.sections) {
-        const heading = el('h3'); heading.append(a(s.title, {chapter: chapter.id, section: s.id})); section.append(heading);
-        s.topics.forEach(id => section.append(row(graph.lookup.get('topic:' + id))));
-      }
+      sectionHead(section, path.title); section.append(el('p', 'lead', path.goal));
+      for (const id of path.topics) section.append(row(graph.lookup.get('topic:' + id), {summary: true}));
       host.append(section);
     }
   }
   function renderChapter(id) {
     const chapter = graph.chapters.get(id); if (!chapter) return missing();
     const host = $('chapter'); host.replaceChildren(); head(host, chapter.title, chapter.description);
-    if (id === 'frameworks') {graph.entries.filter(x => x.type === 'implementation').forEach(x => host.append(row(x, {summary: true}))); return;}
+    if (id === 'frameworks') {for (const group of chapterGroups(chapter)) {const section = el('section', 'topic-section'); sectionHead(section, group.title); group.items.forEach(x => section.append(row(x, {summary: true}))); host.append(section);} return;}
     if (!chapter.sections.length) {host.append(el('p', 'caption', '待补充')); return;}
     const selected = current.get('section');
     if (selected && !chapter.sections.some(s => s.id === selected)) return missing();
@@ -206,6 +230,8 @@
   function renderQuestions() {
     const host = $('questions'); host.replaceChildren();
     head(host, 'Issues', data.cases.length + ' 个工程问题 · ' + graph.questions.length + ' 道关联问答');
+    const kinds = el('nav', 'issue-switch'); kinds.setAttribute('aria-label', '问题类别');
+    for (const [kind, label] of [['', '全部'], ['case', '工程 Issues'], ['question', '关联问答']]) {const link = a(label, {...values(current), kind, page: ''}); if ((current.get('kind') || '') === kind) link.setAttribute('aria-current', 'page'); kinds.append(link);} host.append(kinds);
     const loaded = reviewState(); filters(host, 'questions');
     const review = el('details', 'review-panel'); review.append(el('summary', '', '学习记录')); progressControls(review, loaded); host.append(review);
     
@@ -325,6 +351,7 @@
     let view = current.get('view'), title = 'RL Infra', detail = null;
     if (view === 'questions') {lastList = location.hash; renderQuestions();}
     else if (view === 'library') renderLibrary();
+    else if (view === 'paths') renderPaths();
     else if (['topic', 'case', 'implementation', 'question'].some(k => current.has(k))) {
       const type = ['topic', 'case', 'implementation', 'question'].find(k => current.has(k));
       detail = renderDetail(type, current.get(type)); if (!detail) return; view = 'detail'; title = detail.title + ' / RL Infra';

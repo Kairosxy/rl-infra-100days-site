@@ -13,6 +13,8 @@ $$
 
 E4M3 具有指数和尾数，**相邻可表示值的间隔不是常数**。例如固定 $a=1$，在 PyTorch 2.10.0 CPU 上，`1.03 -> 1.0`、`1.10 -> 1.125`、`0.90 -> 0.875`。这是一次可复算的 dtype 投影，不代表 TransformerEngine 会把最终 Logits 直接转为 FP8，更不是任何实际模型的 Logprob 误差测量。
 
+![E4M3 非等距格点与舍入](../assets/fp8-numerics/e4m3-grid.svg)
+
 一个具体的 Scale 约定来自 TransformerEngine 的 `DelayedScaling`：在其默认 Scale 计算策略下，E4M3 的最大有限值为 448，若用于缩放的 `amax=2`、`margin=0`，则下一缩放系数为 $a=448/2=224$；`margin=1` 则为 112：
 
 $$

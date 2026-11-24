@@ -14,6 +14,8 @@ flowchart LR
 
 **直觉**：EP 切的是 Expert 参数，而不是自动把 Token 均匀切开。**不变量**：每条 Assignment 的 Token ID、Expert ID、Router 权重与原始位置必须在 Dispatch/Combine 前后对应；不平衡是路由结果的性质，不一定是通信实现错误。
 
+![32 次 Expert Assignment 的均衡与热点对照](../assets/ep-token-routing/expert-load.svg)
+
 ## 通信与长尾
 
 每个 Token 的 Hidden=4096、BF16，则一个激活向量 8 KiB。Top-2 对 16 Token 产生 32 个 Assignment，若全部跨 Rank，单向 Dispatch 载荷上界示意约 256 KiB，返回同量级；真实本地命中、压缩/打包、拓扑和并行策略会改变字节量。假设某 Expert 收到 14 个 Token 而其他 Expert 只收到 2–4 个，最慢 Rank 的 Expert GEMM 和等待可能主导整个 MoE Layer 延迟。
@@ -36,6 +38,5 @@ Megatron Core MoE Token Dispatcher、Grouped GEMM、Expert Parallel Process Grou
 
 **三个对照**：均匀 Router vs 热点 Router；EP=1/2/4；固定 Expert Assignment 对比训练与推理输出。
 
-**交互图规格**：左侧 Token、中央 Expert、右侧 GPU；切换“均衡 / 热点”路由分布，连接线随 Token 目的地变化，显示每卡 Token 计数和最慢 GPU；不要让动画暗示路由一定均衡。
 
 参考：[Megatron Core](https://docs.nvidia.com/megatron-core/developer-guide/latest/index.html)。

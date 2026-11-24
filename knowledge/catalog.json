@@ -5,7 +5,15 @@
       "id": "model",
       "title": "大模型基础与模型架构",
       "description": "",
-      "sections": []
+      "sections": [
+        {
+          "id": "model-1",
+          "title": "模型前向与注意力",
+          "topics": [
+            "transformer-attention"
+          ]
+        }
+      ]
     },
     {
       "id": "compute",
@@ -194,6 +202,29 @@
     }
   ],
   "topics": [
+    {
+      "id": "transformer-attention",
+      "title": "Transformer：从 Token 到 Logits",
+      "chapter": "model",
+      "summary": "用张量形状连接 Tokenizer、Attention、MLP、GQA、LM Head 与 KV Cache 的容量和计算约束。",
+      "recall": {
+        "question": "为什么增加序列长度会改变 Attention 的开销，但 GQA 主要影响 KV 容量？",
+        "answer": "全序列 Attention 的打分涉及 query 和 key 的序列维度，GQA 共享 KV Head，不减少 Query Head 数量。",
+        "spoken": "上下文长度影响注意力计算；KV Head 数决定缓存规模的一部分。"
+      },
+      "keywords": [
+        "transformer",
+        "attention",
+        "GQA",
+        "MLP",
+        "tokenizer",
+        "logits",
+        "RoPE",
+        "KV Cache"
+      ],
+      "cases": [],
+      "implementations": []
+    },
     {
       "id": "policy-gradient",
       "title": "一次 Reward 怎么更新 Policy？",

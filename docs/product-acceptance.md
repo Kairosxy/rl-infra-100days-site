@@ -11,22 +11,23 @@
 
 ```
 python scripts/build_knowledge.py --output dist/index.html
-python scripts/build_quiz.py --output dist/quiz/index.html
 python -m unittest discover -s scripts -p 'test_*.py' -v
 node scripts/test_mechanisms.js
 python scripts/check_scripts.py dist
 python -m pip install playwright==1.57.0
-python -m playwright install --with-deps chromium
+python -m playwright install --with-deps --only-shell chromium
 python scripts/browser_smoke.py --dist dist --output test-artifacts
 ```
 
 Browser checks visit every document and Q001-Q224, switch between interactive documents, operate every native experiment, validate scoped search and local review import/export, preserve old drafts, reject corrupt state, and check 375/768/1440px layouts. Screenshots and a machine-readable report are uploaded by CI. An inline-preview run uses a storage substitute and must not be reported as HTTP or deployment verification.
 
+On GitHub-hosted Ubuntu 24.04, `scripts/prepare_ci_browser.sh` downloads only the pinned Chromium headless shell, verifies a real launch, installs system dependencies only if launch fails, and checks Chinese font coverage. The fallback installs missing dependencies; it does not bypass browser tests. Local machines can use the full dependency-install command above.
+
 Successful upload is not successful deployment. The deploy job checks that live `build-info.json` has the exact `GITHUB_SHA` and 224 questions. A later failure does not authorize calling an older published page the new release.
 
 ## Product behavior
 
-One header; hierarchical directory; problem and document search share URL state; question IDs remain stable. Native experiments are placed in relevant article sections, not nested full-page iframes. Old lab URLs forward to their articles. Markdown source links remain traceable. Mermaid and MathJax are optional pinned CDN renderers; the reader and all native figures work if their network requests fail. Diagram source remains accessible.
+One header; hierarchical directory; problem and document search share URL state; question IDs remain stable. Native experiments are placed in relevant article sections, not nested full-page iframes. Old lab and quiz URLs are lightweight redirects; no independent legacy frontend is published. Markdown source links remain traceable. Mermaid and MathJax are optional pinned CDN renderers; the reader and all native figures work if their network requests fail. Diagram source remains accessible.
 
 Review data uses the original browser-local key and numeric question IDs. Every write re-reads storage; imports validate completely before merging, keep existing records, and report conflicts. No server uploads, analytics, fabricated study scores, or assumed cross-domain synchronization.
 
