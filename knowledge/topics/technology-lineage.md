@@ -1,6 +1,6 @@
 # RL Infra 技术谱系与演进
 
-技术谱系按问题和机制组织，十一章是阅读目录。现有 21 个 Topic 已逐一归入技术家族；下面 50 个家族是覆盖目标，并不表示所有列出的技术已经有完整正文或已验证的源码。知识库不是论文名称清单：应先解释一类问题和共同机制，再比较主要分支，最后深入具体算法、版本实现和工程 Issue。
+技术谱系按问题和机制组织，十一章是阅读目录。现有 21 个 Topic 已逐一归入技术家族；下面 58 个家族是覆盖目标，并不表示所有列出的技术已经有完整正文或已验证的源码。知识库不是论文名称清单：应先解释一类问题和共同机制，再比较主要分支，最后深入具体算法、版本实现和工程 Issue。
 
 ## 分类与演进关系
 
@@ -32,6 +32,7 @@
 |---|---|---|---|
 | GPU 执行与存储 | 为什么同 FLOPs 的算子耗时不同？ | SM、Warp、Tensor Core、Register/Shared Memory/L2/HBM、Occupancy、Memory Coalescing、Roofline、Kernel Launch。 | 待补独立正文 |
 | 异步执行与编译 | CPU 提交与 GPU 执行怎样衔接？ | CUDA Stream/Event、同步语义、Graph Capture/Replay、PyTorch Dispatcher/Inductor、Triton/TileLang、编译与动态 Shape；区分语言、编译器和执行优化。 | 待补独立正文 |
+| GPU 资源共享与隔离 | 多进程训练和生成能否在同卡共存，如何控制相互干扰？ | 时间复用、CUDA Stream 并发、跨进程 Context/MPS、MIG 硬件分区、显存与带宽争用、Host Offload；CTRL 是 Co-residency 的新近研究实例，不等同于一般 MPS 能力。 | 待补独立正文 |
 | 网络与集群拓扑 | 为什么跨节点与节点内通信代价不同？ | PCIe/NVLink/NVSwitch、IB/RoCE、RDMA/GPUDirect、NUMA、NIC/rail、拥塞与拓扑映射。 | 待补独立正文 |
 | Collective 算法 | 怎样把多 Rank 的张量聚合和分发？ | P2P、Broadcast、AllReduce、AllGather、ReduceScatter、AllToAll；Ring/Tree/层次算法；带宽、时延、消息规模与同步。 | [NCCL 与 Collective：GPU 为什么在等？](distributed-collectives.md) |
 
@@ -56,6 +57,7 @@
 |---|---|---|---|
 | 自回归生成与采样 | 从 Prompt 到响应的运行阶段有什么区别？ | Prefill/Decode、TTFT/TPOT/TBT；Greedy/Temperature/Top-k/Top-p、Stop、Structured Decoding；多模态 Encoder、流式语音与连续动作生成的执行差异。 | 待补独立正文 |
 | KV Cache 管理 | 怎样控制请求状态的驻留、共享与迁移？ | 连续 KV、PagedAttention、Prefix/Radix Cache、KV 压缩/量化、Offload、HiCache/分层缓存、Eviction 与一致性。 | [KV Cache 与请求调度](kv-scheduling.md) |
+| Agent 上下文生命周期 | 哪些历史必须留在模型输入，哪些只需保存在 Harness 或外部存储？ | 完整历史与实际执行 Context、语义压缩/摘要、工具输出失效、Context Eviction、前缀复用与重 Prefill；MORTIS、Penelope、Contexture 等作为待深入核验的分支。区分删逻辑 Token 与仅回收物理 KV。 | 待补独立正文 |
 | 请求调度与并行 | 怎样控制吞吐、首 Token 和尾延迟？ | Static/Continuous Batching、Chunked Prefill、Admission/Preemption、DP Attention、TP/EP、PD Disaggregation、KV Transfer、Cache-aware Routing、弹性负载均衡。PD 不是模型并行维度。 | [推理并行：为什么不能照搬训练 TP？](serving-parallelism.md) |
 | 投机解码 | 怎样减少串行 Target Forward 次数？ | 经典 Draft–Verify；独立小模型；N-gram/Suffix；Medusa/Native MTP；EAGLE 家族；并行 Draft（PARD、DFlash、DFlash2、DSpark）；动态 Draft 长度、Adaptive Verification、精确/近似验证。MTP 训练与 Draft 训练另连模型目标；方法支持按版本核验。 | 待补独立正文 |
 | 推理时计算与搜索 | 怎样用额外候选预算改善任务表现？ | Best-of-N、Beam/Tree Search、Verifier Rerank、MCTS、Adaptive Compute、Reasoning Budget；与生成加速分开衡量。 | 待补独立正文 |
@@ -71,7 +73,8 @@
 | 策略约束与优化粒度 | 如何控制更新幅度与不同长度样本的梯度？ | TRPO/PPO/GRPO、Dr.GRPO、DAPO、GSPO、CISPO、SAPO；按 Critic/Group Advantage、Token/Sequence Ratio、Clip/平滑约束、Loss Reduction、Entropy 等维度逐项比较。DAPO 还包含动态采样，跨链关联。 | [PPO / GRPO 的优化目标](ppo-grpo.md) |
 | 反馈范式与偏好优化 | 监督信号来自哪里、如何进入训练目标？ | SFT/Instruction Tuning、RLHF/RLAIF/RLVR、ORM/PRM/Generative RM、Rule/LLM/Environment Verifier、DPO/IPO/KTO/SimPO 等偏好目标；在线采样与离线偏好数据区别。 | 待补独立正文 |
 | 蒸馏与混合目标 | 学生如何从 Teacher 分布而非单个标签学习？ | Offline KD、Forward/Reverse KL、On-policy Distillation、Self-Distillation、Online Teacher、Reward+Distillation；Full-vocab 与 Top-k/Sampled Estimator。 | [OPD、Teacher 分布与 KL](opd-kl.md) |
-| 探索、数据与自我改进 | 如何持续获得有信息量的学习样本？ | Exploration/Entropy、Rejection Sampling、Curriculum、Dynamic Sampling、Replay、Synthetic Data、Self-training、Self-rewarding、Self-play、Automatic Curriculum、RSI；广义递归改进仍需独立证据。 | 待补独立正文 |
+| 持续学习与自我改进 | 如何从生成、反馈与学习循环中持续改进能力？ | Synthetic Data、Self-training、Self-rewarding、Self-play、Automatic Curriculum、RSI；区分生成数据、模型更新与改进机制本身演进。广义递归改进仍需独立证据。 | 待补独立正文 |
+| 自适应采样与树形探索 | 如何把 Rollout 预算分配到更有学习价值的任务和中间状态？ | 固定 Group Sampling、Rejection/Dynamic Sampling、课程难度、任务级分配、Entropy/Value/Uncertainty 引导、Action-prefix Tree、分支处 Credit Assignment、历史统计与 Drift-aware Replay；WEIR 等新论文作为待深入验证的具体方法。与 Serving 搜索及环境状态 Fork 区分。 | 待补独立正文 |
 | 生成与连续动作后训练 | 离散 Token RL 之外如何优化策略或生成器？ | Diffusion/Flow Policy 的轨迹、密度与梯度估计、偏好优化、DDPO 类生成 RL、连续控制与 Imitation/Offline RL；不能直接假定存在 LLM Token Logprob 契约。 | 待补独立正文 |
 
 ### RL 训练基础设施
@@ -81,10 +84,13 @@
 | 技术家族 | 上位问题 | 分支与补全范围 | 当前正文入口 |
 |---|---|---|---|
 | RL 数据循环与接口 | 一次 Prompt/Trajectory 怎样成为有效训练样本？ | Rollout–Learner Contract、Prompt Group、Reward/Value/Old/Ref Logprob、Advantage、Mask、Batch Readiness、数据 schema 与生命周期。 | 待补独立正文 |
+| 分布式轨迹数据面 | 跨进程生产的多字段数据何时可见、可读、可回收？ | 共享内存/对象存储/RDMA、Control Plane 与 Payload、Metadata/Field Readiness、Link/Alias/Copy、部分写入、空批轮询、消费确认、超时重试、幂等和恢复；Ray Object Store、TransferQueue、Mooncake。不要把 RPC 成功或元数据 ready 当作已验证载荷一致。 | 待补独立正文 |
 | 资源部署与角色规划 | 哪些模型共享 GPU，哪些需要独立资源？ | Colocate/Hybrid/Disaggregate、Learner/Rollout/Ref/Critic/Teacher/Reward、资源池与弹性并发、显存释放与重分片。 | [RL 训推并行：Learner 与 Rollout 怎么配 GPU？](rl-parallel-planning.md) |
-| 供数与执行调度 | 如何避免整批阻塞又控制在途数据？ | 同步批式、流式流水、One-step Off-policy、Full Async、Partial Rollout、DataSampler、TransferQueue、Backpressure、Group Completion、Drain/Resume、Staleness Budget。 | [异步 Rollout 与 Policy Staleness](async-rollout.md) |
+| 供数与执行调度 | 如何避免整批阻塞又控制在途数据？ | 同步批式、流式流水、One-step Off-policy、Full Async、Partial Rollout、DataSampler、Group Completion、Drain/Resume、Staleness Budget；数据面与多资源背压独立关联。 | [异步 Rollout 与 Policy Staleness](async-rollout.md) |
+| 多资源准入与背压 | 生成、环境、评分和消费容量不同，如何防止局部提速转成全局积压？ | Producer–Consumer、Credit/Permit、Queue Budget、Admission、动态补投、Little's Law、生成资格与完整 Task 生命周期分离、端到端 Drain/Cancel、慢 Reward 队列、等待环与公平性。 | 待补独立正文 |
 | 评分与教师服务 | 训练信号如何作为服务产生并安全回填？ | Reward Model、Rule/Environment Verifier、Judge/PRM、Teacher Serving、Batching、Timeout/Retry、版本/幂等、异步评分；Score Centering 与评分服务无关。 | 待补独立正文 |
-| 权重与持久化状态 | 怎样把 Learner 新版本交给生成端并支持恢复？ | Weight Redistribution/Sync、Checkpoint Engine、张量传输/共享内存/RDMA、量化重打包、版本切换屏障与 KV 失效、故障恢复。与请求 KV Transfer 共享基础传输但状态语义不同。 | 待补独立正文 |
+| 权重传输与持久化 | 怎样传输并持久化模型与优化器状态？ | Weight Redistribution/Sync、Checkpoint Engine、张量传输/共享内存/RDMA、量化重打包、Reshard、恢复范围。与请求 KV Transfer 共享基础传输但状态语义不同。 | 待补独立正文 |
+| 更新提交与策略发布 | 训练尝试、成功更新、权重安装及 rollout 准入何时推进版本？ | Optimizer Step/Skip、逻辑提交与发布版本、Weight Install/Publication Gate、在途样本版本、原子可见性、Checkpoint 一致点、部分失败和回退。CTRL 的 Publication Gate 是这一家族的研究实例；异步不自动证明 off-policy 或任何 staleness 保证。 | 待补独立正文 |
 
 ### Agentic RL 与交互系统
 
@@ -95,6 +101,7 @@ Agentic 指多步决策和环境交互，不是所有新模型方向的上位概
 | Harness 与轨迹 | 模型输出如何成为环境动作并进入下一轮上下文？ | Agent Loop、Tool Schema、Action Parsing、Sandbox、Observation、Action Mask、上下文与 Trajectory 序列化、Timeout/Retry。 | [Agent 的 Action 到底是什么](agent-action.md) |
 | 长时程任务与信用分配 | 如何把结果反馈分配到多轮决策？ | POMDP、Outcome/Process Reward、Step/Trajectory-level Advantage、Memory、Planning/Search、任务分解、状态与工具结果可复现。 | 待补独立正文 |
 | 环境与并行采集 | 如何扩展环境交互而不失去轨迹语义？ | 环境池、并发会话、动态任务长度、仿真/真实环境、异步工具调用、Multi-Agent、Self-play；具身 VLA、World Model 作为独立模型家族关联。 | 待补独立正文 |
+| 环境状态分叉与复用 | 多条轨迹共享历史时怎样安全从同一中间状态继续探索？ | Environment Snapshot/Fork/Replay、Copy-on-Write、工具副作用与隔离、KV Prefix 共享、Trajectory ID/Parent/Version、树形 Rollout 与失败恢复。算法负责选择分支，运行时负责维护可重放状态；不能仅靠复制 Token 序列假设环境一致。 | 待补独立正文 |
 
 ### 训练与推理性能优化
 
@@ -115,6 +122,7 @@ Agentic 指多步决策和环境交互，不是所有新模型方向的上位概
 | 概率契约与诊断 | 两个 Logprob 是否来自同一动作、同一状态和正确分布？ | Token Shift、Mask、采样变换、权重版本、Old/Behavior/Current/Reference、KL/Ratio、支持集、确定性与 Batch Variance；投机解码输出分布另行验证。 | [Token Logprob 与训练目标](logprob-contract.md) |
 | 训推源头对齐 | 相同模型版本为什么仍会生成不同概率？ | 精度、Kernel/归约、Batch 不变性、Router Replay/R3、Sampler Replay、Tokenizer、分布式实现差异；区分路由、支持集和数值。 | [MoE Routing 与 R3](moe-router.md) |
 | 策略纠偏与滞后控制 | 当采样策略不同于优化策略时怎样控制偏差和方差？ | IS/TIS、Token/Sequence Reweighting、Rejection/Mask、IcePop、Score Centering、Regularized Score Centering；区分中心化、正则和重要性重加权。Policy Lag/Staleness、ESS、同步与样本过滤是治理手段。 | 待补独立正文 |
+| 训练更新等价性与梯度安全 | 改变分片、批次、Mask 或优化器执行顺序后，是否仍产生同一逻辑更新？ | 有效 Token/Sequence/Group 的 Loss Reduction、全局分母、Microbatch 累积、参数与梯度逻辑身份、Replica/Shard/Alias 去重、Global Norm/Clip、Unscale、非有限梯度共识、Mask 前后的计算图安全、数值稳定统计；对照逻辑梯度及参数/Optimizer State，而非仅比较 Loss。 | 待补独立正文 |
 | 训练稳定与分布式容错 | 如何识别静默错误、数值异常和系统故障？ | NaN/Inf/Loss Spike、梯度裁剪、低精度溢出、OOM、NCCL Hang、Rank Failure、Checkpoint 恢复、幂等与数据一致性、故障注入。 | 待补独立正文 |
 
 ### 主流框架源码
@@ -136,6 +144,21 @@ Agentic 指多步决策和环境交互，不是所有新模型方向的上位概
 |---|---|---|---|
 | 评估与实验科学 | 怎样区分效果、样本效率、计算效率和实际收益？ | Baseline、Ablation、Scaling Law、Benchmark、Pass@k/任务成功率、有效 Token/s、GPU-time、SLO、成本；置信区间与可复现性。 | [怎样判断一种新方案有效](evidence-standards.md) |
 | 资源设计与可观测 | 怎样将理论上限与真实执行对照？ | 显存/通信/计算估算、容量规划、Profiler/NSys、Tracing、关键路径与 p95/p99、分布式故障定位、性能回归。 | 待补独立正文 |
+
+## 从日程提取新的技术家族
+
+社区速览用于发现技术家族与新方法，架构周报用于抽象系统契约与边界，每日工程题用于发现基础断层与验证问题。它们与技术正文分开维护；不把日报、周报或工程题整篇导入技术手册，也不将内部设计、真实资源配置、私人日志、内部文件链接或未公开数据写入公开仓库。以下是 2026-11-24 的分类增量：只写可公开复用的机制，具体方案与性能需从原始来源独立验证。
+
+| 已发现的问题 | 归入家族 | 可公开验证的入口 |
+|---|---|---|
+| 同卡并发执行训练与生成，训练结束不必等于发布完成 | GPU 资源共享与隔离；更新提交与策略发布 | [CTRL](https://arxiv.org/abs/2611.27119)，[CUDA MPS](https://docs.nvidia.com/deploy/mps/)；比较同卡共驻留、时间复用、独立资源池，不把论文数据当作本地实测 |
+| 语义历史删减可能牺牲已有 Prefix Cache | Agent 上下文生命周期 | [Contexture](https://arxiv.org/abs/2611.26980)；检查实际执行 Context 与完整历史、质量与重算开销 |
+| 从任务中间状态分叉，选择有信息价值的采样位置 | 自适应采样与树形探索；环境状态分叉与复用 | [WEIR](https://arxiv.org/abs/2611.27570)；算法选择与运行时分叉分别验证 |
+| Metadata 请求等待可能阻塞字段就绪通知，传输超时不等于未写入 | 分布式轨迹数据面；多资源准入与背压 | [TransferQueue #217](https://github.com/Ascend/TransferQueue/pull/217)、[#219](https://github.com/Ascend/TransferQueue/pull/219)；以合并版本为准，独立验证消息与载荷 |
+| 生成结束、评分结束、可消费和版本安装是不同事件 | 多资源准入与背压；更新提交与策略发布 | 通用生产者/消费者模型与公开 RL 系统；提出可复算场景，不公开内部设计细节 |
+| 相同逻辑梯度的多个分片视图可能产生不同范数 | 训练更新等价性与梯度安全 | [PyTorch clip_grad_norm_](https://docs.pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html)、[PyTorch AMP examples](https://docs.pytorch.org/docs/stable/notes/amp_examples.html)；对照逻辑模型、唯一统计所有权、统一缩放与 Skip |
+
+最新社区论文仅核对了公开摘要及其所报告的研究机制，标作新近研究实例；没有逐版本核验的其他方法属于覆盖候选。每次吸收日程结果时记录日期、原始公开来源、家族归属及覆盖状态；已有家族优先增加分支或改进问题，只有出现独立上位问题时才新增家族。日程的公开来源无法访问或结果截断时，明确范围，不补造内容。持续关注其他主流模型、生成、具身和算法方向，不能因三个日程当前偏重 RL 系统而缩小全谱系。
 
 ## 技术演进的验收
 
