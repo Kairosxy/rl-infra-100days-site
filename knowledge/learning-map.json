@@ -438,5 +438,139 @@
     "Q219": [
       "evidence-standards"
     ]
+  },
+  "domain_map": {
+    "rows": [
+      [
+        "model",
+        "compute"
+      ],
+      [
+        "parallel",
+        "serving"
+      ],
+      [
+        "async"
+      ],
+      [
+        "rl",
+        "agent"
+      ]
+    ],
+    "support": [
+      "optimization",
+      "learner",
+      "frameworks",
+      "research"
+    ],
+    "nodes": {
+      "model": {
+        "title": "模型架构",
+        "terms": "Transformer · MoE · ViT · Omni · DiT · VLA"
+      },
+      "compute": {
+        "title": "GPU 与分布式计算",
+        "terms": "CUDA · HBM · NCCL · RDMA"
+      },
+      "parallel": {
+        "title": "分布式训练",
+        "terms": "DP / TP / PP / EP / CP · FSDP / ZeRO"
+      },
+      "serving": {
+        "title": "推理与 Serving",
+        "terms": "KV Cache · PD 分离 · 投机解码"
+      },
+      "async": {
+        "title": "RL 训练基础设施",
+        "terms": "Rollout · Reward / Teacher · 数据面 · 权重同步"
+      },
+      "rl": {
+        "title": "强化学习与后训练",
+        "terms": "PG / GAE · PPO / GRPO · OPD · RLVR · RSI"
+      },
+      "agent": {
+        "title": "Agentic RL",
+        "terms": "Harness · 环境 · 轨迹 · 树形探索"
+      },
+      "optimization": {
+        "title": "性能优化",
+        "terms": "低精度 · Kernel · Overlap"
+      },
+      "learner": {
+        "title": "训练正确性与稳定性",
+        "terms": "训推一致性 · 策略纠偏 · 容错"
+      },
+      "frameworks": {
+        "title": "框架源码",
+        "terms": "Megatron · SGLang · VERL"
+      },
+      "research": {
+        "title": "工程实践",
+        "terms": "评估 · 实验 · 可观测"
+      }
+    },
+    "edges": [
+      {
+        "from": "model",
+        "to": "parallel",
+        "relation": "模型执行"
+      },
+      {
+        "from": "model",
+        "to": "serving",
+        "relation": "模型前向"
+      },
+      {
+        "from": "compute",
+        "to": "parallel",
+        "relation": "计算与通信"
+      },
+      {
+        "from": "compute",
+        "to": "serving",
+        "relation": "执行与显存"
+      },
+      {
+        "from": "parallel",
+        "to": "async",
+        "relation": "Learner"
+      },
+      {
+        "from": "serving",
+        "to": "async",
+        "relation": "Rollout"
+      },
+      {
+        "from": "rl",
+        "to": "async",
+        "relation": "优化目标"
+      },
+      {
+        "from": "agent",
+        "to": "async",
+        "relation": "交互与轨迹"
+      }
+    ]
+  },
+  "topic_labels": {
+    "transformer-attention": "Transformer",
+    "kv-scheduling": "KV Cache",
+    "distributed-collectives": "Collective",
+    "tp-matrix-communication": "TP",
+    "policy-gradient": "Policy Gradient",
+    "ppo-grpo": "PPO / GRPO",
+    "logprob-contract": "Logprob 契约",
+    "async-rollout": "异步 Rollout",
+    "parallel-topology": "并行拓扑",
+    "pp-pipeline-bubble": "PP",
+    "ep-token-routing": "EP",
+    "cp-sp-attention": "CP / SP",
+    "training-sharding": "状态分片",
+    "serving-parallelism": "推理并行",
+    "rl-parallel-planning": "训推资源规划",
+    "fp8-numerics": "FP8",
+    "moe-router": "R3 / Router Replay",
+    "rl-throughput": "吞吐与长尾",
+    "evidence-standards": "实验验证"
   }
 }

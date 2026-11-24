@@ -84,7 +84,7 @@
       const count = results.at(record.node.scope).length;
       record.count.textContent = String(count);
       record.link.setAttribute('aria-label', record.node.title + '，' + count + ' 项' + modeLabels[current.mode]);
-      selected(record.link, !current.paths && record.key === active);
+      selected(record.link, record.key === active);
       if (record.children && ancestors.has(record.key)) record.setExpanded(true);
     }
   }
@@ -118,24 +118,86 @@
     }
     $('search').placeholder = current.scope.area ? '搜索当前范围…' : '搜索知识、Issues、框架实现…';
     $('workspace-context').classList.toggle('reading-context', !!current.entry);
+    $('workspace-context').classList.toggle('map-context', isMap());
+    $('content-tabs').querySelector('[data-mode=all] .tab-label').textContent = !current.scope.area && !current.q ? '学习地图' : '全部';
   }
+  function isMap() {
+    return !current.entry && !current.invalid && (current.paths ||
+      (current.mode === 'all' && !current.scope.area && !current.q));
+  }
+  let mapObserver;
   function overview(host) {
-    const chapters = el('section', 'chapter-overview');
-    sectionHead(chapters, '领域目录');
-    for (const [i, chapter] of data.chapters.entries()) {
-      const scope = nav.normalizeScope({area: chapter.id}), counts = results.counts(scope);
-      const line = el('div', 'chapter-overview-row'); line.dataset.chapter = chapter.id;
-      const title = el('div', 'chapter-identity'); title.append(el('span', 'chapter-number', String(i + 1).padStart(2, '0')), stateLink(chapter.title, nav.selectScope(current, scope), 'chapter-name'));
-      const modes = el('div', 'chapter-modes');
-      for (const m of ['topic', 'issues', 'implementation']) {
-        const link = stateLink(modeLabels[m] + ' ' + counts[m], nav.selectMode(nav.selectScope(current, scope), m));
-        link.dataset.mode = m; modes.append(link);
+    const home = el('div', 'learning-home');
+    const paths = el('section', 'learning-routes');
+    paths.id = 'learning-paths';
+    paths.append(el('h1', 'home-title', '学习路线'));
+    for (const path of meta.paths || []) {
+      const line = el('div', 'route-row');
+      line.append(el('h2', 'route-title', path.title));
+      const steps = el('ol', 'route-steps');
+      for (const [i, id] of path.topics.entries()) {
+        const item = graph.lookup.get('topic:' + id), step = el('li');
+        if (i) {const arrow = el('span', 'route-arrow', '→'); arrow.setAttribute('aria-hidden', 'true'); step.append(arrow);}
+        const link = entryLink(item, meta.topic_labels?.[id] || item.title);
+        link.dataset.topic = id; link.title = item.title; link.setAttribute('aria-label', item.title);
+        step.append(link); steps.append(step);
       }
-      line.append(title, modes); chapters.append(line);
+      line.append(steps); paths.append(line);
     }
+    home.append(paths);
+    const section = el('section', 'knowledge-map');
+    section.id = 'knowledge-map';
+    const heading = el('div', 'map-heading');
+    heading.append(el('h2', 'home-title', '知识脉络'));
     const lineage = graph.lookup.get('topic:technology-lineage');
-    if (lineage) {const intro = el('div', 'overview-intro'); intro.append(entryLink(lineage, '技术谱系与演进', 'overview-link'), el('p', 'caption', '技术家族、演进关系与建设路线。')); host.append(intro);}
-    host.append(chapters);
+    if (lineage) heading.append(entryLink(lineage, '技术谱系', 'map-source'));
+    section.append(heading);
+    const spec = meta.domain_map;
+    if (!spec) {home.append(section); host.append(home); return;}
+    const stage = el('div', 'map-stage'), positions = new Map();
+    function domainLink(id) {
+      const info = spec.nodes[id], link = stateLink('', nav.list(current, {scope: nav.normalizeScope({area: id}), mode: 'all', q: '', paths: false}), 'map-node');
+      link.dataset.area = id;
+      link.append(el('strong', '', info.title), el('span', 'map-terms', info.terms));
+      link.setAttribute('aria-label', graph.chapters.get(id).title + '：' + info.terms);
+      return link;
+    }
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.classList.add('map-edges'); svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('focusable', 'false');
+    stage.append(svg);
+    for (const ids of spec.rows) {
+      const row = el('div', 'map-band');
+      if (ids.length === 1) row.classList.add('map-hub');
+      for (const id of ids) {const link = domainLink(id); positions.set(id, link); row.append(link);}
+      stage.append(row);
+    }
+    section.append(stage);
+    const support = el('div', 'map-support');
+    for (const id of spec.support) support.append(domainLink(id));
+    const relations = el('ul', 'sr-only'); relations.setAttribute('aria-label', '技术关系');
+    for (const edge of spec.edges) relations.append(el('li', '', spec.nodes[edge.from].title + ' → ' + spec.nodes[edge.to].title + '：' + edge.relation));
+    const label = el('div', 'map-support-heading', '贯穿各层');
+    section.append(label, support, relations);
+    home.append(section); host.append(home);
+    function drawEdges() {
+      const frame = stage.getBoundingClientRect(); if (!frame.width || !frame.height) return;
+      svg.setAttribute('viewBox', `0 0 ${frame.width} ${frame.height}`);
+      svg.replaceChildren();
+      const node = (tag, attrs) => {const n = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v); return n;};
+      const defs = node('defs', {}), marker = node('marker', {id:'map-arrow', markerWidth:7, markerHeight:7, refX:6, refY:3.5, orient:'auto', markerUnits:'userSpaceOnUse'});
+      marker.append(node('path', {d:'M0 0 L6 3.5 L0 7', fill:'currentColor'})); defs.append(marker); svg.append(defs);
+      const drawn = new Set();
+      for (const edge of spec.edges) {
+        const a = positions.get(edge.from).getBoundingClientRect(), b = positions.get(edge.to).getBoundingClientRect();
+        const down = a.top < b.top, sy = (down ? a.bottom : a.top) - frame.top, ty = (down ? b.top : b.bottom) - frame.top;
+        const sx = (a.left + a.width / 2) - frame.left;
+        const tx = edge.to === 'async' ? sx : (b.left + b.width / 2) - frame.left;
+        const y = (sy + ty) / 2, path = `M${sx} ${sy} V${y} H${tx} V${ty}`;
+        if (!drawn.has(path)) {drawn.add(path); svg.append(node('path', {d:path, class:'map-edge', 'marker-end':'url(#map-arrow)', 'data-from':edge.from, 'data-to':edge.to}));}
+      }
+    }
+    drawEdges();
+    mapObserver = new ResizeObserver(drawEdges); mapObserver.observe(stage);
   }
   function reviewState() {
     let result;
@@ -180,7 +242,7 @@
       head(host, '找不到该内容', '链接可能已过期。返回目录或搜索其他内容。');
       host.append(a('全部内容', '#')); return;
     }
-    if (current.mode === 'all' && !current.scope.area && !current.q) {overview(host); return;}
+    if (isMap()) {overview(host); return;}
     if (current.mode === 'issues') issueFilters(host, loaded);
     if (current.mode !== 'all') {paginate(host, results.at(current.scope)); return;}
     const counts = results.counts(current.scope);
@@ -191,14 +253,6 @@
       const section = el('section', 'collection-group'); section.dataset.group = mode;
       sectionHead(section, modeLabels[mode], stateLink('查看全部 ' + items.length, nav.selectMode(current, mode)));
       items.slice(0, 4).forEach(x => section.append(row(x, {summary: true}))); host.append(section);
-    }
-  }
-  function renderPaths() {
-    const host = $('paths'); host.replaceChildren(); head(host, '学习路线');
-    for (const path of meta.paths || []) {
-      const section = el('section', 'topic-section');
-      sectionHead(section, path.title); section.append(el('p', 'lead', path.goal));
-      for (const id of path.topics) section.append(row(graph.lookup.get('topic:' + id), {summary: true})); host.append(section);
     }
   }
   function download(text, name) {
@@ -332,7 +386,7 @@
     return item;
   }
   function route(scroll = true) {
-    clearTimeout(searchTimer); renderId++; current = nav.read(location.hash); notice('');
+    clearTimeout(searchTimer); mapObserver?.disconnect(); mapObserver = undefined; renderId++; current = nav.read(location.hash); notice('');
     if ($('search').value !== current.q) $('search').value = current.q;
     const loaded = reviewState(); results = nav.resultSet(current, loaded.state.records);
     updateDirectory(); renderContext();
@@ -342,14 +396,12 @@
       $('article').replaceChildren(); $('related').replaceChildren(); $('question-review').replaceChildren();
       $('toc').replaceChildren(); $('mobile-toc').replaceChildren();
     }
-    $('workspace-context').hidden = current.paths;
-    $('collection').hidden = !!detail || current.paths;
-    $('detail').hidden = !detail || current.paths;
-    $('paths').hidden = !current.paths;
-    if (current.paths) renderPaths();
-    else if (detail) renderDetail(current.entry);
+    $('workspace-context').hidden = false;
+    $('collection').hidden = !!detail;
+    $('detail').hidden = !detail;
+    if (detail) renderDetail(current.entry);
     else renderCollection(loaded);
-    document.title = (detail ? current.entry.title : current.paths ? '学习路线' : $('scope-name').textContent) + ' / RL Infra';
+    document.title = (detail ? current.entry.title : isMap() ? '学习地图' : $('scope-name').textContent) + ' / RL Infra';
     if ($('mobile-directory').open) $('mobile-directory').close();
     if (scroll) window.scrollTo({top: 0, behavior: 'instant'});
     if (detail && current.anchor) {

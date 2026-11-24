@@ -82,8 +82,25 @@ def main():
                 go(fragment)
             check(not errors,'interactive article lifecycle regression')
             go('')
-            check(page.locator('.chapter-overview-row').count() == len(payload['chapters']) == 11,
-                  'eleven chapters in unified directory overview')
+            expect(page.locator('#learning-paths')).to_be_visible()
+            check(page.locator('#learning-paths .route-row').count() == len(payload['learning_map']['paths']),
+                  'home displays all curated learning paths')
+            check(page.locator('#knowledge-map .map-node').count() == len(payload['chapters']) == 11,
+                  'eleven distinct domains on the knowledge map')
+            check(page.locator('#knowledge-map .map-edge').count() == len(payload['learning_map']['domain_map']['edges']),
+                  'knowledge map renders each declared relationship')
+            check(page.locator('#knowledge-map .map-node[data-area="serving"]').get_attribute('href') == '#area=serving',
+                  'map node routes to unified scope')
+            page.locator('#knowledge-map .map-node[data-area="parallel"]').click()
+            expect(page.locator('#scope-name')).to_have_text(next(c['title'] for c in payload['chapters'] if c['id']=='parallel'))
+            check(page.locator('#collection [data-group]').count() == 3,
+                  'map node opens all three content types')
+            page.go_back()
+            expect(page.locator('#learning-paths')).to_be_visible()
+            page.locator('#learning-paths .route-steps a').first.click()
+            expect(page.locator('#detail-title')).to_have_text(payload['topics'][0]['title'])
+            page.go_back()
+            expect(page.locator('#knowledge-map')).to_be_visible()
             check(page.locator('#chapter-list').count() == 1, 'one directory DOM')
             branch = page.locator('.directory-node[data-depth="0"]').filter(
                 has=page.locator('.scope-link[data-scope="parallel||||"]'))
@@ -92,7 +109,8 @@ def main():
                 toggle.click()
             check(toggle.get_attribute('aria-expanded') == 'true', 'chapter expands independently of selection')
             go('#view=paths')
-            check(page.locator('#paths .entry').count() > 0, 'learning paths retain actual topic links')
+            expect(page.locator('#learning-paths')).to_be_visible()
+            check(page.locator('#learning-paths .route-steps a').count() > 0, 'legacy paths link resolves to the same homepage')
             go('#view=questions&kind=case')
             check(page.locator('#collection .entry').count() > 0, 'legacy engineering Issues entry')
             check(page.locator('#content-tabs [aria-current=page]').get_attribute('data-mode') == 'issues',

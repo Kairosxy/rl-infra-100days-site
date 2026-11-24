@@ -19,6 +19,27 @@ def enrich_payload(root: Path, catalog: dict, bank: dict) -> dict:
         require(path['topics'])
         if not path.get('title') or not path.get('goal'):
             raise ValueError('Reading path must describe an actual goal')
+    overview = meta.get('domain_map')
+    if not isinstance(overview, dict):
+        raise ValueError('Missing domain map')
+    chapters = {x['id'] for x in catalog['chapters']}
+    rows, support, nodes = overview.get('rows'), overview.get('support'), overview.get('nodes')
+    if (not isinstance(rows, list) or not all(isinstance(row, list) and 1 <= len(row) <= 2 for row in rows)
+            or not isinstance(support, list) or not isinstance(nodes, dict)):
+        raise ValueError('Invalid domain map structure')
+    main = [area for row in rows for area in row]
+    areas = main + support
+    if (set(areas) != chapters or len(areas) != len(chapters) or set(nodes) != chapters
+            or any(not node.get('title') or not node.get('terms') for node in nodes.values())):
+        raise ValueError('Domain map must cover each chapter exactly once')
+    seen_edges = set()
+    for edge in overview.get('edges', []):
+        start, end = edge.get('from'), edge.get('to')
+        if start not in main or end not in main or start == end or (start, end) in seen_edges or not edge.get('relation'):
+            raise ValueError(f'Invalid domain map edge: {edge}')
+        seen_edges.add((start, end))
+    if set(meta.get('topic_labels', {})) - topics:
+        raise ValueError('Unknown reading route label')
     for stage in meta.get('system_flow', []):
         require([stage['topic']])
     prereq = meta.get('prerequisites', {})

@@ -23,19 +23,18 @@
       <input id="search" type="search" placeholder="搜索知识、Issues、框架实现…" autocomplete="off">
       <button type="submit">查找</button>
     </form>
-    <a class="header-paths" href="#view=paths">学习路线</a>
     <button id="menu-toggle" type="button" aria-haspopup="dialog" aria-controls="mobile-directory">目录</button>
   </header>
   <dialog id="mobile-directory" aria-labelledby="directory-title">
     <div class="dialog-head"><strong id="directory-title">知识目录</strong><button id="close-menu" type="button">关闭</button></div>
     <div id="mobile-tree"></div>
-    <div class="sidebar-footer"><a href="#view=paths">学习路线</a><a href="#mode=issues&amp;review=due">待复习</a></div>
+    <div class="sidebar-footer"><a href="#mode=issues&amp;review=due">待复习</a></div>
   </dialog>
   <div class="shell">
     <aside class="sidebar">
       <p class="caption">知识目录</p>
       <div id="desktop-tree"><nav id="chapter-list" aria-label="知识目录"></nav></div>
-      <div class="sidebar-footer"><a href="#view=paths">学习路线</a><a href="#mode=issues&amp;review=due">待复习</a></div>
+      <div class="sidebar-footer"><a href="#mode=issues&amp;review=due">待复习</a></div>
     </aside>
     <main id="content" tabindex="-1">
       <div id="notice" class="status" role="status" aria-live="polite"></div>
@@ -43,7 +42,7 @@
         <nav id="scope-breadcrumbs" class="scope-breadcrumbs" aria-label="当前位置"></nav>
         <div class="scope-heading"><h1 id="scope-name"></h1><p id="scope-description" class="lead"></p></div>
         <nav id="content-tabs" class="content-tabs" aria-label="内容类型">
-          <a href="#" data-mode="all">全部 <span class="tab-count"></span></a>
+          <a href="#" data-mode="all"><span class="tab-label">全部</span> <span class="tab-count"></span></a>
           <a href="#mode=topic" data-mode="topic">知识 <span class="tab-count"></span></a>
           <a href="#mode=issues" data-mode="issues">Issues <span class="tab-count"></span></a>
           <a href="#mode=implementation" data-mode="implementation">框架实现 <span class="tab-count"></span></a>
@@ -51,7 +50,6 @@
         <div id="query-state" class="query-state" hidden></div>
       </section>
       <section id="collection" class="view" aria-label="内容列表"></section>
-      <section id="paths" class="view" hidden></section>
       <section id="detail" class="view" hidden>
         <nav id="breadcrumbs" class="breadcrumbs" aria-label="当前位置"></nav>
         <div class="reading-layout">
