@@ -137,8 +137,9 @@
     const context = scope(item), mode = activeMode();
     const key = value => JSON.stringify(graph.normalizeScope(value));
     const currentKey = key(context);
-    const loaded = mode === 'questions' && current.get('review') ? reviewState().state : undefined;
-    const candidates = mode === 'map' ? [] : filtered(mode === 'questions' ? graph.items.filter(x => ['case','question'].includes(x.type)) : graph.items, loaded, {}, current.get('view') === mode ? current : C.route(C.url(listState(mode))));
+    const params = current.get('view') === mode ? current : C.route(C.url(listState(mode)));
+    const loaded = mode === 'questions' && params.get('review') ? reviewState().state : undefined;
+    const candidates = mode === 'map' ? [] : filtered(mode === 'questions' ? graph.items.filter(x => ['case','question'].includes(x.type)) : graph.items, loaded, {}, params);
     function count(raw) {
       const selection = graph.normalizeScope(raw);
       if (mode === 'map') return graph.entries.filter(x => (selection.area === 'frameworks' ? x.type === 'implementation' : selection.area ? x.type === 'topic' : ['topic','implementation'].includes(x.type)) && graph.inScope(x, selection)).length;

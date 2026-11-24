@@ -35,7 +35,8 @@ test('Storage read failure cannot be mistaken for empty valid storage',()=>{cons
 test('Shared directory scope resolves hierarchy and framework-linked issues',()=>{
  const data=JSON.parse(fs.readFileSync('knowledge/catalog.json','utf8'));
  const bank=JSON.parse(fs.readFileSync('quiz/data/questions.json','utf8'));
- const graph=M.index({...data,question_bank:bank.questions});
+ const meta=JSON.parse(fs.readFileSync('knowledge/learning-map.json','utf8'));
+ const graph=M.index({...data,question_bank:bank.questions.map(q=>({...q,topics:meta.question_links[q.code]||[q.topic]}))});
  const tp=graph.lookup.get('topic:tp-matrix-communication');
  assert.deepEqual(graph.resolveScope({ref:tp.id}),{area:'parallel',section:'parallel-2',ref:tp.id});
  assert.deepEqual(graph.resolveScope({section:'parallel-2'}),{area:'parallel',section:'parallel-2'});

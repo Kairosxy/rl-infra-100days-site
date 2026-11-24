@@ -104,7 +104,8 @@ def main():
             expect(page.locator('#detail-title')).to_have_text(next(t for k,i,t in entries if i=='tp-matrix-communication'))
             # The same tree must filter each page instead of forcing a knowledge route.
             go('#view=questions&area=parallel')
-            page.locator('#chapter-list [data-area="parallel"] [data-section="parallel-2"] summary').click() if not page.locator('#chapter-list [data-area="parallel"] [data-section="parallel-2"]').evaluate('(e)=>e.open') else None
+            if not page.locator('#chapter-list [data-area="parallel"] [data-section="parallel-2"]').evaluate('(e)=>e.open'):
+                page.locator('#chapter-list [data-area="parallel"] [data-section="parallel-2"] summary').click()
             page.locator('#chapter-list [data-entry="topic:tp-matrix-communication"]').click()
             expect(page.locator('#questions')).to_be_visible()
             check('ref=tp-matrix-communication' in page.url, 'Issues directory selection remains in Issues')
