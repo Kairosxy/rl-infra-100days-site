@@ -7,10 +7,32 @@
       "description": "",
       "sections": [
         {
+          "id": "math-foundations",
+          "title": "数学与优化基础",
+          "topics": [
+            "tensor-autograd",
+            "probability-information"
+          ]
+        },
+        {
+          "id": "token-representation",
+          "title": "Token 与表示",
+          "topics": [
+            "token-representation"
+          ]
+        },
+        {
           "id": "model-1",
           "title": "模型前向与注意力",
           "topics": [
             "transformer-attention"
+          ]
+        },
+        {
+          "id": "model-capacity",
+          "title": "模型容量与条件计算",
+          "topics": [
+            "model-moe"
           ]
         }
       ]
@@ -20,6 +42,27 @@
       "title": "GPU 与分布式计算基础",
       "description": "",
       "sections": [
+        {
+          "id": "gpu-execution",
+          "title": "GPU 执行与存储",
+          "topics": [
+            "gpu-execution-memory"
+          ]
+        },
+        {
+          "id": "cuda-execution",
+          "title": "异步执行与编译",
+          "topics": [
+            "cuda-streams"
+          ]
+        },
+        {
+          "id": "gpu-network",
+          "title": "网络与集群拓扑",
+          "topics": [
+            "gpu-network-topology"
+          ]
+        },
         {
           "id": "parallel-1",
           "title": "通信原语",
@@ -34,6 +77,13 @@
       "title": "大模型分布式训练",
       "description": "",
       "sections": [
+        {
+          "id": "training-lifecycle",
+          "title": "训练流程与优化器",
+          "topics": [
+            "training-update-lifecycle"
+          ]
+        },
         {
           "id": "parallel-topology",
           "title": "并行拓扑",
@@ -71,6 +121,13 @@
       "title": "大模型推理与 Serving",
       "description": "",
       "sections": [
+        {
+          "id": "serving-generation",
+          "title": "自回归生成与采样",
+          "topics": [
+            "autoregressive-serving"
+          ]
+        },
         {
           "id": "serving-1",
           "title": "缓存与推理并行",
@@ -747,6 +804,217 @@
       "cases": [],
       "implementations": [],
       "source": "topics/research/technology-lineage.md"
+    },
+    {
+      "id": "tensor-autograd",
+      "title": "张量、矩阵乘法与自动微分",
+      "chapter": "model",
+      "summary": "从矩阵乘法、计算图和链式法则理解梯度、参数更新及激活显存。",
+      "recall": {
+        "question": "为什么只知道一个 Token 的 logprob 数值不能直接得到参数梯度？",
+        "answer": "数值只记录前向结果，参数梯度依赖当前可微计算图中的局部导数和链式法则。",
+        "spoken": "数值只记录前向结果，参数梯度依赖当前可微计算图中的局部导数和链式法则。"
+      },
+      "keywords": [
+        "tensor",
+        "GEMM",
+        "autograd",
+        "backward",
+        "gradient",
+        "激活"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/model/tensor-autograd.md"
+    },
+    {
+      "id": "probability-information",
+      "title": "概率、Logprob 与信息量",
+      "chapter": "model",
+      "summary": "用同一个离散分布推导条件概率、期望、Softmax、交叉熵、Entropy 和 KL。",
+      "recall": {
+        "question": "为什么一个采样 Token 的 log-ratio 可以为负，而 KL 不能为负？",
+        "answer": "KL 是在指定分布下对 log-ratio 取完整期望；单样本值是随机量。",
+        "spoken": "KL 是在指定分布下对 log-ratio 取完整期望；单样本值是随机量。"
+      },
+      "keywords": [
+        "probability",
+        "softmax",
+        "logprob",
+        "entropy",
+        "KL",
+        "cross entropy",
+        "期望",
+        "方差"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/model/probability-information.md"
+    },
+    {
+      "id": "token-representation",
+      "title": "Tokenizer、Embedding 与语言模型训练目标",
+      "chapter": "model",
+      "summary": "解释文本如何成为 token ID、向量、logits 与 next-token loss，区分多模态表示。",
+      "recall": {
+        "question": "为什么位置 t 的 logits 不能直接与位置 t 的 token ID 计算自回归 Loss？",
+        "answer": "Causal LM 的第 t 个输出条件于截至 t 的输入，预测的是下一个 token；标签需要移位。",
+        "spoken": "Causal LM 的第 t 个输出条件于截至 t 的输入，预测的是下一个 token；标签需要移位。"
+      },
+      "keywords": [
+        "tokenizer",
+        "BPE",
+        "embedding",
+        "LM head",
+        "causal shift",
+        "SFT",
+        "multimodal"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/model/token-representation.md"
+    },
+    {
+      "id": "model-moe",
+      "title": "Dense、MoE 与模型容量",
+      "chapter": "model",
+      "summary": "区分总参数、激活参数、路由概率、Expert 计算、负载均衡与 EP 的实现边界。",
+      "recall": {
+        "question": "MoE 只激活两个专家，为什么显存仍可能比 Dense 更大？",
+        "answer": "激活参数决定每 token 的一部分计算量，但所有常驻专家权重及训练状态仍占存储。",
+        "spoken": "激活参数决定每 token 的一部分计算量，但所有常驻专家权重及训练状态仍占存储。"
+      },
+      "keywords": [
+        "dense",
+        "MoE",
+        "expert",
+        "router",
+        "top-k",
+        "capacity",
+        "activated parameters"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/model/model-moe.md"
+    },
+    {
+      "id": "gpu-execution-memory",
+      "title": "GPU 执行模型、显存与算术强度",
+      "chapter": "compute",
+      "summary": "从 SM、Warp、Tensor Core 与存储层级推导 GEMM 的计算/访存成本。",
+      "recall": {
+        "question": "为什么同一个模型的 Prefill 与小 Batch Decode 可能受不同瓶颈限制？",
+        "answer": "权重可复用程度和有效算术强度不同，Decode 常有较低的矩阵维度和更多串行访存/启动成本。",
+        "spoken": "权重可复用程度和有效算术强度不同，Decode 常有较低的矩阵维度和更多串行访存/启动成本。"
+      },
+      "keywords": [
+        "SM",
+        "warp",
+        "tensor core",
+        "HBM",
+        "L2",
+        "shared memory",
+        "roofline",
+        "GEMM"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/compute/gpu-execution-memory.md"
+    },
+    {
+      "id": "cuda-streams",
+      "title": "CUDA Stream、Event 与异步执行",
+      "chapter": "compute",
+      "summary": "区分 CPU 提交、GPU 完成、跨 Stream 依赖、真实重叠与 CUDA Graph。",
+      "recall": {
+        "question": "为什么 CPU 上测一次 CUDA 调用耗时，通常不等于 Kernel 执行时间？",
+        "answer": "调用可能仅把工作提交到 Stream，CPU 返回时 GPU 尚未完成；必须选择正确同步或 Event 边界。",
+        "spoken": "调用可能仅把工作提交到 Stream，CPU 返回时 GPU 尚未完成；必须选择正确同步或 Event 边界。"
+      },
+      "keywords": [
+        "CUDA",
+        "stream",
+        "event",
+        "async",
+        "synchronize",
+        "CUDA graph",
+        "overlap"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/compute/cuda-streams.md"
+    },
+    {
+      "id": "gpu-network-topology",
+      "title": "PCIe、NVLink、RDMA 与集群通信",
+      "chapter": "compute",
+      "summary": "识别节点内外通信路径、有效带宽、时延、GPU Direct 与通信拓扑。",
+      "recall": {
+        "question": "为什么相同 64 MiB 的 All-Reduce 换了 Rank 放置后耗时可能不同？",
+        "answer": "实际链路、拓扑、共享带宽、同步及 Collective 算法变化，消息大小只是成本的一项。",
+        "spoken": "实际链路、拓扑、共享带宽、同步及 Collective 算法变化，消息大小只是成本的一项。"
+      },
+      "keywords": [
+        "PCIe",
+        "NVLink",
+        "NVSwitch",
+        "RDMA",
+        "InfiniBand",
+        "RoCE",
+        "GPUDirect",
+        "NUMA"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/compute/gpu-network-topology.md"
+    },
+    {
+      "id": "training-update-lifecycle",
+      "title": "从 DataLoader 到 Optimizer Step",
+      "chapter": "parallel",
+      "summary": "理解 SFT/预训练的 forward、backward、有效 batch、梯度累积、DDP、AdamW 与 checkpoint。",
+      "recall": {
+        "question": "每卡两个 Microbatch、不同有效 Token 数时，为什么不能简单平均两个 mean loss？",
+        "answer": "等权平均 Microbatch mean 与全局 token mean 不同；全局目标决定分子和分母的归约。",
+        "spoken": "等权平均 Microbatch mean 与全局 token mean 不同；全局目标决定分子和分母的归约。"
+      },
+      "keywords": [
+        "pretraining",
+        "SFT",
+        "DDP",
+        "microbatch",
+        "gradient accumulation",
+        "AdamW",
+        "checkpoint"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/parallel/training-update-lifecycle.md"
+    },
+    {
+      "id": "autoregressive-serving",
+      "title": "Prefill、Decode 与实际采样分布",
+      "chapter": "serving",
+      "summary": "跟踪请求的 token 生命周期、prefill/decode 计算、采样变换与延迟指标。",
+      "recall": {
+        "question": "为什么 Temperature、Top-p 不能只当成无关训练语义的推理参数？",
+        "answer": "它们改变实际行为分布，RL 的 behavior logprob 应对应真正生成动作的概率。",
+        "spoken": "它们改变实际行为分布，RL 的 behavior logprob 应对应真正生成动作的概率。"
+      },
+      "keywords": [
+        "prefill",
+        "decode",
+        "TTFT",
+        "TPOT",
+        "TBT",
+        "sampling",
+        "top-p",
+        "temperature",
+        "continuous batching"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/serving/autoregressive-serving.md"
     }
   ],
   "cases": [
@@ -1034,6 +1302,51 @@
       "date": "2026-10-27",
       "kind": "implementation",
       "id": "areal-service"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "tensor-autograd"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "probability-information"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "token-representation"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "model-moe"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "gpu-execution-memory"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "cuda-streams"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "gpu-network-topology"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "training-update-lifecycle"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "autoregressive-serving"
     }
   ]
 }

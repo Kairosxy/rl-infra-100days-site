@@ -1,6 +1,6 @@
 # RL Infra 技术谱系与演进
 
-技术谱系按问题和机制组织，十一章是阅读目录。现有 21 个 Topic 已逐一归入技术家族；下面 58 个家族是覆盖目标，并不表示所有列出的技术已经有完整正文或已验证的源码。知识库不是论文名称清单：应先解释一类问题和共同机制，再比较主要分支，最后深入具体算法、版本实现和工程 Issue。
+技术谱系按问题和机制组织，十一章是阅读目录。已有专题按所属家族归档；本轮新增 9 篇前置机制正文，基础部分已有入口的家族仍需补齐剩余分支。下面 58 个家族是覆盖目标，并不表示所有列出的技术已经有完整正文或已验证的源码。知识库不是论文名称清单：应先解释一类问题和共同机制，再比较主要分支，最后深入具体算法、版本实现和工程 Issue。
 
 ## 分类与演进关系
 
@@ -16,10 +16,10 @@
 
 | 技术家族 | 上位问题 | 分支与补全范围 | 当前正文入口 |
 |---|---|---|---|
-| 数学与学习基础 | 如何表达分布并通过目标函数更新参数？ | 线性代数、概率/期望、Entropy、KL、MLE/Cross Entropy、Autodiff、梯度与优化；从概率到策略梯度。 | 待补独立正文 |
-| Token 与表示 | 原始输入如何变成可训练张量？ | BPE/SentencePiece、Embedding、LM Head、Weight Tying、Causal Shift；视觉 Patch、音频 Codec、VAE Latent 与连续动作。 | 待补独立正文 |
+| 数学与学习基础 | 如何表达分布并通过目标函数更新参数？ | 线性代数、概率/期望、Entropy、KL、MLE/Cross Entropy、Autodiff、梯度与优化；从概率到策略梯度。 | [张量、矩阵乘法与自动微分](../model/tensor-autograd.md)；[概率、Logprob 与信息量](../model/probability-information.md)（基础部分） |
+| Token 与表示 | 原始输入如何变成可训练张量？ | BPE/SentencePiece、Embedding、LM Head、Weight Tying、Causal Shift；视觉 Patch、音频 Codec、VAE Latent 与连续动作。 | [Tokenizer、Embedding 与语言模型训练目标](../model/token-representation.md)（基础部分） |
 | 序列建模与长上下文 | 如何处理 Token 间依赖并控制 KV 与计算成本？ | RNN/SSM 背景、Transformer；MHA/MQA/GQA/MLA（头或 KV 表示）；滑窗/稀疏 Attention（连接范围）；Linear Attention/SSM/混合架构（序列混合机制）；RoPE 与位置外推。FlashAttention 属于 Kernel 实现，跨链关联。 | [Transformer：从 Token 到 Logits](../model/transformer-attention.md) |
-| 模型容量与训练目标 | 如何扩大容量、减少活跃计算、改善预测？ | Dense、MoE、细粒度专家、Shared Expert、路由与负载均衡；Next-token Prediction 与 MTP（训练目标）；参数量、激活参数、FLOPs 和显存估算。EP 是分布式实现，R3 是正确性。 | 待补独立正文 |
+| 模型容量与训练目标 | 如何扩大容量、减少活跃计算、改善预测？ | Dense、MoE、细粒度专家、Shared Expert、路由与负载均衡；Next-token Prediction 与 MTP（训练目标）；参数量、激活参数、FLOPs 和显存估算。EP 是分布式实现，R3 是正确性。 | [Dense、MoE 与模型容量](../model/model-moe.md)；[Tokenizer、Embedding 与语言模型训练目标](../model/token-representation.md)（基础部分） |
 | 多模态理解与 Omni | 如何表示多模态输入、融合语义并产生跨模态输出？ | CNN/ViT 视觉编码；CLIP 类图文对齐；VLM 的 projector/cross-attention/统一 token；音频与视频编码；Omni 的统一理解生成、多时基位置编码、流式输出。对比仅输入多模态和可输出多模态。 | 待补独立正文 |
 | 生成模型 | 如何由概率模型产生文本、图像、音频、视频或连续动作？ | Autoregressive、VAE；Diffusion 的加噪/去噪与 score；Pixel/Latent Diffusion；U-Net/DiT Backbone；Flow Matching/Rectified Flow 目标与 ODE；CFG、采样器、蒸馏/少步生成。区分模型架构与生成目标。 | 待补独立正文 |
 | 具身策略与环境建模 | 如何由观测、语言产生动作，或预测交互后的环境？ | VLA 的离散 Action Token、连续回归、Diffusion/Flow Action Head；Action Chunk、实时闭环；World Model 的潜变量动力学、action-conditioned 预测、视频生成/交互世界模型、Model-based RL 与规划。VLA 不等于 Agentic RL，视频生成也不必然等于 World Model。 | 待补独立正文 |
@@ -30,10 +30,10 @@
 
 | 技术家族 | 上位问题 | 分支与补全范围 | 当前正文入口 |
 |---|---|---|---|
-| GPU 执行与存储 | 为什么同 FLOPs 的算子耗时不同？ | SM、Warp、Tensor Core、Register/Shared Memory/L2/HBM、Occupancy、Memory Coalescing、Roofline、Kernel Launch。 | 待补独立正文 |
-| 异步执行与编译 | CPU 提交与 GPU 执行怎样衔接？ | CUDA Stream/Event、同步语义、Graph Capture/Replay、PyTorch Dispatcher/Inductor、Triton/TileLang、编译与动态 Shape；区分语言、编译器和执行优化。 | 待补独立正文 |
+| GPU 执行与存储 | 为什么同 FLOPs 的算子耗时不同？ | SM、Warp、Tensor Core、Register/Shared Memory/L2/HBM、Occupancy、Memory Coalescing、Roofline、Kernel Launch。 | [GPU 执行模型、显存与算术强度](../compute/gpu-execution-memory.md)（基础部分） |
+| 异步执行与编译 | CPU 提交与 GPU 执行怎样衔接？ | CUDA Stream/Event、同步语义、Graph Capture/Replay、PyTorch Dispatcher/Inductor、Triton/TileLang、编译与动态 Shape；区分语言、编译器和执行优化。 | [CUDA Stream、Event 与异步执行](../compute/cuda-streams.md)（基础部分） |
 | GPU 资源共享与隔离 | 多进程训练和生成能否在同卡共存，如何控制相互干扰？ | 时间复用、CUDA Stream 并发、跨进程 Context/MPS、MIG 硬件分区、显存与带宽争用、Host Offload；CTRL 是 Co-residency 的新近研究实例，不等同于一般 MPS 能力。 | 待补独立正文 |
-| 网络与集群拓扑 | 为什么跨节点与节点内通信代价不同？ | PCIe/NVLink/NVSwitch、IB/RoCE、RDMA/GPUDirect、NUMA、NIC/rail、拥塞与拓扑映射。 | 待补独立正文 |
+| 网络与集群拓扑 | 为什么跨节点与节点内通信代价不同？ | PCIe/NVLink/NVSwitch、IB/RoCE、RDMA/GPUDirect、NUMA、NIC/rail、拥塞与拓扑映射。 | [PCIe、NVLink、RDMA 与集群通信](../compute/gpu-network-topology.md)（基础部分） |
 | Collective 算法 | 怎样把多 Rank 的张量聚合和分发？ | P2P、Broadcast、AllReduce、AllGather、ReduceScatter、AllToAll；Ring/Tree/层次算法；带宽、时延、消息规模与同步。 | [NCCL 与 Collective：GPU 为什么在等？](../compute/distributed-collectives.md) |
 
 ### 分布式训练
@@ -42,12 +42,12 @@
 
 | 技术家族 | 上位问题 | 分支与补全范围 | 当前正文入口 |
 |---|---|---|---|
-| 数据并行与状态分片 | 复制数据计算时怎样降低模型状态成本？ | DP/DDP、梯度累积与 Bucket、Distributed Optimizer、ZeRO-1/2/3、FSDP1/2、HSDP、DTensor；区分参数/梯度/优化器分片。 | [FSDP2 / ZeRO：分片的是状态还是计算？](../parallel/training-sharding.md) |
+| 数据并行与状态分片 | 复制数据计算时怎样降低模型状态成本？ | DP/DDP、梯度累积与 Bucket、Distributed Optimizer、ZeRO-1/2/3、FSDP1/2、HSDP、DTensor；区分参数/梯度/优化器分片。 | [FSDP2 / ZeRO：分片的是状态还是计算？](../parallel/training-sharding.md)；[从 DataLoader 到 Optimizer Step](../parallel/training-update-lifecycle.md)（基础部分） |
 | 张量与层并行 | 单层或整模型太大时如何切分计算？ | TP Column/Row Linear 与 Vocab Parallel；PP Microbatch、GPipe、1F1B、Interleaving、Zero Bubble；通信边界和 Pipeline Bubble。 | [TP：为什么切开矩阵还要通信？](../parallel/tp-matrix-communication.md)；[PP：为什么流水线仍有 GPU 空闲？](../parallel/pp-pipeline-bubble.md) |
 | 序列与上下文并行 | 如何在长序列下分担激活和 Attention？ | Megatron SP、CP、Ring Attention、Ulysses 类序列交换；不同方案切分范围、KV 交换、通信量与重算。 | [CP / SP：长上下文的序列怎么切？](../parallel/cp-sp-attention.md) |
 | 专家并行 | 如何分布 MoE 专家并处理动态路由负载？ | Token Dispatch/Combine、All-to-All、Grouped GEMM、负载偏斜、容量与 Drop、通信重叠、DeepEP 类通信实现。 | [EP：为什么 MoE 会卡在 All-to-All？](../parallel/ep-token-routing.md) |
 | 混合并行与资源规划 | 哪些 Rank 实际参与哪次计算或通信？ | Device Mesh/Process Group、多维并行组、显存/激活估算、批量与微批次、拓扑感知、Recompute/Offload；具体框架中 EP 和 DP 的复用关系以 Rank Group 为准。 | [DP / TP / PP / EP 怎么组合](../parallel/parallel-topology.md) |
-| 训练生命周期与优化器 | 模型从数据进入到参数保存经历什么？ | Pretraining/SFT、Packing/动态 Token Batch、DataLoader、梯度累积、AdamW/Adafactor/Muon 等优化器家族、LR Schedule、梯度裁剪、Checkpoint/Reshard/异步保存。优化器不是并行策略。 | 待补独立正文 |
+| 训练生命周期与优化器 | 模型从数据进入到参数保存经历什么？ | Pretraining/SFT、Packing/动态 Token Batch、DataLoader、梯度累积、AdamW/Adafactor/Muon 等优化器家族、LR Schedule、梯度裁剪、Checkpoint/Reshard/异步保存。优化器不是并行策略。 | [从 DataLoader 到 Optimizer Step](../parallel/training-update-lifecycle.md)（基础部分） |
 
 ### 推理与 Serving
 
@@ -55,7 +55,7 @@
 
 | 技术家族 | 上位问题 | 分支与补全范围 | 当前正文入口 |
 |---|---|---|---|
-| 自回归生成与采样 | 从 Prompt 到响应的运行阶段有什么区别？ | Prefill/Decode、TTFT/TPOT/TBT；Greedy/Temperature/Top-k/Top-p、Stop、Structured Decoding；多模态 Encoder、流式语音与连续动作生成的执行差异。 | 待补独立正文 |
+| 自回归生成与采样 | 从 Prompt 到响应的运行阶段有什么区别？ | Prefill/Decode、TTFT/TPOT/TBT；Greedy/Temperature/Top-k/Top-p、Stop、Structured Decoding；多模态 Encoder、流式语音与连续动作生成的执行差异。 | [Prefill、Decode 与实际采样分布](../serving/autoregressive-serving.md)（基础部分） |
 | KV Cache 管理 | 怎样控制请求状态的驻留、共享与迁移？ | 连续 KV、PagedAttention、Prefix/Radix Cache、KV 压缩/量化、Offload、HiCache/分层缓存、Eviction 与一致性。 | [KV Cache 与请求调度](../serving/kv-scheduling.md) |
 | Agent 上下文生命周期 | 哪些历史必须留在模型输入，哪些只需保存在 Harness 或外部存储？ | 完整历史与实际执行 Context、语义压缩/摘要、工具输出失效、Context Eviction、前缀复用与重 Prefill；MORTIS、Penelope、Contexture 等作为待深入核验的分支。区分删逻辑 Token 与仅回收物理 KV。 | 待补独立正文 |
 | 请求调度与并行 | 怎样控制吞吐、首 Token 和尾延迟？ | Static/Continuous Batching、Chunked Prefill、Admission/Preemption、DP Attention、TP/EP、PD Disaggregation、KV Transfer、Cache-aware Routing、弹性负载均衡。PD 不是模型并行维度。 | [推理并行：为什么不能照搬训练 TP？](../serving/serving-parallelism.md) |

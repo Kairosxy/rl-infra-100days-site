@@ -98,7 +98,8 @@ def main():
             page.go_back()
             expect(page.locator('#learning-paths')).to_be_visible()
             page.locator('#learning-paths .route-steps a').first.click()
-            expect(page.locator('#detail-title')).to_have_text(payload['topics'][0]['title'])
+            first_topic = payload['learning_map']['paths'][0]['topics'][0]
+            expect(page.locator('#detail-title')).to_have_text(next(t['title'] for t in payload['topics'] if t['id'] == first_topic))
             page.go_back()
             expect(page.locator('#knowledge-map')).to_be_visible()
             check(page.locator('#chapter-list').count() == 1, 'one directory DOM')

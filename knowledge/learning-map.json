@@ -32,10 +32,13 @@
       "title": "模型前向与资源估算",
       "goal": "从张量形状推导参数、激活和 KV Cache 的规模。",
       "topics": [
+        "tensor-autograd",
+        "probability-information",
+        "token-representation",
         "transformer-attention",
-        "kv-scheduling",
-        "distributed-collectives",
-        "tp-matrix-communication"
+        "gpu-execution-memory",
+        "autoregressive-serving",
+        "kv-scheduling"
       ]
     },
     {
@@ -52,10 +55,14 @@
       "title": "配置多机多卡",
       "goal": "先查容量和通信，再比较性能。",
       "topics": [
+        "gpu-execution-memory",
+        "gpu-network-topology",
         "distributed-collectives",
+        "training-update-lifecycle",
         "parallel-topology",
         "tp-matrix-communication",
         "pp-pipeline-bubble",
+        "model-moe",
         "ep-token-routing",
         "cp-sp-attention",
         "training-sharding",
@@ -81,26 +88,31 @@
       "policy-gradient"
     ],
     "logprob-contract": [
-      "policy-gradient"
+      "policy-gradient",
+      "autoregressive-serving"
     ],
     "parallel-topology": [
-      "distributed-collectives"
+      "distributed-collectives",
+      "training-update-lifecycle"
     ],
     "tp-matrix-communication": [
-      "distributed-collectives"
+      "distributed-collectives",
+      "tensor-autograd"
     ],
     "pp-pipeline-bubble": [
-      "distributed-collectives"
+      "distributed-collectives",
+      "training-update-lifecycle"
     ],
     "ep-token-routing": [
-      "moe-router",
+      "model-moe",
       "distributed-collectives"
     ],
     "cp-sp-attention": [
       "tp-matrix-communication"
     ],
     "training-sharding": [
-      "distributed-collectives"
+      "distributed-collectives",
+      "training-update-lifecycle"
     ],
     "serving-parallelism": [
       "tp-matrix-communication",
@@ -123,7 +135,54 @@
     ],
     "rl-throughput": [
       "kv-scheduling",
-      "parallel-topology"
+      "parallel-topology",
+      "cuda-streams"
+    ],
+    "tensor-autograd": [],
+    "probability-information": [],
+    "token-representation": [
+      "tensor-autograd",
+      "probability-information"
+    ],
+    "model-moe": [
+      "tensor-autograd",
+      "probability-information"
+    ],
+    "gpu-execution-memory": [
+      "tensor-autograd"
+    ],
+    "cuda-streams": [
+      "gpu-execution-memory"
+    ],
+    "gpu-network-topology": [
+      "gpu-execution-memory"
+    ],
+    "training-update-lifecycle": [
+      "tensor-autograd",
+      "token-representation",
+      "distributed-collectives"
+    ],
+    "autoregressive-serving": [
+      "transformer-attention",
+      "probability-information",
+      "gpu-execution-memory"
+    ],
+    "transformer-attention": [
+      "token-representation"
+    ],
+    "distributed-collectives": [
+      "gpu-network-topology"
+    ],
+    "moe-router": [
+      "model-moe",
+      "logprob-contract"
+    ],
+    "kv-scheduling": [
+      "autoregressive-serving"
+    ],
+    "policy-gradient": [
+      "probability-information",
+      "tensor-autograd"
     ]
   },
   "experiments": [
@@ -251,7 +310,8 @@
       "async-rollout"
     ],
     "Q073": [
-      "logprob-contract"
+      "logprob-contract",
+      "probability-information"
     ],
     "Q074": [
       "fp8-numerics",
@@ -259,7 +319,9 @@
     ],
     "Q076": [
       "kv-scheduling",
-      "logprob-contract"
+      "logprob-contract",
+      "cuda-streams",
+      "autoregressive-serving"
     ],
     "Q077": [
       "fp8-numerics"
@@ -272,10 +334,12 @@
       "rl-throughput"
     ],
     "Q081": [
-      "parallel-topology"
+      "parallel-topology",
+      "training-update-lifecycle"
     ],
     "Q082": [
-      "moe-router"
+      "moe-router",
+      "model-moe"
     ],
     "Q083": [
       "ppo-grpo",
@@ -283,7 +347,8 @@
     ],
     "Q084": [
       "pp-pipeline-bubble",
-      "rl-throughput"
+      "rl-throughput",
+      "training-update-lifecycle"
     ],
     "Q085": [
       "rl-parallel-planning"
@@ -294,7 +359,8 @@
     ],
     "Q087": [
       "distributed-collectives",
-      "rl-throughput"
+      "rl-throughput",
+      "gpu-network-topology"
     ],
     "Q088": [
       "rl-parallel-planning"
@@ -323,7 +389,8 @@
     ],
     "Q120": [
       "ppo-grpo",
-      "parallel-topology"
+      "parallel-topology",
+      "training-update-lifecycle"
     ],
     "Q132": [
       "ppo-grpo",
@@ -335,11 +402,13 @@
     ],
     "Q148": [
       "tp-matrix-communication",
-      "opd-kl"
+      "opd-kl",
+      "probability-information"
     ],
     "Q175": [
       "moe-router",
-      "ep-token-routing"
+      "ep-token-routing",
+      "model-moe"
     ],
     "Q176": [
       "ep-token-routing",
@@ -358,7 +427,9 @@
     ],
     "Q180": [
       "logprob-contract",
-      "cp-sp-attention"
+      "cp-sp-attention",
+      "token-representation",
+      "training-update-lifecycle"
     ],
     "Q181": [
       "training-sharding"
@@ -368,7 +439,8 @@
     ],
     "Q183": [
       "distributed-collectives",
-      "rl-throughput"
+      "rl-throughput",
+      "gpu-network-topology"
     ],
     "Q184": [
       "rl-parallel-planning"
@@ -377,18 +449,22 @@
       "logprob-contract"
     ],
     "Q186": [
-      "logprob-contract"
+      "logprob-contract",
+      "autoregressive-serving"
     ],
     "Q187": [
-      "logprob-contract"
+      "logprob-contract",
+      "autoregressive-serving"
     ],
     "Q188": [
       "kv-scheduling",
-      "logprob-contract"
+      "logprob-contract",
+      "autoregressive-serving"
     ],
     "Q189": [
       "kv-scheduling",
-      "logprob-contract"
+      "logprob-contract",
+      "cuda-streams"
     ],
     "Q190": [
       "kv-scheduling",
@@ -437,6 +513,26 @@
     ],
     "Q219": [
       "evidence-standards"
+    ],
+    "Q046": [
+      "opd-kl",
+      "token-representation"
+    ],
+    "Q075": [
+      "logprob-contract",
+      "autoregressive-serving"
+    ],
+    "Q099": [
+      "rl-throughput",
+      "gpu-execution-memory"
+    ],
+    "Q199": [
+      "fp8-numerics",
+      "training-update-lifecycle"
+    ],
+    "Q207": [
+      "rl-throughput",
+      "gpu-execution-memory"
     ]
   },
   "domain_map": {
@@ -571,6 +667,15 @@
     "fp8-numerics": "FP8",
     "moe-router": "R3 / Router Replay",
     "rl-throughput": "吞吐与长尾",
-    "evidence-standards": "实验验证"
+    "evidence-standards": "实验验证",
+    "tensor-autograd": "张量与 Autograd",
+    "probability-information": "概率与 KL",
+    "token-representation": "Token 与表示",
+    "model-moe": "Dense / MoE",
+    "gpu-execution-memory": "GPU / Roofline",
+    "cuda-streams": "CUDA Stream",
+    "gpu-network-topology": "GPU 互联",
+    "training-update-lifecycle": "训练更新 / DDP",
+    "autoregressive-serving": "Prefill / Decode"
   }
 }
