@@ -23,7 +23,8 @@ class ProductDataTest(unittest.TestCase):
     def test_paths_and_prerequisites_validate(self):
         catalog,bank=self.load()
         enrich_payload(ROOT,catalog,bank)
-        self.assertEqual(len(catalog['learning_map']['paths']),4)
+        self.assertEqual(len(catalog['learning_map']['paths']),5)
+        self.assertTrue(any('embodied-world-models' in p['topics'] for p in catalog['learning_map']['paths']))
         self.assertEqual(catalog['learning_map']['paths'][0]['topics'][0], 'tensor-autograd')
         self.assertIn('transformer-attention', catalog['learning_map']['paths'][0]['topics'])
         self.assertTrue(all(path['topics'] for path in catalog['learning_map']['paths']))

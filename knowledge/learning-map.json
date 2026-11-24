@@ -36,6 +36,7 @@
         "probability-information",
         "token-representation",
         "transformer-attention",
+        "attention-context",
         "gpu-execution-memory",
         "autoregressive-serving",
         "kv-scheduling"
@@ -91,6 +92,17 @@
         "rl-throughput",
         "evidence-standards"
       ]
+    },
+    {
+      "title": "多模态与具身模型",
+      "goal": "从模态表示、生成目标到连续动作与环境预测，理解对应的训练和推理边界。",
+      "topics": [
+        "token-representation",
+        "multimodal-models",
+        "generative-models",
+        "mdp-value-return",
+        "embodied-world-models"
+      ]
     }
   ],
   "prerequisites": {
@@ -119,7 +131,8 @@
       "distributed-collectives"
     ],
     "cp-sp-attention": [
-      "tp-matrix-communication"
+      "tp-matrix-communication",
+      "attention-context"
     ],
     "training-sharding": [
       "distributed-collectives",
@@ -144,7 +157,8 @@
       "logprob-contract",
       "rl-data-cycle",
       "importance-sampling",
-      "ray-data-runtime"
+      "ray-data-runtime",
+      "weight-publication"
     ],
     "opd-kl": [
       "logprob-contract",
@@ -195,7 +209,8 @@
       "logprob-contract"
     ],
     "kv-scheduling": [
-      "autoregressive-serving"
+      "autoregressive-serving",
+      "attention-context"
     ],
     "policy-gradient": [
       "probability-information",
@@ -259,6 +274,38 @@
     ],
     "evidence-standards": [
       "performance-measurement"
+    ],
+    "attention-context": [
+      "transformer-attention"
+    ],
+    "multimodal-models": [
+      "token-representation",
+      "transformer-attention"
+    ],
+    "generative-models": [
+      "tensor-autograd",
+      "probability-information",
+      "token-representation"
+    ],
+    "embodied-world-models": [
+      "multimodal-models",
+      "generative-models",
+      "mdp-value-return"
+    ],
+    "feedback-services": [
+      "rl-data-cycle",
+      "posttraining-feedback",
+      "ray-data-runtime"
+    ],
+    "weight-publication": [
+      "rl-data-cycle",
+      "training-sharding",
+      "gpu-network-topology"
+    ],
+    "kernel-optimization": [
+      "gpu-execution-memory",
+      "cuda-streams",
+      "transformer-attention"
     ]
   },
   "experiments": [
@@ -385,7 +432,8 @@
     ],
     "Q054": [
       "kv-scheduling",
-      "async-rollout"
+      "async-rollout",
+      "weight-publication"
     ],
     "Q073": [
       "logprob-contract",
@@ -433,7 +481,8 @@
       "training-update-lifecycle"
     ],
     "Q085": [
-      "rl-parallel-planning"
+      "rl-parallel-planning",
+      "weight-publication"
     ],
     "Q086": [
       "tp-matrix-communication",
@@ -454,7 +503,8 @@
     ],
     "Q091": [
       "rl-parallel-planning",
-      "async-rollout"
+      "async-rollout",
+      "weight-publication"
     ],
     "Q094": [
       "async-rollout"
@@ -483,7 +533,8 @@
     ],
     "Q147": [
       "opd-kl",
-      "training-sharding"
+      "training-sharding",
+      "feedback-services"
     ],
     "Q148": [
       "tp-matrix-communication",
@@ -530,7 +581,8 @@
     ],
     "Q184": [
       "rl-parallel-planning",
-      "rl-data-cycle"
+      "rl-data-cycle",
+      "weight-publication"
     ],
     "Q185": [
       "logprob-contract",
@@ -563,7 +615,8 @@
     ],
     "Q193": [
       "kv-scheduling",
-      "async-rollout"
+      "async-rollout",
+      "weight-publication"
     ],
     "Q194": [
       "logprob-contract",
@@ -624,12 +677,14 @@
     ],
     "Q199": [
       "fp8-numerics",
-      "training-update-lifecycle"
+      "training-update-lifecycle",
+      "kernel-optimization"
     ],
     "Q207": [
       "rl-throughput",
       "gpu-execution-memory",
-      "performance-measurement"
+      "performance-measurement",
+      "kernel-optimization"
     ],
     "Q007": [
       "policy-gradient",
@@ -646,7 +701,8 @@
     ],
     "Q011": [
       "policy-gradient",
-      "posttraining-feedback"
+      "posttraining-feedback",
+      "feedback-services"
     ],
     "Q023": [
       "policy-gradient",
@@ -813,6 +869,27 @@
     "Q218": [
       "evidence-standards",
       "performance-measurement"
+    ],
+    "Q070": [
+      "agent-action",
+      "attention-context",
+      "agent-harness-environment"
+    ],
+    "Q163": [
+      "async-rollout",
+      "weight-publication"
+    ],
+    "Q016": [
+      "policy-gradient",
+      "feedback-services"
+    ],
+    "Q045": [
+      "opd-kl",
+      "feedback-services"
+    ],
+    "Q151": [
+      "opd-kl",
+      "feedback-services"
     ]
   },
   "domain_map": {
@@ -968,6 +1045,13 @@
     "floating-point-quantization": "浮点与量化",
     "gradient-equivalence": "梯度与更新一致性",
     "policy-correction": "策略纠偏",
-    "performance-measurement": "Profiling / 指标"
+    "performance-measurement": "Profiling / 指标",
+    "attention-context": "Attention / 长上下文",
+    "multimodal-models": "ViT / VLM / Omni",
+    "generative-models": "Diffusion / Flow",
+    "embodied-world-models": "VLA / World Model",
+    "feedback-services": "Reward / Teacher 服务",
+    "weight-publication": "Weight Sync",
+    "kernel-optimization": "Kernel / IO 优化"
   }
 }

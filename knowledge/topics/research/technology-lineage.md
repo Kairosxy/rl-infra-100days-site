@@ -1,6 +1,6 @@
 # RL Infra 技术谱系与演进
 
-技术谱系按问题和机制组织，十一章是阅读目录。已有专题按所属家族归档；本轮新增 21 篇前置机制正文，基础部分已有入口的家族仍需补齐剩余分支。下面 58 个家族是覆盖目标，并不表示所有列出的技术已经有完整正文或已验证的源码。知识库不是论文名称清单：应先解释一类问题和共同机制，再比较主要分支，最后深入具体算法、版本实现和工程 Issue。
+技术谱系按问题和机制组织，十一章是阅读目录。已有专题按所属家族归档；本轮新增 28 篇前置机制正文，基础部分已有入口的家族仍需补齐剩余分支。下面 58 个家族是覆盖目标，并不表示所有列出的技术已经有完整正文或已验证的源码。知识库不是论文名称清单：应先解释一类问题和共同机制，再比较主要分支，最后深入具体算法、版本实现和工程 Issue。
 
 ## 分类与演进关系
 
@@ -18,11 +18,11 @@
 |---|---|---|---|
 | 数学与学习基础 | 如何表达分布并通过目标函数更新参数？ | 线性代数、概率/期望、Entropy、KL、MLE/Cross Entropy、Autodiff、梯度与优化；从概率到策略梯度。 | [张量、矩阵乘法与自动微分](../model/tensor-autograd.md)；[概率、Logprob 与信息量](../model/probability-information.md)（基础部分） |
 | Token 与表示 | 原始输入如何变成可训练张量？ | BPE/SentencePiece、Embedding、LM Head、Weight Tying、Causal Shift；视觉 Patch、音频 Codec、VAE Latent 与连续动作。 | [Tokenizer、Embedding 与语言模型训练目标](../model/token-representation.md)（基础部分） |
-| 序列建模与长上下文 | 如何处理 Token 间依赖并控制 KV 与计算成本？ | RNN/SSM 背景、Transformer；MHA/MQA/GQA/MLA（头或 KV 表示）；滑窗/稀疏 Attention（连接范围）；Linear Attention/SSM/混合架构（序列混合机制）；RoPE 与位置外推。FlashAttention 属于 Kernel 实现，跨链关联。 | [Transformer：从 Token 到 Logits](../model/transformer-attention.md) |
+| 序列建模与长上下文 | 如何处理 Token 间依赖并控制 KV 与计算成本？ | RNN/SSM 背景、Transformer；MHA/MQA/GQA/MLA（头或 KV 表示）；滑窗/稀疏 Attention（连接范围）；Linear Attention/SSM/混合架构（序列混合机制）；RoPE 与位置外推。FlashAttention 属于 Kernel 实现，跨链关联。 | [Transformer：从 Token 到 Logits](../model/transformer-attention.md)；[Attention、位置编码与长上下文](../model/attention-context.md)（基础部分） |
 | 模型容量与训练目标 | 如何扩大容量、减少活跃计算、改善预测？ | Dense、MoE、细粒度专家、Shared Expert、路由与负载均衡；Next-token Prediction 与 MTP（训练目标）；参数量、激活参数、FLOPs 和显存估算。EP 是分布式实现，R3 是正确性。 | [Dense、MoE 与模型容量](../model/model-moe.md)；[Tokenizer、Embedding 与语言模型训练目标](../model/token-representation.md)（基础部分） |
-| 多模态理解与 Omni | 如何表示多模态输入、融合语义并产生跨模态输出？ | CNN/ViT 视觉编码；CLIP 类图文对齐；VLM 的 projector/cross-attention/统一 token；音频与视频编码；Omni 的统一理解生成、多时基位置编码、流式输出。对比仅输入多模态和可输出多模态。 | 待补独立正文 |
-| 生成模型 | 如何由概率模型产生文本、图像、音频、视频或连续动作？ | Autoregressive、VAE；Diffusion 的加噪/去噪与 score；Pixel/Latent Diffusion；U-Net/DiT Backbone；Flow Matching/Rectified Flow 目标与 ODE；CFG、采样器、蒸馏/少步生成。区分模型架构与生成目标。 | 待补独立正文 |
-| 具身策略与环境建模 | 如何由观测、语言产生动作，或预测交互后的环境？ | VLA 的离散 Action Token、连续回归、Diffusion/Flow Action Head；Action Chunk、实时闭环；World Model 的潜变量动力学、action-conditioned 预测、视频生成/交互世界模型、Model-based RL 与规划。VLA 不等于 Agentic RL，视频生成也不必然等于 World Model。 | 待补独立正文 |
+| 多模态理解与 Omni | 如何表示多模态输入、融合语义并产生跨模态输出？ | CNN/ViT 视觉编码；CLIP 类图文对齐；VLM 的 projector/cross-attention/统一 token；音频与视频编码；Omni 的统一理解生成、多时基位置编码、流式输出。对比仅输入多模态和可输出多模态。 | [ViT、VLM 与 Omni 的模态接口](../model/multimodal-models.md)（基础部分） |
+| 生成模型 | 如何由概率模型产生文本、图像、音频、视频或连续动作？ | Autoregressive、VAE；Diffusion 的加噪/去噪与 score；Pixel/Latent Diffusion；U-Net/DiT Backbone；Flow Matching/Rectified Flow 目标与 ODE；CFG、采样器、蒸馏/少步生成。区分模型架构与生成目标。 | [自回归、Diffusion、DiT 与 Flow Matching](../model/generative-models.md)（基础部分） |
+| 具身策略与环境建模 | 如何由观测、语言产生动作，或预测交互后的环境？ | VLA 的离散 Action Token、连续回归、Diffusion/Flow Action Head；Action Chunk、实时闭环；World Model 的潜变量动力学、action-conditioned 预测、视频生成/交互世界模型、Model-based RL 与规划。VLA 不等于 Agentic RL，视频生成也不必然等于 World Model。 | [VLA、连续动作策略与 World Model](../model/embodied-world-models.md)（基础部分） |
 
 ### GPU 与分布式计算基础
 
@@ -88,9 +88,9 @@
 | 资源部署与角色规划 | 哪些模型共享 GPU，哪些需要独立资源？ | Colocate/Hybrid/Disaggregate、Learner/Rollout/Ref/Critic/Teacher/Reward、资源池与弹性并发、显存释放与重分片。 | [RL 训推并行：Learner 与 Rollout 怎么配 GPU？](../async/rl-parallel-planning.md) |
 | 供数与执行调度 | 如何避免整批阻塞又控制在途数据？ | 同步批式、流式流水、One-step Off-policy、Full Async、Partial Rollout、DataSampler、Group Completion、Drain/Resume、Staleness Budget；数据面与多资源背压独立关联。 | [异步 Rollout 与 Policy Staleness](../async/async-rollout.md) |
 | 多资源准入与背压 | 生成、环境、评分和消费容量不同，如何防止局部提速转成全局积压？ | Producer–Consumer、Credit/Permit、Queue Budget、Admission、动态补投、Little's Law、生成资格与完整 Task 生命周期分离、端到端 Drain/Cancel、慢 Reward 队列、等待环与公平性。 | [Ray Task、Actor、ObjectRef 与队列背压](../async/ray-data-runtime.md)（基础部分） |
-| 评分与教师服务 | 训练信号如何作为服务产生并安全回填？ | Reward Model、Rule/Environment Verifier、Judge/PRM、Teacher Serving、Batching、Timeout/Retry、版本/幂等、异步评分；Score Centering 与评分服务无关。 | 待补独立正文 |
-| 权重传输与持久化 | 怎样传输并持久化模型与优化器状态？ | Weight Redistribution/Sync、Checkpoint Engine、张量传输/共享内存/RDMA、量化重打包、Reshard、恢复范围。与请求 KV Transfer 共享基础传输但状态语义不同。 | 待补独立正文 |
-| 更新提交与策略发布 | 训练尝试、成功更新、权重安装及 rollout 准入何时推进版本？ | Optimizer Step/Skip、逻辑提交与发布版本、Weight Install/Publication Gate、在途样本版本、原子可见性、Checkpoint 一致点、部分失败和回退。CTRL 的 Publication Gate 是这一家族的研究实例；异步不自动证明 off-policy 或任何 staleness 保证。 | 待补独立正文 |
+| 评分与教师服务 | 训练信号如何作为服务产生并安全回填？ | Reward Model、Rule/Environment Verifier、Judge/PRM、Teacher Serving、Batching、Timeout/Retry、版本/幂等、异步评分；Score Centering 与评分服务无关。 | [Reward、Verifier 与 Teacher 的服务化](../async/feedback-services.md)（基础部分） |
+| 权重传输与持久化 | 怎样传输并持久化模型与优化器状态？ | Weight Redistribution/Sync、Checkpoint Engine、张量传输/共享内存/RDMA、量化重打包、Reshard、恢复范围。与请求 KV Transfer 共享基础传输但状态语义不同。 | [Weight Sync、Reshard 与策略版本](../async/weight-publication.md)（基础部分） |
+| 更新提交与策略发布 | 训练尝试、成功更新、权重安装及 rollout 准入何时推进版本？ | Optimizer Step/Skip、逻辑提交与发布版本、Weight Install/Publication Gate、在途样本版本、原子可见性、Checkpoint 一致点、部分失败和回退。CTRL 的 Publication Gate 是这一家族的研究实例；异步不自动证明 off-policy 或任何 staleness 保证。 | [Weight Sync、Reshard 与策略版本](../async/weight-publication.md)（基础部分） |
 
 ### Agentic RL 与交互系统
 
@@ -110,7 +110,7 @@ Agentic 指多步决策和环境交互，不是所有新模型方向的上位概
 | 技术家族 | 上位问题 | 分支与补全范围 | 当前正文入口 |
 |---|---|---|---|
 | 数值格式与量化 | 怎样减少存储、访存和计算成本？ | FP32/TF32/FP16/BF16、FP8 E4M3/E5M2、MXFP8/MXFP4/NVFP4、INT8/INT4；PTQ/QAT、W/A/KV Quantization、Per-tensor/Channel/Token/Block Scale、混合精度；格式与策略分开。 | [FP8 的收益与数值边界](../optimization/fp8-numerics.md)；[浮点格式、量化与混合精度](../optimization/floating-point-quantization.md)（基础部分） |
-| 算子与编译优化 | 怎样减少中间张量、launch 和无效访存？ | GEMM/Grouped GEMM、FlashAttention 系列、Kernel Fusion、CUDA Graph、Triton/TileLang/CUTLASS、动态 Shape 与编译缓存。 | 待补独立正文 |
+| 算子与编译优化 | 怎样减少中间张量、launch 和无效访存？ | GEMM/Grouped GEMM、FlashAttention 系列、Kernel Fusion、CUDA Graph、Triton/TileLang/CUTLASS、动态 Shape 与编译缓存。 | [Kernel Fusion、FlashAttention 与执行开销](../optimization/kernel-optimization.md)（基础部分） |
 | 资源与通信优化 | 怎样缩短计算、通信和等待的关键路径？ | 计算通信 Overlap、Activation Recompute/Offload、MoE Dispatch 与负载均衡、动态 Batch、长尾治理、资源弹性；区分训练与推理的瓶颈。 | [RL Step 真的慢在哪里](../optimization/rl-throughput.md) |
 
 ### 训练正确性与稳定性
