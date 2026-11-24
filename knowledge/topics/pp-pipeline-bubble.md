@@ -11,6 +11,8 @@ flowchart LR
  S3 --> L["Loss / Backward"]
 ```
 
+![4 Stage、8 Micro-batch 的理想前向时间线](../assets/pp-pipeline-bubble/pipeline-forward.svg)
+
 ## 为什么拆层不能自动获得线性加速？
 
 **直觉**：流水线只有在填满后才能让所有 Stage 同时工作；首尾不可避免地存在空闲。**不变量**：同一 Micro-batch 的激活与梯度必须沿对应 Stage 顺序传递；所有 Stage 的参数版本必须满足训练调度的更新约束。
@@ -38,6 +40,5 @@ Megatron Core 的 Pipeline Schedule、`pipeline_model_parallel_size`、Virtual P
 
 **三个对照**：p=2/4、m=4/8/16 的时间线；固定总 Batch 对比不同 Micro-batch；故意让一个 Stage 慢 2 倍观察尾部等待。
 
-**交互图规格**：以横轴时间、纵轴 Stage 画泳道，主控只改变 m 与 Stage 数；每个 Micro-batch 的 Forward/Backward 方块标识相同 ID；显示理论 Bubble 与 Stage 不均衡的差异。优先时间线，不做装饰性 GPU 卡片。
 
 参考：[Megatron Core](https://docs.nvidia.com/megatron-core/developer-guide/latest/index.html)。
