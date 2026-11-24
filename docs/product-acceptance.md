@@ -11,7 +11,6 @@
 
 ```
 python scripts/build_knowledge.py --output dist/index.html
-python scripts/build_quiz.py --output dist/quiz/index.html
 python -m unittest discover -s scripts -p 'test_*.py' -v
 node scripts/test_mechanisms.js
 python scripts/check_scripts.py dist
@@ -26,7 +25,7 @@ Successful upload is not successful deployment. The deploy job checks that live 
 
 ## Product behavior
 
-One header; hierarchical directory; problem and document search share URL state; question IDs remain stable. Native experiments are placed in relevant article sections, not nested full-page iframes. Old lab URLs forward to their articles. Markdown source links remain traceable. Mermaid and MathJax are optional pinned CDN renderers; the reader and all native figures work if their network requests fail. Diagram source remains accessible.
+One header; hierarchical directory; problem and document search share URL state; question IDs remain stable. Native experiments are placed in relevant article sections, not nested full-page iframes. Old lab and quiz URLs are lightweight redirects; no independent legacy frontend is published. Markdown source links remain traceable. Mermaid and MathJax are optional pinned CDN renderers; the reader and all native figures work if their network requests fail. Diagram source remains accessible.
 
 Review data uses the original browser-local key and numeric question IDs. Every write re-reads storage; imports validate completely before merging, keep existing records, and report conflicts. No server uploads, analytics, fabricated study scores, or assumed cross-domain synchronization.
 

@@ -2,7 +2,7 @@
 """Build the public knowledge reader.
 
 Public topics, cases and implementation notes share one validated relation
-graph. Archived courses and local answer records are built independently.
+graph. Legacy routes forward to the reader; question data remains unchanged.
 """
 from __future__ import annotations
 
@@ -16,7 +16,6 @@ from pathlib import Path
 
 from markdown_render import render_markdown
 from product_data import enrich_payload
-from site_nav import NAV_CSS, nav_markup
 
 GROUPS = ("topics", "cases", "implementations")
 RELATIONS = {
@@ -124,23 +123,21 @@ def generate_knowledge(root: Path, output: Path) -> int:
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(html, encoding="utf-8")
     (output.parent / "build-info.json").write_text(json.dumps({**catalog["build"], "topics": len(catalog["topics"]), "questions": len(questions)}, ensure_ascii=False), encoding="utf-8")
-    # Interactive labs are a supporting page of the knowledge site.
-    labs_source = root / "labs"
-    if labs_source.is_dir():
-        labs_target = output.parent / "labs"
-        labs_target.mkdir(parents=True, exist_ok=True)
-        for asset in ("index.html", "style.css", "app.js", "parallel.html", "parallel-performance.html", "rl-memory.html", "workbench.css"):
-            source_file = labs_source / asset
-            if not source_file.is_file():
-                raise FileNotFoundError(source_file)
-            shutil.copy2(source_file, labs_target / asset)
-        page = labs_target / "index.html"
-        page.write_text(
-            page.read_text(encoding="utf-8").replace("{{SITE_NAV}}", nav_markup("labs")),
-            encoding="utf-8",
-        )
-        sheet = labs_target / "style.css"
-        sheet.write_text(sheet.read_text(encoding="utf-8") + "\n" + NAV_CSS, encoding="utf-8")
+    # Preserve old bookmarks without publishing a second frontend.
+    labs_target = output.parent / "labs"
+    labs_target.mkdir(parents=True, exist_ok=True)
+    for asset in ("index.html", "parallel.html", "parallel-performance.html", "rl-memory.html"):
+        shutil.copy2(root / "labs" / asset, labs_target / asset)
+    quiz_target = output.parent / "quiz"
+    quiz_target.mkdir(parents=True, exist_ok=True)
+    (quiz_target / "index.html").write_text(
+        '<!doctype html><html lang="zh-CN"><meta charset="utf-8">'
+        '<title>RL Infra</title><a href="../#view=questions">Issues</a>'
+        '<script>const q=new URLSearchParams(location.hash.slice(1)).get("q");'
+        'const n=Number(q);location.replace("../#"+(Number.isInteger(n)&&n>=1&&n<=224'
+        '?"question=Q"+String(n).padStart(3,"0"):"view=questions"));</script></html>',
+        encoding="utf-8",
+    )
     return sum(len(catalog[group]) for group in GROUPS)
 
 
