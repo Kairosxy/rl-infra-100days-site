@@ -2,58 +2,40 @@
   "schema": "rl-infra-knowledge-v1",
   "chapters": [
     {
-      "id": "rl",
-      "title": "RL 优化",
-      "description": "从采样分布到一次可信的参数更新",
-      "sections": [
-        {
-          "id": "rl-1",
-          "title": "策略优化",
-          "topics": [
-            "policy-gradient",
-            "ppo-grpo"
-          ]
-        }
-      ]
+      "id": "model",
+      "title": "大模型基础与模型架构",
+      "description": "",
+      "sections": []
     },
     {
-      "id": "learner",
-      "title": "Learner 与数值",
-      "description": "Loss、梯度、低精度和训推一致性",
+      "id": "compute",
+      "title": "GPU 与分布式计算基础",
+      "description": "",
       "sections": [
         {
-          "id": "learner-1",
-          "title": "梯度与目标",
+          "id": "parallel-1",
+          "title": "通信原语",
           "topics": [
-            "logprob-contract"
-          ]
-        },
-        {
-          "id": "learner-2",
-          "title": "低精度与 MoE",
-          "topics": [
-            "fp8-numerics",
-            "moe-router"
+            "distributed-collectives"
           ]
         }
       ]
     },
     {
       "id": "parallel",
-      "title": "并行训练",
-      "description": "如何分配显存、计算与跨卡通信",
+      "title": "大模型分布式训练",
+      "description": "",
       "sections": [
         {
-          "id": "parallel-1",
-          "title": "并行基础",
+          "id": "parallel-topology",
+          "title": "并行拓扑",
           "topics": [
-            "distributed-collectives",
             "parallel-topology"
           ]
         },
         {
           "id": "parallel-2",
-          "title": "张量与流水线",
+          "title": "张量与流水线并行",
           "topics": [
             "tp-matrix-communication",
             "pp-pipeline-bubble"
@@ -61,7 +43,7 @@
         },
         {
           "id": "parallel-3",
-          "title": "专家与长序列",
+          "title": "专家与序列并行",
           "topics": [
             "ep-token-routing",
             "cp-sp-attention"
@@ -69,22 +51,21 @@
         },
         {
           "id": "parallel-4",
-          "title": "参数分片与 RL 配置",
+          "title": "参数与状态分片",
           "topics": [
-            "training-sharding",
-            "rl-parallel-planning"
+            "training-sharding"
           ]
         }
       ]
     },
     {
       "id": "serving",
-      "title": "Serving 与 KV",
-      "description": "请求调度、缓存和长尾",
+      "title": "大模型推理与 Serving",
+      "description": "",
       "sections": [
         {
           "id": "serving-1",
-          "title": "KV 与调度",
+          "title": "缓存与推理并行",
           "topics": [
             "kv-scheduling",
             "serving-parallelism"
@@ -93,41 +74,21 @@
       ]
     },
     {
-      "id": "agent",
-      "title": "Agent 轨迹",
-      "description": "行为、观察、工具与奖励边界",
+      "id": "rl",
+      "title": "大模型强化学习算法",
+      "description": "",
       "sections": [
         {
-          "id": "agent-1",
-          "title": "Agent 行为",
+          "id": "rl-1",
+          "title": "策略优化",
           "topics": [
-            "agent-action"
+            "policy-gradient",
+            "ppo-grpo"
           ]
-        }
-      ]
-    },
-    {
-      "id": "async",
-      "title": "异步训练",
-      "description": "数据供给、版本和恢复语义",
-      "sections": [
-        {
-          "id": "async-1",
-          "title": "数据与版本",
-          "topics": [
-            "async-rollout"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "distill",
-      "title": "蒸馏与混合优化",
-      "description": "Teacher/Student、KL 与 RL 信号",
-      "sections": [
+        },
         {
           "id": "distill-1",
-          "title": "蒸馏目标",
+          "title": "蒸馏与混合优化",
           "topics": [
             "opd-kl"
           ]
@@ -135,13 +96,55 @@
       ]
     },
     {
-      "id": "diagnosis",
-      "title": "性能与排障",
-      "description": "先找证据，再动配置",
+      "id": "async",
+      "title": "RL 训练基础设施",
+      "description": "",
       "sections": [
         {
+          "id": "async-1",
+          "title": "异步数据与版本",
+          "topics": [
+            "async-rollout"
+          ]
+        },
+        {
+          "id": "rl-resources",
+          "title": "训推资源规划",
+          "topics": [
+            "rl-parallel-planning"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "agent",
+      "title": "Agentic RL",
+      "description": "",
+      "sections": [
+        {
+          "id": "agent-1",
+          "title": "交互与轨迹",
+          "topics": [
+            "agent-action"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "optimization",
+      "title": "训练与推理性能优化",
+      "description": "",
+      "sections": [
+        {
+          "id": "learner-2",
+          "title": "低精度计算",
+          "topics": [
+            "fp8-numerics"
+          ]
+        },
+        {
           "id": "diagnosis-1",
-          "title": "吞吐与排障",
+          "title": "端到端吞吐",
           "topics": [
             "rl-throughput"
           ]
@@ -149,13 +152,40 @@
       ]
     },
     {
+      "id": "learner",
+      "title": "训练正确性与稳定性",
+      "description": "",
+      "sections": [
+        {
+          "id": "learner-1",
+          "title": "概率与目标",
+          "topics": [
+            "logprob-contract"
+          ]
+        },
+        {
+          "id": "router",
+          "title": "路由一致性",
+          "topics": [
+            "moe-router"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "frameworks",
+      "title": "主流框架源码解析",
+      "description": "",
+      "sections": []
+    },
+    {
       "id": "research",
-      "title": "研究与设计",
-      "description": "论文、工程方案和可复现实验",
+      "title": "工程实践与系统设计",
+      "description": "",
       "sections": [
         {
           "id": "research-1",
-          "title": "研究方法",
+          "title": "实验与证据",
           "topics": [
             "evidence-standards"
           ]
@@ -239,7 +269,7 @@
     {
       "id": "fp8-numerics",
       "title": "FP8 的收益与数值边界",
-      "chapter": "learner",
+      "chapter": "optimization",
       "summary": "从量化 Scale 到 BF16/FP8 的 Logprob 差异与模型质量。",
       "recall": {
         "question": "FP8 GEMM 更快，RL Step 就一定更快吗？",
@@ -395,7 +425,7 @@
     {
       "id": "opd-kl",
       "title": "OPD、Teacher 分布与 KL",
-      "chapter": "distill",
+      "chapter": "rl",
       "summary": "Teacher 的全词表信号如何与 RL Advantage 共存。",
       "recall": {
         "question": "Reverse KL 与 Forward KL 能混用吗？",
@@ -416,7 +446,7 @@
     {
       "id": "rl-throughput",
       "title": "RL Step 真的慢在哪里",
-      "chapter": "diagnosis",
+      "chapter": "optimization",
       "summary": "把吞吐数字拆到 Rollout、Train、通信、等待与排空。",
       "recall": {
         "question": "Learner 加速两倍，RL Step 会加速两倍吗？",
@@ -527,7 +557,7 @@
     {
       "id": "distributed-collectives",
       "title": "NCCL 与 Collective：GPU 为什么在等？",
-      "chapter": "parallel",
+      "chapter": "compute",
       "summary": "Process Group、All-Reduce、All-Gather、Reduce-Scatter 与通信拓扑。",
       "recall": {
         "question": "All-Reduce 和 Reduce-Scatter 的输出布局一样吗？",
@@ -612,7 +642,7 @@
     {
       "id": "rl-parallel-planning",
       "title": "RL 训推并行：Learner 与 Rollout 怎么配 GPU？",
-      "chapter": "parallel",
+      "chapter": "async",
       "summary": "多维并行、权重重分片、版本同步与关键路径。",
       "recall": {
         "question": "Learner 与 Rollout 的 TP 不同，能直接拷贝权重分片吗？",

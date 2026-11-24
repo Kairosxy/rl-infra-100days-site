@@ -51,9 +51,9 @@
   }
   function tree(host) {
     host.replaceChildren();
-    for (const chapter of data.chapters) {
+    for (const [i, chapter] of data.chapters.entries()) {
       const group = el('details', 'tree-group'); group.dataset.area = chapter.id;
-      const summary = el('summary', '', chapter.title); group.append(summary, a('概览', {chapter: chapter.id}, 'tree-overview'));
+      const summary = el('summary', '', (i + 1) + '. ' + chapter.title); group.append(summary, a('概览', {chapter: chapter.id}, 'tree-overview'));
       for (const section of chapter.sections || []) {
         const sub = el('div', 'tree-section'); sub.append(a(section.title, {chapter: chapter.id, section: section.id}, 'tree-section-title'));
         for (const id of section.topics) {
@@ -62,6 +62,7 @@
         }
         group.append(sub);
       }
+      if (chapter.id === 'frameworks') graph.entries.filter(x => x.type === 'implementation').forEach(x => group.append(a(x.title, detailURL(x), 'tree-topic')));
       host.append(group);
     }
   }
@@ -75,34 +76,26 @@
   }
   function renderHome() {
     const host = $('home'); host.replaceChildren();
-    head(host, 'RL 训练系统', '算法、训练引擎、推理引擎与调度。按系统环节找内容\uff0c也可以从具体问题进入。');
-    host.append(el('p', 'inventory', graph.entries.length + ' 篇文档 / ' + graph.questions.length + ' 道问答 / ' + graph.sections.size + ' 个专题'));
-    sectionHead(host, '知识目录');
+    head(host, 'RL Infra 技术手册');
     for (const [i, chapter] of data.chapters.entries()) {
-      const line = el('section', 'area-row');
-      line.append(el('span', 'index', String(i + 1).padStart(2, '0')), a(chapter.title, {chapter: chapter.id}, 'area-title'));
-      const desc = el('div'); desc.append(el('p', '', chapter.description));
-      const topics = graph.entries.filter(x => x.type === 'topic' && x.chapter === chapter.id), questions = graph.questions.filter(x => graph.inChapter(x, chapter.id));
-      desc.append(el('span', 'caption', topics.length + ' 篇知识 / ' + questions.length + ' 道关联题'));
-      const links = el('div', 'section-links'); (chapter.sections || []).forEach(s => links.append(a(s.title, {chapter: chapter.id, section: s.id}))); desc.append(links); line.append(desc); host.append(line);
+      const section = el('section', 'topic-section');
+      sectionHead(section, (i + 1) + '. ' + chapter.title);
+      if (chapter.id === 'frameworks') {
+        graph.entries.filter(x => x.type === 'implementation').forEach(x => section.append(row(x)));
+      } else if (!chapter.sections.length) {
+        section.append(el('p', 'caption', '待补充'));
+      } else for (const s of chapter.sections) {
+        const heading = el('h3', '', s.title); section.append(heading);
+        s.topics.forEach(id => section.append(row(graph.lookup.get('topic:' + id))));
+      }
+      host.append(section);
     }
-    sectionHead(host, '一次训练迭代');
-    const flow = el('ol', 'system-flow');
-    for (const stage of meta.system_flow || []) {
-      const li = el('li'); const link = a('', {topic: stage.topic}); link.append(el('strong', '', stage.title), el('span', '', stage.detail)); li.append(link); flow.append(li);
-    }
-    host.append(flow, el('p', 'caption', '更新后的权重返回 Rollout。数据依赖与资源条件满足时\uff0c部分阶段可重叠执行。'));
-    const cross = el('div', 'link-strip'); for (const [id, label] of [['parallel', '并行与通信'], ['async', '数据供给与版本'], ['diagnosis', '可观测与排障']]) cross.append(a(label, {chapter: id})); host.append(cross);
-    sectionHead(host, '阅读顺序');
-    for (const path of meta.paths || []) {
-      const group = el('details', 'learning-path'); group.append(el('summary', '', path.title), el('p', 'caption', path.goal));
-      const ol = el('ol'); path.topics.forEach(id => {const item = graph.lookup.get('topic:' + id); if (item) {const li = el('li'); li.append(a(item.title, {topic: id})); ol.append(li);}}); group.append(ol); host.append(group);
-    }
-
   }
   function renderChapter(id) {
     const chapter = graph.chapters.get(id); if (!chapter) return missing();
     const host = $('chapter'); host.replaceChildren(); head(host, chapter.title, chapter.description);
+    if (id === 'frameworks') {graph.entries.filter(x => x.type === 'implementation').forEach(x => host.append(row(x, {summary: true}))); return;}
+    if (!chapter.sections.length) {host.append(el('p', 'caption', '待补充')); return;}
     const selected = current.get('section');
     if (selected && !chapter.sections.some(s => s.id === selected)) return missing();
     for (const s of chapter.sections || []) {
@@ -201,7 +194,7 @@
     paginate(host, filtered(graph.items.filter(x => ['case', 'question'].includes(x.type)), loaded.state));
   }
   function renderLibrary() {
-    const host = $('library'); host.replaceChildren(); head(host, '检索', '搜索标题、正文、完整答案和追问。'); filters(host, 'library'); paginate(host, filtered(graph.items));
+    const host = $('library'); host.replaceChildren(); head(host, '搜索'); filters(host, 'library'); paginate(host, filtered(graph.items));
   }
   function paragraphs(host, text) {
     String(text || '').split(/\n\s*\n/).forEach(part => host.append(el('p', 'source-text', part.replace(/\\([|\[\]_])/g, '$1'))));
