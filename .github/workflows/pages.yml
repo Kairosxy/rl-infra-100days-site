@@ -37,10 +37,9 @@ jobs:
         run: node scripts/test_mechanisms.js
       - name: Check every published inline and external script
         run: python scripts/check_scripts.py dist
-      - name: Install browser test runner
-        run: |
-          python -m pip install playwright==1.57.0
-          python -m playwright install --with-deps chromium
+      - name: Prepare pinned headless browser
+        timeout-minutes: 8
+        run: bash scripts/prepare_ci_browser.sh
       - name: Browser regression and responsive screenshots
         run: python scripts/browser_smoke.py --dist dist --output test-artifacts
       - name: Save browser acceptance evidence

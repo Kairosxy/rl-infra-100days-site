@@ -15,11 +15,13 @@ python -m unittest discover -s scripts -p 'test_*.py' -v
 node scripts/test_mechanisms.js
 python scripts/check_scripts.py dist
 python -m pip install playwright==1.57.0
-python -m playwright install --with-deps chromium
+python -m playwright install --with-deps --only-shell chromium
 python scripts/browser_smoke.py --dist dist --output test-artifacts
 ```
 
 Browser checks visit every document and Q001-Q224, switch between interactive documents, operate every native experiment, validate scoped search and local review import/export, preserve old drafts, reject corrupt state, and check 375/768/1440px layouts. Screenshots and a machine-readable report are uploaded by CI. An inline-preview run uses a storage substitute and must not be reported as HTTP or deployment verification.
+
+On GitHub-hosted Ubuntu 24.04, `scripts/prepare_ci_browser.sh` downloads only the pinned Chromium headless shell, verifies a real launch, installs system dependencies only if launch fails, and checks Chinese font coverage. The fallback installs missing dependencies; it does not bypass browser tests. Local machines can use the full dependency-install command above.
 
 Successful upload is not successful deployment. The deploy job checks that live `build-info.json` has the exact `GITHUB_SHA` and 224 questions. A later failure does not authorize calling an older published page the new release.
 
