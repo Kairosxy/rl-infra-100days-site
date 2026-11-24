@@ -45,9 +45,14 @@
       "title": "先读懂一次 RL 更新",
       "goal": "说清 Reward、Logprob、Advantage 和版本之间的关系。",
       "topics": [
+        "probability-information",
+        "mdp-value-return",
+        "gae-bootstrap",
         "policy-gradient",
         "ppo-grpo",
         "logprob-contract",
+        "importance-sampling",
+        "rl-data-cycle",
         "async-rollout"
       ]
     },
@@ -75,9 +80,14 @@
       "goal": "从概率契约到精度、路由与系统时间线。",
       "topics": [
         "logprob-contract",
+        "floating-point-quantization",
         "fp8-numerics",
         "moe-router",
+        "importance-sampling",
+        "policy-correction",
         "kv-scheduling",
+        "gradient-equivalence",
+        "performance-measurement",
         "rl-throughput",
         "evidence-standards"
       ]
@@ -85,7 +95,8 @@
   ],
   "prerequisites": {
     "ppo-grpo": [
-      "policy-gradient"
+      "policy-gradient",
+      "gae-bootstrap"
     ],
     "logprob-contract": [
       "policy-gradient",
@@ -121,17 +132,23 @@
     "rl-parallel-planning": [
       "parallel-topology",
       "training-sharding",
-      "serving-parallelism"
+      "serving-parallelism",
+      "rl-data-cycle"
     ],
     "fp8-numerics": [
-      "logprob-contract"
+      "logprob-contract",
+      "floating-point-quantization"
     ],
     "async-rollout": [
       "ppo-grpo",
-      "logprob-contract"
+      "logprob-contract",
+      "rl-data-cycle",
+      "importance-sampling",
+      "ray-data-runtime"
     ],
     "opd-kl": [
-      "logprob-contract"
+      "logprob-contract",
+      "probability-information"
     ],
     "rl-throughput": [
       "kv-scheduling",
@@ -182,7 +199,66 @@
     ],
     "policy-gradient": [
       "probability-information",
-      "tensor-autograd"
+      "tensor-autograd",
+      "mdp-value-return"
+    ],
+    "mdp-value-return": [
+      "probability-information"
+    ],
+    "gae-bootstrap": [
+      "mdp-value-return"
+    ],
+    "importance-sampling": [
+      "probability-information",
+      "mdp-value-return",
+      "policy-gradient"
+    ],
+    "posttraining-feedback": [
+      "token-representation",
+      "mdp-value-return",
+      "policy-gradient"
+    ],
+    "speculative-decoding": [
+      "autoregressive-serving",
+      "kv-scheduling"
+    ],
+    "rl-data-cycle": [
+      "ppo-grpo",
+      "logprob-contract",
+      "training-update-lifecycle"
+    ],
+    "ray-data-runtime": [
+      "rl-data-cycle",
+      "gpu-network-topology"
+    ],
+    "agent-harness-environment": [
+      "mdp-value-return",
+      "autoregressive-serving",
+      "rl-data-cycle"
+    ],
+    "floating-point-quantization": [
+      "tensor-autograd",
+      "gpu-execution-memory"
+    ],
+    "gradient-equivalence": [
+      "training-update-lifecycle",
+      "floating-point-quantization"
+    ],
+    "policy-correction": [
+      "logprob-contract",
+      "importance-sampling",
+      "model-moe"
+    ],
+    "performance-measurement": [
+      "cuda-streams",
+      "rl-data-cycle",
+      "gpu-execution-memory"
+    ],
+    "agent-action": [
+      "agent-harness-environment"
+    ],
+    "evidence-standards": [
+      "performance-measurement"
     ]
   },
   "experiments": [
@@ -284,10 +360,12 @@
       "ppo-grpo"
     ],
     "Q008": [
-      "opd-kl"
+      "opd-kl",
+      "probability-information"
     ],
     "Q017": [
-      "policy-gradient"
+      "policy-gradient",
+      "gae-bootstrap"
     ],
     "Q021": [
       "ppo-grpo"
@@ -311,7 +389,8 @@
     ],
     "Q073": [
       "logprob-contract",
-      "probability-information"
+      "probability-information",
+      "policy-correction"
     ],
     "Q074": [
       "fp8-numerics",
@@ -324,10 +403,12 @@
       "autoregressive-serving"
     ],
     "Q077": [
-      "fp8-numerics"
+      "fp8-numerics",
+      "floating-point-quantization"
     ],
     "Q078": [
-      "fp8-numerics"
+      "fp8-numerics",
+      "floating-point-quantization"
     ],
     "Q080": [
       "fp8-numerics",
@@ -343,7 +424,8 @@
     ],
     "Q083": [
       "ppo-grpo",
-      "parallel-topology"
+      "parallel-topology",
+      "gradient-equivalence"
     ],
     "Q084": [
       "pp-pipeline-bubble",
@@ -367,7 +449,8 @@
     ],
     "Q090": [
       "agent-action",
-      "async-rollout"
+      "async-rollout",
+      "rl-data-cycle"
     ],
     "Q091": [
       "rl-parallel-planning",
@@ -390,11 +473,13 @@
     "Q120": [
       "ppo-grpo",
       "parallel-topology",
-      "training-update-lifecycle"
+      "training-update-lifecycle",
+      "gradient-equivalence"
     ],
     "Q132": [
       "ppo-grpo",
-      "parallel-topology"
+      "parallel-topology",
+      "gradient-equivalence"
     ],
     "Q147": [
       "opd-kl",
@@ -423,7 +508,8 @@
     ],
     "Q179": [
       "ppo-grpo",
-      "parallel-topology"
+      "parallel-topology",
+      "gradient-equivalence"
     ],
     "Q180": [
       "logprob-contract",
@@ -443,10 +529,12 @@
       "gpu-network-topology"
     ],
     "Q184": [
-      "rl-parallel-planning"
+      "rl-parallel-planning",
+      "rl-data-cycle"
     ],
     "Q185": [
-      "logprob-contract"
+      "logprob-contract",
+      "policy-correction"
     ],
     "Q186": [
       "logprob-contract",
@@ -478,7 +566,8 @@
       "async-rollout"
     ],
     "Q194": [
-      "logprob-contract"
+      "logprob-contract",
+      "policy-correction"
     ],
     "Q198": [
       "training-sharding",
@@ -495,24 +584,31 @@
       "training-sharding"
     ],
     "Q203": [
-      "rl-throughput"
+      "rl-throughput",
+      "performance-measurement"
     ],
     "Q204": [
       "evidence-standards",
       "rl-throughput"
     ],
     "Q212": [
-      "logprob-contract"
+      "logprob-contract",
+      "gradient-equivalence"
     ],
     "Q216": [
       "agent-action",
-      "async-rollout"
+      "async-rollout",
+      "rl-data-cycle"
     ],
     "Q217": [
-      "async-rollout"
+      "async-rollout",
+      "agent-harness-environment",
+      "ray-data-runtime"
     ],
     "Q219": [
-      "evidence-standards"
+      "evidence-standards",
+      "gradient-equivalence",
+      "performance-measurement"
     ],
     "Q046": [
       "opd-kl",
@@ -532,7 +628,191 @@
     ],
     "Q207": [
       "rl-throughput",
-      "gpu-execution-memory"
+      "gpu-execution-memory",
+      "performance-measurement"
+    ],
+    "Q007": [
+      "policy-gradient",
+      "mdp-value-return"
+    ],
+    "Q009": [
+      "policy-gradient",
+      "posttraining-feedback",
+      "rl-data-cycle"
+    ],
+    "Q010": [
+      "policy-gradient",
+      "posttraining-feedback"
+    ],
+    "Q011": [
+      "policy-gradient",
+      "posttraining-feedback"
+    ],
+    "Q023": [
+      "policy-gradient",
+      "posttraining-feedback"
+    ],
+    "Q024": [
+      "policy-gradient",
+      "posttraining-feedback"
+    ],
+    "Q043": [
+      "opd-kl",
+      "probability-information"
+    ],
+    "Q049": [
+      "async-rollout",
+      "importance-sampling",
+      "rl-data-cycle"
+    ],
+    "Q051": [
+      "async-rollout",
+      "importance-sampling",
+      "policy-correction"
+    ],
+    "Q052": [
+      "async-rollout",
+      "importance-sampling"
+    ],
+    "Q053": [
+      "async-rollout",
+      "importance-sampling"
+    ],
+    "Q055": [
+      "async-rollout",
+      "ray-data-runtime"
+    ],
+    "Q057": [
+      "agent-action",
+      "agent-harness-environment"
+    ],
+    "Q060": [
+      "agent-action",
+      "agent-harness-environment"
+    ],
+    "Q063": [
+      "agent-action",
+      "agent-harness-environment"
+    ],
+    "Q064": [
+      "agent-action",
+      "agent-harness-environment"
+    ],
+    "Q065": [
+      "agent-action",
+      "mdp-value-return",
+      "agent-harness-environment"
+    ],
+    "Q071": [
+      "agent-action",
+      "agent-harness-environment"
+    ],
+    "Q079": [
+      "logprob-contract",
+      "policy-correction"
+    ],
+    "Q089": [
+      "rl-throughput",
+      "rl-data-cycle",
+      "ray-data-runtime"
+    ],
+    "Q092": [
+      "rl-throughput",
+      "performance-measurement"
+    ],
+    "Q095": [
+      "rl-throughput",
+      "gradient-equivalence",
+      "performance-measurement"
+    ],
+    "Q105": [
+      "policy-gradient",
+      "mdp-value-return"
+    ],
+    "Q106": [
+      "policy-gradient",
+      "mdp-value-return"
+    ],
+    "Q109": [
+      "policy-gradient",
+      "importance-sampling"
+    ],
+    "Q110": [
+      "policy-gradient",
+      "importance-sampling"
+    ],
+    "Q111": [
+      "policy-gradient",
+      "importance-sampling"
+    ],
+    "Q113": [
+      "policy-gradient",
+      "gae-bootstrap"
+    ],
+    "Q124": [
+      "ppo-grpo",
+      "gradient-equivalence"
+    ],
+    "Q129": [
+      "ppo-grpo",
+      "gradient-equivalence"
+    ],
+    "Q135": [
+      "opd-kl",
+      "posttraining-feedback"
+    ],
+    "Q138": [
+      "opd-kl",
+      "posttraining-feedback"
+    ],
+    "Q141": [
+      "opd-kl",
+      "posttraining-feedback"
+    ],
+    "Q158": [
+      "async-rollout",
+      "importance-sampling"
+    ],
+    "Q161": [
+      "async-rollout",
+      "ray-data-runtime"
+    ],
+    "Q166": [
+      "agent-action",
+      "agent-harness-environment"
+    ],
+    "Q167": [
+      "agent-action",
+      "agent-harness-environment"
+    ],
+    "Q171": [
+      "agent-action",
+      "agent-harness-environment"
+    ],
+    "Q191": [
+      "kv-scheduling",
+      "speculative-decoding"
+    ],
+    "Q195": [
+      "fp8-numerics",
+      "floating-point-quantization",
+      "policy-correction"
+    ],
+    "Q196": [
+      "fp8-numerics",
+      "floating-point-quantization"
+    ],
+    "Q208": [
+      "rl-throughput",
+      "performance-measurement"
+    ],
+    "Q215": [
+      "evidence-standards",
+      "rl-data-cycle"
+    ],
+    "Q218": [
+      "evidence-standards",
+      "performance-measurement"
     ]
   },
   "domain_map": {
@@ -676,6 +956,18 @@
     "cuda-streams": "CUDA Stream",
     "gpu-network-topology": "GPU 互联",
     "training-update-lifecycle": "训练更新 / DDP",
-    "autoregressive-serving": "Prefill / Decode"
+    "autoregressive-serving": "Prefill / Decode",
+    "mdp-value-return": "MDP / Value",
+    "gae-bootstrap": "GAE",
+    "importance-sampling": "Importance Sampling",
+    "posttraining-feedback": "后训练与反馈",
+    "speculative-decoding": "投机解码",
+    "rl-data-cycle": "RL 数据循环",
+    "ray-data-runtime": "Ray / 数据面",
+    "agent-harness-environment": "Harness / 环境",
+    "floating-point-quantization": "浮点与量化",
+    "gradient-equivalence": "梯度与更新一致性",
+    "policy-correction": "策略纠偏",
+    "performance-measurement": "Profiling / 指标"
   }
 }

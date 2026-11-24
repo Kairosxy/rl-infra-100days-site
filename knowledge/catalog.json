@@ -135,6 +135,13 @@
             "kv-scheduling",
             "serving-parallelism"
           ]
+        },
+        {
+          "id": "speculative-decoding",
+          "title": "投机解码",
+          "topics": [
+            "speculative-decoding"
+          ]
         }
       ]
     },
@@ -144,11 +151,33 @@
       "description": "",
       "sections": [
         {
+          "id": "rl-foundations",
+          "title": "强化学习基础与价值估计",
+          "topics": [
+            "mdp-value-return",
+            "gae-bootstrap"
+          ]
+        },
+        {
           "id": "rl-1",
           "title": "策略优化",
           "topics": [
             "policy-gradient",
             "ppo-grpo"
+          ]
+        },
+        {
+          "id": "off-policy-estimation",
+          "title": "离策略估计",
+          "topics": [
+            "importance-sampling"
+          ]
+        },
+        {
+          "id": "feedback-preference",
+          "title": "反馈范式与偏好优化",
+          "topics": [
+            "posttraining-feedback"
           ]
         },
         {
@@ -166,10 +195,17 @@
       "description": "",
       "sections": [
         {
-          "id": "async-1",
-          "title": "异步数据与版本",
+          "id": "rl-data-cycle",
+          "title": "RL 数据循环与接口",
           "topics": [
-            "async-rollout"
+            "rl-data-cycle"
+          ]
+        },
+        {
+          "id": "trajectory-data-plane",
+          "title": "分布式轨迹数据面",
+          "topics": [
+            "ray-data-runtime"
           ]
         },
         {
@@ -177,6 +213,13 @@
           "title": "训推资源规划",
           "topics": [
             "rl-parallel-planning"
+          ]
+        },
+        {
+          "id": "async-1",
+          "title": "异步数据与版本",
+          "topics": [
+            "async-rollout"
           ]
         }
       ]
@@ -186,6 +229,13 @@
       "title": "Agentic RL",
       "description": "",
       "sections": [
+        {
+          "id": "agent-harness",
+          "title": "Harness 与环境交互",
+          "topics": [
+            "agent-harness-environment"
+          ]
+        },
         {
           "id": "agent-1",
           "title": "交互与轨迹",
@@ -204,6 +254,7 @@
           "id": "learner-2",
           "title": "低精度计算",
           "topics": [
+            "floating-point-quantization",
             "fp8-numerics"
           ]
         },
@@ -225,7 +276,8 @@
           "id": "learner-1",
           "title": "概率与目标",
           "topics": [
-            "logprob-contract"
+            "logprob-contract",
+            "policy-correction"
           ]
         },
         {
@@ -233,6 +285,13 @@
           "title": "路由一致性",
           "topics": [
             "moe-router"
+          ]
+        },
+        {
+          "id": "gradient-safety",
+          "title": "更新等价性与梯度安全",
+          "topics": [
+            "gradient-equivalence"
           ]
         }
       ]
@@ -260,6 +319,13 @@
           "title": "实验与证据",
           "topics": [
             "evidence-standards"
+          ]
+        },
+        {
+          "id": "resource-observability",
+          "title": "资源设计与可观测",
+          "topics": [
+            "performance-measurement"
           ]
         }
       ]
@@ -1015,6 +1081,296 @@
       "cases": [],
       "implementations": [],
       "source": "topics/serving/autoregressive-serving.md"
+    },
+    {
+      "id": "mdp-value-return",
+      "title": "MDP、Return 与价值函数",
+      "chapter": "rl",
+      "summary": "从状态、动作、奖励和环境转移解释 Return、Bellman、V/Q、Advantage 与 MC/TD。",
+      "recall": {
+        "question": "Reward 和 Value 为什么不是同一个量？",
+        "answer": "Reward 是一次转移的反馈；Value 是从给定状态按策略继续执行时未来回报的期望。",
+        "spoken": "Reward 是一次转移的反馈；Value 是从给定状态按策略继续执行时未来回报的期望。"
+      },
+      "keywords": [
+        "MDP",
+        "POMDP",
+        "return",
+        "Bellman",
+        "value",
+        "Q",
+        "MC",
+        "TD",
+        "advantage"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/rl/mdp-value-return.md"
+    },
+    {
+      "id": "gae-bootstrap",
+      "title": "GAE：TD 误差、Bootstrap 与终止边界",
+      "chapter": "rl",
+      "summary": "逐步复算 TD residual 和 GAE，区分真正终止、外部截断与轨迹拼接边界。",
+      "recall": {
+        "question": "外部时间限制截断时，为什么可能需要保留下一状态 Value，却不能跨新 episode 递推 GAE？",
+        "answer": "Bootstrap 取决于是否真实终止；GAE 的连续递推还取决于样本是否属于同一条实际连续轨迹。",
+        "spoken": "Bootstrap 取决于是否真实终止；GAE 的连续递推还取决于样本是否属于同一条实际连续轨迹。"
+      },
+      "keywords": [
+        "GAE",
+        "TD",
+        "bootstrap",
+        "terminated",
+        "truncated",
+        "advantage",
+        "critic"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/rl/gae-bootstrap.md"
+    },
+    {
+      "id": "importance-sampling",
+      "title": "Importance Sampling、支持集与有效样本量",
+      "chapter": "rl",
+      "summary": "从换测度恒等式解释行为/目标分布、Token/Trajectory ratio、截断及 ESS。",
+      "recall": {
+        "question": "Top-p 截断丢掉了目标分布仍有概率的 Token，精确 IS 能恢复其贡献吗？",
+        "answer": "不能。精确换测度要求目标有质量的事件在行为分布下有支持；未采样的零概率区域不能靠重加权补回。",
+        "spoken": "不能。精确换测度要求目标有质量的事件在行为分布下有支持；未采样的零概率区域不能靠重加权补回。"
+      },
+      "keywords": [
+        "importance sampling",
+        "off-policy",
+        "behavior",
+        "ratio",
+        "support",
+        "ESS",
+        "V-trace"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/rl/importance-sampling.md"
+    },
+    {
+      "id": "posttraining-feedback",
+      "title": "SFT、RLHF、RLVR 与偏好优化",
+      "chapter": "rl",
+      "summary": "沿监督、偏好、Reward Model、Verifier 与在线 RL 区分反馈来源和优化目标。",
+      "recall": {
+        "question": "RLVR 与 GRPO 为什么不是互相替代的算法？",
+        "answer": "RLVR 说明奖励来自可验证信号；GRPO 定义组相对 Advantage 与策略优化方式，两者可组合。",
+        "spoken": "RLVR 说明奖励来自可验证信号；GRPO 定义组相对 Advantage 与策略优化方式，两者可组合。"
+      },
+      "keywords": [
+        "SFT",
+        "RLHF",
+        "RLVR",
+        "RLAIF",
+        "reward model",
+        "ORM",
+        "PRM",
+        "DPO",
+        "preference"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/rl/posttraining-feedback.md"
+    },
+    {
+      "id": "speculative-decoding",
+      "title": "投机解码：Draft、Verify 与技术分支",
+      "chapter": "serving",
+      "summary": "解释精确投机采样、接受概率、Block draft、MTP/EAGLE/DFlash 的关系和收益上限。",
+      "recall": {
+        "question": "为什么 Draft 的接受率很高，端到端吞吐仍可能下降？",
+        "answer": "每轮提交 Token 数要除以 Draft、Verify、KV 与调度成本；并发下验证宽度还可能损害吞吐。",
+        "spoken": "每轮提交 Token 数要除以 Draft、Verify、KV 与调度成本；并发下验证宽度还可能损害吞吐。"
+      },
+      "keywords": [
+        "speculative decoding",
+        "draft",
+        "verify",
+        "MTP",
+        "EAGLE",
+        "DFlash",
+        "acceptance"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/serving/speculative-decoding.md"
+    },
+    {
+      "id": "rl-data-cycle",
+      "title": "一次 RL 更新：模型角色与数据生命周期",
+      "chapter": "async",
+      "summary": "从 Prompt、Rollout、Reward、Logprob、Advantage 到 Learner 与权重发布定义同步 RL 基线。",
+      "recall": {
+        "question": "为什么 Rollout 完成不代表样本已经可以训练？",
+        "answer": "算法可能仍需要 reward、同组完整性、行为概率、价值与 advantage 等字段，且版本和 mask 必须一致。",
+        "spoken": "算法可能仍需要 reward、同组完整性、行为概率、价值与 advantage 等字段，且版本和 mask 必须一致。"
+      },
+      "keywords": [
+        "RL loop",
+        "rollout",
+        "learner",
+        "reward",
+        "reference",
+        "critic",
+        "teacher",
+        "trajectory",
+        "weight sync"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/async/rl-data-cycle.md"
+    },
+    {
+      "id": "ray-data-runtime",
+      "title": "Ray Task、Actor、ObjectRef 与队列背压",
+      "chapter": "async",
+      "summary": "理解远程执行、对象引用、资源预约、载荷传输、pending task 与背压。",
+      "recall": {
+        "question": "拿到 ObjectRef 是否说明数据已经在消费进程的 GPU 显存中？",
+        "answer": "不是。ObjectRef 代表远程结果或对象身份；其就绪、对象所在节点、序列化、跨节点与 H2D 都需分别确认。",
+        "spoken": "不是。ObjectRef 代表远程结果或对象身份；其就绪、对象所在节点、序列化、跨节点与 H2D 都需分别确认。"
+      },
+      "keywords": [
+        "Ray",
+        "actor",
+        "task",
+        "ObjectRef",
+        "object store",
+        "placement group",
+        "queue",
+        "backpressure"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/async/ray-data-runtime.md"
+    },
+    {
+      "id": "agent-harness-environment",
+      "title": "Agent Harness、环境状态与工具执行",
+      "chapter": "agent",
+      "summary": "跟踪模型、Harness、Tool、Sandbox 和外部状态的多轮生命周期，解释失败与重试契约。",
+      "recall": {
+        "question": "为什么复制一条 Agent 的 Token 前缀不能保证从同一环境状态继续采样？",
+        "answer": "工具可能改变外部状态；会话、文件、随机状态及未完成调用需要单独 snapshot 或可重放契约。",
+        "spoken": "工具可能改变外部状态；会话、文件、随机状态及未完成调用需要单独 snapshot 或可重放契约。"
+      },
+      "keywords": [
+        "agent harness",
+        "environment",
+        "POMDP",
+        "tool call",
+        "sandbox",
+        "observation",
+        "snapshot",
+        "retry"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/agent/agent-harness-environment.md"
+    },
+    {
+      "id": "floating-point-quantization",
+      "title": "浮点格式、量化与混合精度",
+      "chapter": "optimization",
+      "summary": "区分指数/尾数、舍入、FP16/BF16/FP8、整数与浮点量化、PTQ/QAT。",
+      "recall": {
+        "question": "BF16 与 FP16 都是 16 bit，为什么动态范围与数值精度不同？",
+        "answer": "两者指数位和尾数位分配不同；BF16 指数范围接近 FP32，但同量级的格点通常比 FP16 更粗。",
+        "spoken": "两者指数位和尾数位分配不同；BF16 指数范围接近 FP32，但同量级的格点通常比 FP16 更粗。"
+      },
+      "keywords": [
+        "FP32",
+        "BF16",
+        "FP16",
+        "FP8",
+        "FP4",
+        "INT8",
+        "quantization",
+        "PTQ",
+        "QAT",
+        "mixed precision"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/optimization/floating-point-quantization.md"
+    },
+    {
+      "id": "gradient-equivalence",
+      "title": "Loss Reduction、梯度范数与更新一致性",
+      "chapter": "learner",
+      "summary": "区分逻辑梯度与物理分片，推导全局范数、AMP 顺序、NaN 与同步 Skip。",
+      "recall": {
+        "question": "一个梯度被两个 Rank 完整复制，计算全局 norm 时都平方求和会怎样？",
+        "answer": "同一逻辑梯度被重复计入，范数放大为 sqrt(2) 倍；应按唯一逻辑元素统计。",
+        "spoken": "同一逻辑梯度被重复计入，范数放大为 sqrt(2) 倍；应按唯一逻辑元素统计。"
+      },
+      "keywords": [
+        "gradient",
+        "loss reduction",
+        "global norm",
+        "clip",
+        "AMP",
+        "NaN",
+        "skip",
+        "determinism"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/learner/gradient-equivalence.md"
+    },
+    {
+      "id": "policy-correction",
+      "title": "训推一致性：差异来源与策略纠偏",
+      "chapter": "learner",
+      "summary": "分解同版本执行偏差与跨版本策略漂移，定位数值对齐、Replay、IS、Score Centering 与版本控制。",
+      "recall": {
+        "question": "R3、IS 和 Score Centering 分别修改什么？",
+        "answer": "R3 对齐专家选择路径，IS 改变样本的概率权重，Score Centering 处理行为分布下 Score 的非零期望偏置；三者不是同一修正。",
+        "spoken": "R3 对齐专家选择路径，IS 改变样本的概率权重，Score Centering 处理行为分布下 Score 的非零期望偏置；三者不是同一修正。"
+      },
+      "keywords": [
+        "TIM",
+        "training-inference mismatch",
+        "policy correction",
+        "R3",
+        "IS",
+        "TIS",
+        "Score Centering",
+        "staleness"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/learner/policy-correction.md"
+    },
+    {
+      "id": "performance-measurement",
+      "title": "性能测量、关键路径与资源效率",
+      "chapter": "research",
+      "summary": "以实际时间轴、吞吐分母、GPU-time、p99 和可控 A/B 评估系统改动。",
+      "recall": {
+        "question": "Rollout Tokens/s 提升 2 倍，为什么不能据此宣称 RL 训练吞吐提升 2 倍？",
+        "answer": "Learner、Reward、权重发布、在途废弃与资源数量可能改变；有效训练吞吐需按完整时间和资源核算。",
+        "spoken": "Learner、Reward、权重发布、在途废弃与资源数量可能改变；有效训练吞吐需按完整时间和资源核算。"
+      },
+      "keywords": [
+        "profiling",
+        "GPU-time",
+        "throughput",
+        "p99",
+        "SLO",
+        "benchmark",
+        "A/B",
+        "critical path"
+      ],
+      "cases": [],
+      "implementations": [],
+      "source": "topics/research/performance-measurement.md"
     }
   ],
   "cases": [
@@ -1347,6 +1703,66 @@
       "date": "2026-11-24",
       "kind": "topic",
       "id": "autoregressive-serving"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "mdp-value-return"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "gae-bootstrap"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "importance-sampling"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "posttraining-feedback"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "speculative-decoding"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "rl-data-cycle"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "ray-data-runtime"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "agent-harness-environment"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "floating-point-quantization"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "gradient-equivalence"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "policy-correction"
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "topic",
+      "id": "performance-measurement"
     }
   ]
 }
