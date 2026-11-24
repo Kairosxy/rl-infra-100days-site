@@ -83,6 +83,11 @@ def main():
             check(not errors,'interactive article lifecycle regression')
             go('#topic=tp-matrix-communication')
             check(page.locator('#article img').first.evaluate('(e)=>e.complete && e.naturalWidth>0'),'TP static figure loads')
+            for topic_id in ('pp-pipeline-bubble', 'ep-token-routing', 'kv-scheduling', 'fp8-numerics', 'ppo-grpo', 'async-rollout'):
+                go('#topic=' + topic_id)
+                check(page.locator('#article img').count() > 0, topic_id + ' has static figure')
+                check(page.locator('#article img').evaluate_all('(imgs)=>imgs.every(e=>e.complete && e.naturalWidth>0)'), topic_id + ' figures load')
+            go('#topic=tp-matrix-communication')
             page.locator('[data-nav=questions]').click()
             check('ref=tp-matrix-communication' in page.url,'topic scope survives Issues navigation')
             page.locator('[data-nav=library]').click()
