@@ -6,6 +6,6 @@
 
 假设论文比较了 Async 与 Sync，报告有效吞吐 2×。你需要检查是否相同的 Accepted Group Size、Staleness Budget、模型质量以及最终 Drain Time；如果只报告某一阶段忙碌度，那不是同一个端到端指标。
 
-遇到“新算法解决某类失效”的宣称，最有价值的实验通常不是再实现一个更大的 Demo，而是在最小复现中**刻意制造该失效**。例如关闭 R3 对比 Router Assignment 和 Logprob Gap，或将不等长 Micro-batch 的 Reduction 改错一行，看 Gradient 是否变化。
+验证新算法是否修复某类失效，通常先在最小复现中**刻意制造该失效**。例如关闭 R3 对比 Router Assignment 和 Logprob Gap，或将不等长 Micro-batch 的 Reduction 改错一行，看 Gradient 是否变化。
 
 技术结论应保留源链接、发布/复现日期和源码版本。官网 Nightly 文档能用于解释当前设计，但不应自动等价于用户正在使用的 Release 行为。

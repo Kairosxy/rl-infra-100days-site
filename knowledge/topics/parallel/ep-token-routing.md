@@ -2,15 +2,7 @@
 
 设 4 张 GPU，每张负责 2 个 Expert，总计 8 个 Expert；一个 Batch 有 16 个 Token，每个 Token 选择 Top-2 Expert。理想均衡时总共 32 次 Expert Assignment，平均每个 Expert 4 个 Token。但 Router 可能把大量 Token 送往同一 Expert，平均值并不能代表最慢 Rank。
 
-```mermaid
-flowchart LR
- T["16 Tokens"] --> R["Router Top-2"]
- R --> D["Pack / Dispatch"]
- D --> A["All-to-All"]
- A --> E["GPU0..3 / Expert GEMM"]
- E --> B["All-to-All 返回"]
- B --> C["Unpack / Combine"]
-```
+![Expert 路由、Dispatch、计算与 Combine](../../assets/ep-token-routing/mechanism-1.svg)
 
 **直觉**：EP 切的是 Expert 参数，而不是自动把 Token 均匀切开。**不变量**：每条 Assignment 的 Token ID、Expert ID、Router 权重与原始位置必须在 Dispatch/Combine 前后对应；不平衡是路由结果的性质，不一定是通信实现错误。
 

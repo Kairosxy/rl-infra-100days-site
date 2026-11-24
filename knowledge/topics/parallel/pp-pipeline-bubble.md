@@ -2,14 +2,7 @@
 
 把 12 层 Transformer 均分到 4 个 Stage，每 Stage 3 层。输入 Batch 分成 m=8 个 Micro-batch。即使每个 Stage 计算时间相同，第一批数据也必须先经过 Stage0 才能到 Stage1；最后一批离开 Stage0 后，后面的 Stage 还在工作。
 
-```mermaid
-flowchart LR
- B["8 个 Micro-batch"] --> S0["Stage0 层 0–2"]
- S0 --> S1["Stage1 层 3–5"]
- S1 --> S2["Stage2 层 6–8"]
- S2 --> S3["Stage3 层 9–11"]
- S3 --> L["Loss / Backward"]
-```
+![模型层在四个 Pipeline Stage 间的划分](../../assets/pp-pipeline-bubble/mechanism-1.svg)
 
 ![4 Stage、8 Micro-batch 的理想前向时间线](../../assets/pp-pipeline-bubble/pipeline-forward.svg)
 

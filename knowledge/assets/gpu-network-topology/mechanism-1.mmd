@@ -1,0 +1,7 @@
+flowchart LR
+ G0[GPU 0] <--> F[NVLink / PCIe fabric]
+ G1[GPU 1] <--> F
+ G0 <--> N0[NIC / DMA]
+ N0 <--> S[IB / RoCE network]
+ S <--> N1[Remote NIC]
+ N1 <--> G2[Remote GPU]

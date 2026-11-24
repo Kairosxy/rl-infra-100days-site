@@ -4,21 +4,7 @@
 
 ## 一条请求的生命周期
 
-~~~mermaid
-sequenceDiagram
- participant R as Request
- participant S as Scheduler
- participant M as Model
- R->>S: Prompt token IDs
- S->>M: Prefill prompt
- M-->>S: KV and logits
- S-->>R: First sampled token
- loop Until stop
- S->>M: Decode new position with KV
- M-->>S: Updated KV and logits
- S-->>R: Next sampled token
- end
-~~~
+![请求进入、Prefill、首 Token 与迭代 Decode](../../assets/autoregressive-serving/mechanism-1.svg)
 
 假设 Prompt=1024 Token，目标生成 4 Token。常见增量生成路径先 Prefill 1024 个位置并采出第一个 Token，再做 3 次 Decode 来获得其余 3 个 Token；如果实现还要处理最终 Token、计算完整缓存或执行其他动作，调用次数会变化。不能机械把输出长度当成 Decode Forward 次数。
 
@@ -26,7 +12,7 @@ sequenceDiagram
 
 ## 从 Raw Softmax 到 Behavior Policy
 
-设原始概率为 [0.6,0.3,0.1]。Temperature=1 时不改变 Softmax；T=0.5 时，若只进行温度变换，归一化平方后得到约 [0.7826,0.1957,0.0217]。若原始分布做 Top-p=0.8，常见 nucleus 规则保留前两个 Token，再归一化为 [2/3,1/3,0]。这个例子分别演示两种变换，不假定框架中的组合顺序。
+设原始概率为 [0.6,0.3,0.1]。Temperature=1 时不改变 Softmax；T=0.5 时，若只进行温度变换，归一化平方后得到约 [0.7826,0.1957,0.0217]。若原始分布做 Top-p=0.8，常见 nucleus 规则保留前两个 Token，再归一化为 [2/3,1/3,0]。两次计算各自从原始分布出发；实际组合顺序由采样实现决定。
 
 Greedy 只选择一个最大值（相同最大值时还依赖 tie-breaking）。经过变换的实际采样分布与 raw model distribution 不一定相同。Stop 条件可能截断返回内容；需要明确 EOS、停止字符串及生成后裁剪是否进入记录。RL 若从 q 采样、从 p 优化，就必须记录语义明确的 [Logprob](../learner/logprob-contract.md)。
 

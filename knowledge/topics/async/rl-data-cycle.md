@@ -19,24 +19,13 @@ RL 训练不断用策略生成数据、获得反馈、计算训练目标、更�
 
 假设 2 个 Prompt，每个采 4 个回答，得到 8 个 Response。GRPO 若规定每组四个有效回答，Prompt A 四条结束、B 三条结束时，可以先完成 A 的组内统计；不能用 B 的三条假装是完整四条。实际过滤、替换、动态采样规则应在算法契约中定义。
 
-~~~mermaid
-flowchart LR
- P[Prompt + group_id] --> G[Rollout]
- G --> R[Reward / Verifier]
- G --> L[Behavior / Old logprob]
- R --> A[Advantage]
- L --> U[Learner]
- A --> U
- U --> W[Commit new weights]
- W --> I[Install / publish]
- I --> G
-~~~
+![从采样、评分到 Learner 更新及权重发布](../../assets/rl-data-cycle/mechanism-1.svg)
 
-图中各字段可按实现并行准备；真正的 barrier 是消费前满足该目标的所有依赖，而非固定等所有远程调用都返回。Weight Install 完成与 Optimizer Step 成功是两个事件，异步系统不能只记录一个 global step 代替所有版本。
+图中各字段可并行准备。Learner 消费前必须满足该目标的所有数据依赖，无关的远程调用可以继续执行。Weight Install 完成与 Optimizer Step 成功是两个事件，异步系统不能只记录一个 global step 代替所有版本。
 
 ## 轨迹数据契约
 
-以下为框架无关的示意，不是 VERL 的真实类定义。
+下面列出一组与具体框架无关的轨迹字段。
 
 ~~~text
 sample_id, group_id, attempt_id

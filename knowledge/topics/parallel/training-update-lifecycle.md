@@ -4,16 +4,7 @@
 
 ## 单次更新的运行顺序
 
-~~~mermaid
-flowchart LR
- D[Batch / Packing] --> F[Forward]
- F --> L[Loss]
- L --> B[Backward]
- B --> A[Gradient Accumulation]
- A --> R[Gradient Sync]
- R --> O[Optimizer Step]
- O --> W[New Weights]
-~~~
+![一次训练更新中的计算、累积与同步](../../assets/training-update-lifecycle/mechanism-1.svg)
 
 图中同步表示逻辑依赖；DDP 可以在反向过程中按 Bucket 启动通信。标准 DP/DDP 让不同 Rank 保存完整模型副本并处理不同数据；DDP 同步梯度，不自动划分 Dataset，也不分片参数或 Adam 状态。FSDP、ZeRO 的状态分片是另外的机制。
 

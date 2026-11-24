@@ -4,7 +4,7 @@
 
 ## 从对象与时刻建立可证伪假设
 
-这是**教学故障假设，非实际生产事件**。设 8 Rank，每 GPU 24 GiB HBM，模型有 4 个 BF16 Block、每块权重 4 GiB，合计 16 GiB。root-only `fully_shard(model)` 的 Pre-forward Hook 要求整个 16 GiB 组形成完整参数视图，而不是只需要本卡的 2 GiB 分片。
+以下按一个教学场景估算。设 8 Rank，每 GPU 24 GiB HBM，模型有 4 个 BF16 Block、每块权重 4 GiB，合计 16 GiB。root-only `fully_shard(model)` 的 Pre-forward Hook 要求整个 16 GiB 组形成完整参数视图，而不是只需要本卡的 2 GiB 分片。
 
 进一步假设当前 Rank 还有 **9 GiB 其它同时存活对象**（可能包含 Optimizer、Activation 和 Workspace，具体构成待测），且分片与完整视图分开驻留。root-only 的预算是 `2 + 9 + 16 = 27 GiB/Rank`；逐 Block 展开变为 `2 + 9 + 4 = 15 GiB/Rank`，若预取下一 Block，则为 **19 GiB/Rank**。9 GiB 是教学假设，不是由参数量计算出来的；**首次 Forward 不应默认把 Adam Moment 算进这 9 GiB**，典型 AdamW 的状态在首次 `optimizer.step()` 才初始化。要区分初始化后第一轮与稳定训练迭代，并用显存快照核对实际存活对象。参数分片的生命周期见 [FSDP2 实现](../../implementations/pytorch/fsdp2-sharding.md)。
 
@@ -22,7 +22,7 @@ if group_by_block:
 fully_shard(model, mesh=mesh, reshard_after_forward=True)
 ```
 
-这是 PyTorch v2.14.0 的调用结构示意，不是可独立启动的训练脚本。实际运行还需初始化 Process Group、模型和 DeviceMesh，并在包裹完成后创建 Optimizer。**该反事实可以只依赖本篇案例复现，不依赖其它尚未合并的文档修订**；本仓库尚未执行 8-GPU 测试。
+这是 PyTorch v2.14.0 的调用结构示意，不是可独立启动的训练脚本。实际运行还需初始化 Process Group、模型和 DeviceMesh，并在包裹完成后创建 Optimizer。可按上述两种参数组配置独立构造对照实验；8-GPU 测试尚未执行。
 
 | 时间与记录对象 | 若 root 大组是主因，应该观察到 | 如果不成立，继续核查 |
 |---|---|---|

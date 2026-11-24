@@ -24,11 +24,11 @@ Tokenizer 决定 token ID 和序列长度。Embedding 是查表；LM Head 把 hi
 
 MHA 的 KV Head 数等于 Query Head 数。GQA 让一组 Query Head 共享一个 KV Head；本例每四个 Query Head 对应一个 KV Head。实际算子可以避免物理复制 K/V。Attention 仍然有 32 个 Query Head，因此不能简单把计算量也除以 4。
 
-对全长 S 的标准 dense attention，打分与聚合的主要算术量随 S² 增长；因果 mask、FlashAttention 和局部注意力会改变具体常数、内存流量或有效计算范围。FlashAttention 的关键不是取消全部 QK 计算，而是避免将完整注意力矩阵作为中间结果写回 HBM。
+对全长 S 的标准 dense attention，打分与聚合的主要算术量随 S² 增长；因果 mask、FlashAttention 和局部注意力会改变具体常数、内存流量或有效计算范围。FlashAttention 保留标准 Attention 的 QK 打分，通过分块计算避免将完整注意力矩阵写回 HBM。
 
 ## 参数、激活和缓存
 
-假定无 bias，Q、K、V 和输出投影的参数量为 4096×(4096+1024+1024+4096)=41,943,040。SwiGLU 的三个投影参数量约 3×4096×11008=135,266,304。Norm、Embedding、LM Head 与其他模块需另计。这是单层示例，不是任一真实模型的参数报告。
+假定无 bias，Q、K、V 和输出投影的参数量为 4096×(4096+1024+1024+4096)=41,943,040。SwiGLU 的三个投影参数量约 3×4096×11008=135,266,304。Norm、Embedding、LM Head 与其他模块需另计。以上为该假设模型单层的参数预算。
 
 BF16 KV Cache 每 token 需要 2×32×8×128×2=131072 bytes，即 128 KiB。8192 token 为 1 GiB，未计分配粒度、缓存页表及并行策略。训练激活不是 KV Cache：反向需要的中间值取决于算子保存策略、重计算及 sharding；不能拿推理 KV 公式代替训练激活估算。
 

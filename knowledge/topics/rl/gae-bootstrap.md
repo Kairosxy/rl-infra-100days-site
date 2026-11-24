@@ -7,8 +7,10 @@ GAE（Generalized Advantage Estimation）把多步 TD residual 按衰减系数�
 记 $V_t$ 为当前 critic 对状态的估计，$b_t$ 表示下一状态是否可 Bootstrap，$c_t$ 表示后一位置是否是同一条连续轨迹中可用于递推的 residual。
 
 $$
-\delta_t=r_t+\gamma b_tV_{t+1}-V_t,\qquad
-\hat A_t=\delta_t+\gamma\lambda c_t\hat A_{t+1}.
+\begin{aligned}
+\delta_t&=r_t+\gamma b_tV_{t+1}-V_t,\\
+\hat A_t&=\delta_t+\gamma\lambda c_t\hat A_{t+1}.
+\end{aligned}
 $$
 
 设两步奖励 [0,1]，Value=[0.5,0.6,0.8]，gamma=0.9，lambda=0.95。若第二步是外部时间限制导致的截断，且最后状态确实可以继续，则保留末状态 Value=0.8，但不跨出采集片段递推：
@@ -18,7 +20,7 @@ $$
 | 1（末步） | 1+0.9×0.8−0.6=1.12 | 1.12 |
 | 0 | 0+0.9×0.6−0.5=0.04 | 0.04+0.855×1.12=0.9976 |
 
-若末步是真正 Terminal，则末步不 Bootstrap，delta=0.4，A0=0.382。区别不是是否达到 max length 这个字段，而是任务定义中是否还有后续回报。
+若末步达到任务的 Terminal 状态，则不 Bootstrap，delta=0.4，A0=0.382。判断标准是任务定义中是否还有后续回报；max length 字段本身不足以确定。
 
 ~~~python
 def gae(rewards, values, bootstrap, continuation, gamma=.9, lam=.95):
@@ -34,7 +36,7 @@ assert abs(gae([0,1], [.5,.6,.8], [1,1], [1,0])[0] - .9976) < 1e-10
 assert abs(gae([0,1], [.5,.6,.8], [1,0], [1,0])[0] - .382) < 1e-10
 ~~~
 
-这是教学计算，未假设任何框架字段名。Packed Batch 中尤其要区分 padding mask、bootstrap mask、trajectory continuation mask 与 actor loss mask；只用一个 done 通常表达不了所有边界。外部截断后若环境已经 reset，要读取截断前的最终 observation 对应的 Value，而不是新 episode 初始状态的 Value。
+以上两个 mask 是公式中的概念，不对应固定框架字段名。Packed Batch 中尤其要区分 padding mask、bootstrap mask、trajectory continuation mask 与 actor loss mask；只用一个 done 通常表达不了所有边界。外部截断后若环境已经 reset，要读取截断前的最终 observation 对应的 Value，而不是新 episode 初始状态的 Value。
 
 ## gamma 与 lambda
 

@@ -1,0 +1,103 @@
+<svg width="344pt" height="366pt"
+ viewBox="0.00 0.00 344.30 365.80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 351.4)">
+<title>Rollout 与 Learner 的资源、数据和版本依赖</title>
+
+<g id="edge1" class="edge">
+<title>A&#45;&gt;B</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M234.5,-300.9C234.5,-295.94 234.5,-290.43 234.5,-285.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="236.95,-285.09 234.5,-278.09 232.05,-285.09 236.95,-285.09"/>
+</g>
+
+<g id="edge2" class="edge">
+<title>B&#45;&gt;C</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M185.89,-241.9C167.63,-235.47 146.74,-228.12 127.91,-221.5"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="128.49,-219.1 121.07,-219.09 126.86,-223.72 128.49,-219.1"/>
+</g>
+
+<g id="edge7" class="edge">
+<title>B&#45;&gt;G</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M234.5,-241.9C234.5,-236.94 234.5,-231.43 234.5,-226.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="236.95,-226.09 234.5,-219.09 232.05,-226.09 236.95,-226.09"/>
+</g>
+
+<g id="edge3" class="edge">
+<title>C&#45;&gt;D</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M74,-182.9C74.44,-177.94 74.92,-172.43 75.38,-167.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="77.83,-167.28 76,-160.09 72.95,-166.85 77.83,-167.28"/>
+</g>
+
+<g id="edge4" class="edge">
+<title>D&#45;&gt;E</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M77.5,-123.97C77.5,-118.19 77.5,-111.62 77.5,-105.38"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="79.95,-105.28 77.5,-98.28 75.05,-105.28 79.95,-105.28"/>
+</g>
+
+<g id="edge8" class="edge">
+<title>D&#45;&gt;H</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M119.23,-123.97C134.67,-117.67 152.42,-110.42 168.89,-103.7"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="169.82,-105.96 175.38,-101.05 167.97,-101.43 169.82,-105.96"/>
+</g>
+
+<g id="edge5" class="edge">
+<title>E&#45;&gt;F</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M113.27,-61.97C128.17,-54.87 145.58,-46.58 161.11,-39.18"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="162.37,-41.3 167.64,-36.08 160.27,-36.87 162.37,-41.3"/>
+</g>
+
+<g id="edge6" class="edge">
+<title>F&#45;&gt;B</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M250.04,-36.08C279.67,-46.95 312.5,-59 312.5,-59 312.5,-59 315.5,-183 315.5,-183 315.5,-183 315.5,-219 315.5,-219 315.5,-219 295.78,-228.74 275.79,-238.61"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="274.51,-236.51 269.32,-241.8 276.68,-240.9 274.51,-236.51"/>
+</g>
+
+<g id="node1" class="node">
+<title>A</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M289.5,-337C289.5,-337 179.5,-337 179.5,-337 173.5,-337 167.5,-331 167.5,-325 167.5,-325 167.5,-313 167.5,-313 167.5,-307 173.5,-301 179.5,-301 179.5,-301 289.5,-301 289.5,-301 295.5,-301 301.5,-307 301.5,-313 301.5,-313 301.5,-325 301.5,-325 301.5,-331 295.5,-337 289.5,-337"/>
+<text text-anchor="middle" x="234.5" y="-315.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Prompt / Sampler</text>
+</g>
+
+<g id="node2" class="node">
+<title>B</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M280.5,-278C280.5,-278 188.5,-278 188.5,-278 182.5,-278 176.5,-272 176.5,-266 176.5,-266 176.5,-254 176.5,-254 176.5,-248 182.5,-242 188.5,-242 188.5,-242 280.5,-242 280.5,-242 286.5,-242 292.5,-248 292.5,-254 292.5,-254 292.5,-266 292.5,-266 292.5,-272 286.5,-278 280.5,-278"/>
+<text text-anchor="middle" x="234.5" y="-256.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Rollout Engine</text>
+</g>
+
+<g id="node3" class="node">
+<title>C</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M133,-219C133,-219 12,-219 12,-219 6,-219 0,-213 0,-207 0,-207 0,-195 0,-195 0,-189 6,-183 12,-183 12,-183 133,-183 133,-183 139,-183 145,-189 145,-195 145,-195 145,-207 145,-207 145,-213 139,-219 133,-219"/>
+<text text-anchor="middle" x="72.5" y="-197.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Trajectory / Reward</text>
+</g>
+
+<g id="node4" class="node">
+<title>D</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M124.5,-160C124.5,-160 30.5,-160 30.5,-160 24.5,-160 18.5,-154 18.5,-148 18.5,-148 18.5,-136 18.5,-136 18.5,-130 24.5,-124 30.5,-124 30.5,-124 124.5,-124 124.5,-124 130.5,-124 136.5,-130 136.5,-136 136.5,-136 136.5,-148 136.5,-148 136.5,-154 130.5,-160 124.5,-160"/>
+<text text-anchor="middle" x="77.5" y="-138.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Learner Engine</text>
+</g>
+
+<g id="node5" class="node">
+<title>E</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M115.5,-98C115.5,-98 39.5,-98 39.5,-98 33.5,-98 27.5,-92 27.5,-86 27.5,-86 27.5,-74 27.5,-74 27.5,-68 33.5,-62 39.5,-62 39.5,-62 115.5,-62 115.5,-62 121.5,-62 127.5,-68 127.5,-74 127.5,-74 127.5,-86 127.5,-86 127.5,-92 121.5,-98 115.5,-98"/>
+<text text-anchor="middle" x="77.5" y="-76.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">权重版本 v+1</text>
+</g>
+
+<g id="node6" class="node">
+<title>F</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M247.5,-36C247.5,-36 159.5,-36 159.5,-36 153.5,-36 147.5,-30 147.5,-24 147.5,-24 147.5,-12 147.5,-12 147.5,-6 153.5,0 159.5,0 159.5,0 247.5,0 247.5,0 253.5,0 259.5,-6 259.5,-12 259.5,-12 259.5,-24 259.5,-24 259.5,-30 253.5,-36 247.5,-36"/>
+<text text-anchor="middle" x="203.5" y="-14.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">权重转换 / 同步</text>
+</g>
+
+<g id="node7" class="node">
+<title>G</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M295,-219C295,-219 174,-219 174,-219 168,-219 162,-213 162,-207 162,-207 162,-195 162,-195 162,-189 168,-183 174,-183 174,-183 295,-183 295,-183 301,-183 307,-189 307,-195 307,-195 307,-207 307,-207 307,-213 301,-219 295,-219"/>
+<text text-anchor="middle" x="234.5" y="-197.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">KV / Decode / TP&#45;EP</text>
+</g>
+
+<g id="node8" class="node">
+<title>H</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M292,-101C292,-101 157,-101 157,-101 151,-101 145,-95 145,-89 145,-89 145,-71 145,-71 145,-65 151,-59 157,-59 157,-59 292,-59 292,-59 298,-59 304,-65 304,-71 304,-71 304,-89 304,-89 304,-95 298,-101 292,-101"/>
+<text text-anchor="middle" x="224.5" y="-83.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Gradient / Optimizer /</text>
+<text text-anchor="middle" x="224.5" y="-69.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">TP&#45;PP&#45;EP&#45;DP</text>
+</g>
+</g>
+</svg>

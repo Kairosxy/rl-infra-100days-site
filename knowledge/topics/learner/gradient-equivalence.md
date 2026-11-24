@@ -15,15 +15,7 @@ $$
 
 ## 混合精度的操作顺序
 
-~~~mermaid
-flowchart LR
- L[Scaled loss] --> B[Accumulate grads]
- B --> U[Unscale]
- U --> F[Nonfinite check]
- F -->|finite| C[Global norm / clip]
- C --> O[Optimizer step]
- F -->|nonfinite| S[Skip update]
-~~~
+![梯度累积、Unscale、全局裁剪与异常更新跳过](../../assets/gradient-equivalence/mechanism-1.svg)
 
 该图表示采用 loss scaling 的一种逻辑顺序。梯度累积期间 scale 应保持一致；在全部待更新梯度完成后 unscale，再按未缩放值做范数和裁剪。若跨 Rank 分片组成一次逻辑更新，必须达成一致的成功/Skip 决策，否则模型和 Optimizer State 可能分歧。实际框架的 API、同步点和 scaler 状态处理以版本实现为准。
 

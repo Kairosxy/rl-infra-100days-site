@@ -1,0 +1,7 @@
+flowchart LR
+ A["Request / Tokenizer"] --> B["Admission / Scheduler"]
+ B --> C["Prefill"]
+ C --> D["KV Cache / Prefix Reuse"]
+ D --> E["Decode"]
+ E --> F["TP/DP/EP/PP"]
+ F --> G["TTFT / TPOT / Throughput / P99"]

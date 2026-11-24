@@ -9,7 +9,7 @@ T_{\mathrm{step,new}}=42+\frac{18}{2}=51\ {\rm s},\quad
 S=\frac{60}{51}\approx1.176.
 $$
 
-如果宣传“训练速度翻倍”，很可能只指 Learner 部分；整轮 RL 的改善只有约 17.6%。这属于 Amdahl 规律下的推导，不是现场 Benchmark。
+如果宣传“训练速度翻倍”，很可能只指 Learner 部分；整轮 RL 的改善只有约 17.6%。该数值由 Amdahl 规律推得，现场 Benchmark 需另行测量。
 
 ## 如何定位
 

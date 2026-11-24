@@ -1,0 +1,6 @@
+flowchart LR
+ I[Image] --> E[Vision Encoder]
+ E --> P[Projector or Resampler]
+ T[Text IDs] --> L[Language model]
+ P --> L
+ L --> A[Text logits]

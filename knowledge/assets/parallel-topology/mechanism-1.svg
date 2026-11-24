@@ -1,0 +1,78 @@
+<svg width="209pt" height="396pt"
+ viewBox="0.00 0.00 208.80 395.80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 381.4)">
+<title>并行计算的先修知识、机制、实现与排障</title>
+
+<g id="edge1" class="edge">
+<title>A&#45;&gt;B</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M90,-324.72C90,-319.89 90,-314.65 90,-309.55"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="92.45,-309.24 90,-302.24 87.55,-309.24 92.45,-309.24"/>
+</g>
+
+<g id="edge2" class="edge">
+<title>B&#45;&gt;C</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M90,-259.72C90,-254.89 90,-249.65 90,-244.55"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="92.45,-244.24 90,-237.24 87.55,-244.24 92.45,-244.24"/>
+</g>
+
+<g id="edge3" class="edge">
+<title>C&#45;&gt;D</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M90,-194.72C90,-189.89 90,-184.65 90,-179.55"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="92.45,-179.24 90,-172.24 87.55,-179.24 92.45,-179.24"/>
+</g>
+
+<g id="edge4" class="edge">
+<title>D&#45;&gt;E</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M90,-129.72C90,-124.89 90,-119.65 90,-114.55"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="92.45,-114.24 90,-107.24 87.55,-114.24 92.45,-114.24"/>
+</g>
+
+<g id="edge5" class="edge">
+<title>E&#45;&gt;F</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M90,-64.72C90,-59.89 90,-54.65 90,-49.55"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="92.45,-49.24 90,-42.24 87.55,-49.24 92.45,-49.24"/>
+</g>
+
+<g id="node1" class="node">
+<title>A</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M167,-367C167,-367 13,-367 13,-367 7,-367 1,-361 1,-355 1,-355 1,-337 1,-337 1,-331 7,-325 13,-325 13,-325 167,-325 167,-325 173,-325 179,-331 179,-337 179,-337 179,-355 179,-355 179,-361 173,-367 167,-367"/>
+<text text-anchor="middle" x="90" y="-349.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">前置: 矩阵乘法 / 反向传播 /</text>
+<text text-anchor="middle" x="90" y="-335.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">GPU HBM</text>
+</g>
+
+<g id="node2" class="node">
+<title>B</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M161.5,-302C161.5,-302 18.5,-302 18.5,-302 12.5,-302 6.5,-296 6.5,-290 6.5,-290 6.5,-272 6.5,-272 6.5,-266 12.5,-260 18.5,-260 18.5,-260 161.5,-260 161.5,-260 167.5,-260 173.5,-266 173.5,-272 173.5,-272 173.5,-290 173.5,-290 173.5,-296 167.5,-302 161.5,-302"/>
+<text text-anchor="middle" x="90" y="-284.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">核心: 参数/数据/层/专家/</text>
+<text text-anchor="middle" x="90" y="-270.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">序列切分</text>
+</g>
+
+<g id="node3" class="node">
+<title>C</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M160,-237C160,-237 20,-237 20,-237 14,-237 8,-231 8,-225 8,-225 8,-207 8,-207 8,-201 14,-195 20,-195 20,-195 160,-195 160,-195 166,-195 172,-201 172,-207 172,-207 172,-225 172,-225 172,-231 166,-237 160,-237"/>
+<text text-anchor="middle" x="90" y="-219.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">机制: DP / TP / PP / EP /</text>
+<text text-anchor="middle" x="90" y="-205.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">CP / FSDP</text>
+</g>
+
+<g id="node4" class="node">
+<title>D</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M155,-172C155,-172 25,-172 25,-172 19,-172 13,-166 13,-160 13,-160 13,-142 13,-142 13,-136 19,-130 25,-130 25,-130 155,-130 155,-130 161,-130 167,-136 167,-142 167,-142 167,-160 167,-160 167,-166 161,-172 155,-172"/>
+<text text-anchor="middle" x="90" y="-154.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">实现: Process Group /</text>
+<text text-anchor="middle" x="90" y="-140.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Collective / 调度</text>
+</g>
+
+<g id="node5" class="node">
+<title>E</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M168,-107C168,-107 12,-107 12,-107 6,-107 0,-101 0,-95 0,-95 0,-77 0,-77 0,-71 6,-65 12,-65 12,-65 168,-65 168,-65 174,-65 180,-71 180,-77 180,-77 180,-95 180,-95 180,-101 174,-107 168,-107"/>
+<text text-anchor="middle" x="90" y="-89.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">性能: FLOPs / HBM / 带宽 /</text>
+<text text-anchor="middle" x="90" y="-75.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Bubble</text>
+</g>
+
+<g id="node6" class="node">
+<title>F</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M165.5,-42C165.5,-42 14.5,-42 14.5,-42 8.5,-42 2.5,-36 2.5,-30 2.5,-30 2.5,-12 2.5,-12 2.5,-6 8.5,0 14.5,0 14.5,0 165.5,0 165.5,0 171.5,0 177.5,-6 177.5,-12 177.5,-12 177.5,-30 177.5,-30 177.5,-36 171.5,-42 165.5,-42"/>
+<text text-anchor="middle" x="90" y="-24.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">排障: OOM / NCCL Hang /</text>
+<text text-anchor="middle" x="90" y="-10.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">低利用率 / 数值漂移</text>
+</g>
+</g>
+</svg>

@@ -6,7 +6,7 @@
 
 按 PyTorch **v2.14.0** 的 [`fully_shard` 实现](https://github.com/pytorch/pytorch/blob/v2.14.0/torch/distributed/fsdp/_fully_shard/_fully_shard.py)，每次调用会把该模块尚未被子模块调用管理的参数归入同一个 FSDP 参数组。计算之前，这组参数执行 `All-Gather`，形成当前算子需要的未分片视图。官方源码明确建议从子模块向根模块（bottom-up）调用，而不是仅在最外层调用一次。
 
-取一个仅用于容量推演的模型：四个 Block，每个 Block 的 BF16 权重 **4 GiB**，总计 **16 GiB**；`world_size=8`，各 Rank 均匀分片；每卡 HBM 为 **24 GiB**。再假设 Forward 开始时，每卡还有 **9 GiB** 的其它同时存活分配（可能包含激活、优化器状态及工作区，具体构成不是实测）。每卡参数分片常驻量为 `16 / 8 = 2 GiB`。
+取一个仅用于容量推演的模型：四个 Block，每个 Block 的 BF16 权重 **4 GiB**，总计 **16 GiB**；`world_size=8`，各 Rank 均匀分片；每卡 HBM 为 **24 GiB**。再假设 Forward 开始时，每卡还有 **9 GiB** 的其他同时存活分配，可能包含激活、优化器状态及工作区（9 GiB 为给定预算）。每卡参数分片常驻量为 `16 / 8 = 2 GiB`。
 
 | 包裹方式与执行点 | 正在存活的完整权重视图 | 估算同时存活载荷 | 24 GiB 容量判断 |
 |---|---:|---:|---|
@@ -14,7 +14,7 @@
 | 逐 Block 分组，且只展开当前 Block | 4 GiB | `2+9+4=15 GiB` | 尚有余量 |
 | 逐 Block 分组，当前与下一 Block 预取重叠 | 8 GiB | `2+9+8=19 GiB` | 余量缩小 |
 
-这是**将分片与展开视图按独立活跃载荷计入的教学预算**，不是 PyTorch 的 `max_memory_allocated` 实测值。真实实现的存储复用、混合精度、预取时机、通信缓冲与 CUDA Allocator 会改变峰值；`9 GiB` 也不是由参数规模推算出来的。表格只证明一个机制：**即便参数数目、分片比例、单卡容量都不变，参数组粒度仍可能改变是否 OOM**。如果真正的峰值来自 Activation 或 Optimizer Step，逐 Block 分组未必解决。
+以上预算假定**分片与展开视图分别占用独立活跃存储**；具体 `max_memory_allocated` 需要在运行中测量。真实实现的存储复用、混合精度、预取时机、通信缓冲与 CUDA Allocator 会改变峰值；`9 GiB` 也不是由参数规模推算出来的。表格只证明一个机制：**即便参数数目、分片比例、单卡容量都不变，参数组粒度仍可能改变是否 OOM**。如果真正的峰值来自 Activation 或 Optimizer Step，逐 Block 分组未必解决。
 
 ## Forward / Backward 的实际状态转换
 

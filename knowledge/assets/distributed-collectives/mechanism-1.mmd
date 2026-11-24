@@ -1,0 +1,6 @@
+flowchart LR
+ A["前置：Rank / GPU / HBM"] --> B["Process Group"]
+ B --> C["Collective：AR / AG / RS / A2A"]
+ C --> D["DDP / FSDP / TP / EP"]
+ D --> E["拓扑 / 延迟 / 带宽"]
+ E --> F["NCCL Hang / 低利用率"]

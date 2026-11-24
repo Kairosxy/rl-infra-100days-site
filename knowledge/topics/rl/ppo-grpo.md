@@ -6,7 +6,7 @@ $$
 r=\frac{\pi_{\theta}(a|s)}{\pi_{\mathrm{old}}(a|s)}=1.5.
 $$
 
-PPO 的 Clipped Surrogate 不是简单把所有 $r$ 限制在区间内，而是根据 Advantage 的方向取较小目标：
+PPO 的 Clipped Surrogate 根据 Advantage 的符号，在原始目标与截断 ratio 后的目标之间取较小值：
 
 $$
 J_{\mathrm{clip}}=\min(rA,\operatorname{clip}(r,1-\epsilon,1+\epsilon)A).
@@ -38,8 +38,6 @@ $$
 [DeepSeekMath](https://arxiv.org/abs/2402.03300) 是 GRPO 的重要来源；[DAPO](https://arxiv.org/abs/2503.14476) 讨论采样、Clip 与 Token Loss 的困难；[GSPO](https://arxiv.org/abs/2507.18071) 研究 Sequence 层面的策略优化。这些工作并非只改了某个“默认超参数”，需要先确定估计对象、Loss Reduction 和概率分布。
 
 工程上，可以对同一批固定 Token、Reward 和 Old/Current Logprob 实现两个 Reduction，对比每个 Token 的梯度；比“跑一次大模型看 Reward 是否上涨”更直接。
-
-
 
 ## Reduction 如何改变实际梯度
 

@@ -4,14 +4,7 @@
 
 ## 知识依赖图
 
-```mermaid
-flowchart TD
- A[前置: 矩阵乘法 / 反向传播 / GPU HBM] --> B[核心: 参数/数据/层/专家/序列切分]
- B --> C[机制: DP / TP / PP / EP / CP / FSDP]
- C --> D[实现: Process Group / Collective / 调度]
- D --> E[性能: FLOPs / HBM / 带宽 / Bubble]
- E --> F[排障: OOM / NCCL Hang / 低利用率 / 数值漂移]
-```
+![并行计算的先修知识、机制、实现与排障](../../assets/parallel-topology/mechanism-1.svg)
 
 学习路径：先掌握 TP、DP 和通信原语；再理解 PP、EP、CP、FSDP；最后结合 Megatron、SGLang、vLLM 和 RL 训推分离讨论选型。
 
@@ -39,7 +32,7 @@ flowchart TD
 
 **直觉**：每张 GPU 放一份模型，处理不同样本。**不变量**：同步更新前，各副本聚合后的梯度应对应约定的全局 Batch 归约方式；梯度平均与 Loss Reduction 必须匹配。
 
-**机制与勘误（PyTorch v2.10.0）**：普通 DDP 按 Bucket 同步梯度，不对参数或优化器状态做分片；数据划分仍由调用者负责。原式用同一个 `P` 同时表示参数量和 Rank 数，量纲含混，不能直接用来估算网络流量。设 `N` 为梯度元素数、`p` 为 DP Group 的 Rank 数、`b` 为通信 dtype 的字节数，`S=N×b` 为待归约张量字节数。采用**理想 Ring All-Reduce 教学模型**时，每 Rank 的累计发送量为 `2(p−1)S/p`，接收量相同；这不是对 NCCL 实际算法或端到端时间的断言。
+**通信机制（PyTorch v2.10.0）**：普通 DDP 按 Bucket 同步梯度，不对参数或优化器状态做分片；数据划分仍由调用者负责。估算网络流量时，参数元素数与参与通信的 Rank 数需要使用不同变量。设 `N` 为梯度元素数、`p` 为 DP Group 的 Rank 数、`b` 为通信 dtype 的字节数，`S=N×b` 为待归约张量字节数。采用**理想 Ring All-Reduce 教学模型**时，每 Rank 的累计发送量为 `2(p−1)S/p`，接收量相同；这不是对 NCCL 实际算法或端到端时间的断言。
 
 沿用本文两个 BF16 MLP 权重：`N=2×4096×8192=67,108,864`，假设梯度也以 BF16 通信，`S=128 MiB`。DP=4 时，每 Rank 理想 Ring 累计发送 `2×3/4×128=192 MiB`、接收 `192 MiB`；如果实际通信梯度为 FP32，则每方向变为 `384 MiB`。注意两者都是**公式推导**，不是 GPU/NCCL 实测，也不包含 Bucket 启动、网络拓扑或 Backward Overlap。DP=4 不会把每副本 128 MiB 的这两个权重降到 32 MiB；要减少参数常驻量需要 TP、FSDP 等实际分片机制。源码依据：[PyTorch v2.10.0 `DistributedDataParallel`](https://github.com/pytorch/pytorch/blob/v2.10.0/torch/nn/parallel/distributed.py)，其中明确说明梯度同步、输入不自动切分以及副本参数更新约定。
 
@@ -104,18 +97,7 @@ flowchart TD
 
 ## 排障树
 
-```mermaid
-flowchart TD
- S[训练或推理异常] --> A{主要症状}
- A -->|OOM| B[参数常驻 vs Activation vs 临时通信峰值]
- A -->|慢| C[算子耗时 / Collective / Bubble / Router 偏斜]
- A -->|Hang| D[Rank Collective 顺序 / 进程退出 / 网络]
- A -->|结果漂移| E[切分维度 / Mask / 数值精度 / Policy Version]
- B --> F[固定 Batch/Seq 逐项切换分片]
- C --> G[Nsight Timeline 与 Rank 对齐]
- D --> H[检查每 Rank 最后进入的 Collective]
- E --> I[固定输入与权重对照单卡]
-```
+![OOM、慢、Hang 与结果漂移的排查分支](../../assets/parallel-topology/mechanism-2.svg)
 
 三个最小实验：① TP=1/2/4 的前向数值等价、局部 Shape 与通信次数；② PP=2/4 固定总 Batch、改变 Micro-batch 并验证 Bubble 估算；③ EP 固定 Router 索引、注入不均衡分布并观察 All-to-All 长尾。
 

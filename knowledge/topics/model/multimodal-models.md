@@ -10,14 +10,7 @@ CLIP 类图文对齐用匹配的图像、文本对学习表示空间。两对样
 
 ## VLM 的融合位置
 
-~~~mermaid
-flowchart LR
- I[Image] --> E[Vision Encoder]
- E --> P[Projector or Resampler]
- T[Text IDs] --> L[Language model]
- P --> L
- L --> A[Text logits]
-~~~
+![图像编码、投影及文本与视觉表示融合](../../assets/multimodal-models/mechanism-1.svg)
 
 图中展示视觉 Token/向量接入 LLM 的一种常见方式。其他架构可以使用 Cross-attention 或共享模态 Token 空间。模型输入需保留图像位置、视觉特征数量和 Text Token 的对应；视觉 Embedding 不一定存在普通文本 vocab ID。SFT/RL 中不能将所有视觉输入都当作模型生成动作。
 

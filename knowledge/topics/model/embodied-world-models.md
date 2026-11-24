@@ -4,14 +4,7 @@ VLA 解决从视觉、语言和机器人状态到动作的问题；World Model �
 
 ## 动作空间与模仿学习
 
-~~~mermaid
-flowchart LR
- O[Camera / proprioception] --> P[Policy]
- L[Language goal] --> P
- P --> A[Action or action chunk]
- A --> E[Robot / simulator]
- E --> O
-~~~
+![语言目标、观测、策略与环境的反馈回路](../../assets/embodied-world-models/mechanism-1.svg)
 
 假设机械臂每步动作有 7 个维度，控制频率 20 Hz。一段 8 步 Action Chunk 的 Shape 为 [8,7]，覆盖 0.4s 的计划时间。实际闭环可每次仅执行其中一部分，再获取新观测并重规划。块更长可能减少模型请求次数，但不必然提高成功率，控制延迟与环境变化必须计入。
 

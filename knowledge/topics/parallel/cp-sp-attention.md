@@ -2,14 +2,7 @@
 
 TP 拆 Hidden/Head 维度，长序列 Attention 的瓶颈却可能是按序列增长的激活和 KV；即使权重已经放得下，单卡仍可能在 Attention 处 OOM。
 
-```mermaid
-flowchart TD
- A["输入 [B,T,H]"] --> B["SP：切分激活的序列维"]
- A --> C["CP：切分 Attention 的上下文位置"]
- C --> D["跨 Rank KV 交换 / Attention 归约"]
- D --> E["Mask / Position / 数值等价"]
- E --> F["显存峰值与通信"]
-```
+![SP 与 CP 的切分位置及 CP 的通信约束](../../assets/cp-sp-attention/mechanism-1.svg)
 
 ## 统一锚点
 

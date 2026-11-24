@@ -306,6 +306,44 @@
     }
     host.append(el('p', 'caption', '自评间隔是教学默认值\uff0c不是 AI 打分。'));
   }
+  // Scroll only the objects that need their own width; keep the article and
+  // its headings in the normal reading flow. Native table semantics stay intact.
+  function prepareArticle(article) {
+    function scrollRegion(className, label) {
+      const region = el('div', className);
+      region.setAttribute('role', 'region'); region.setAttribute('aria-label', label);
+      region.tabIndex = 0;
+      return region;
+    }
+    for (const table of article.querySelectorAll('table')) {
+      const region = scrollRegion('article-table', '表格（可横向滚动）');
+      if ((table.rows[0]?.cells.length || 0) >= 3) region.dataset.wide = 'true';
+      table.before(region); region.append(table);
+    }
+    for (const math of article.querySelectorAll('div.arithmatex')) {
+      math.tabIndex = 0; math.setAttribute('role', 'region'); math.setAttribute('aria-label', '公式');
+    }
+    for (const pre of article.querySelectorAll('pre')) {
+      pre.tabIndex = 0; pre.setAttribute('aria-label', '代码');
+    }
+    for (const image of article.querySelectorAll('p > img')) {
+      const paragraph = image.parentElement;
+      if (paragraph.children.length !== 1 || paragraph.textContent.trim()) continue;
+      const figure = el('figure', 'article-figure');
+      const region = scrollRegion('figure-scroll', '机制图（可横向滚动）');
+      // SVGs remain selectable/editable in the repository. Avoid shrinking a
+      // large sequence diagram until its labels become illegible on phones.
+      const sizeFigure = () => {
+        if (image.naturalWidth > 0) {
+          image.style.minWidth = Math.min(880, image.naturalWidth) + 'px';
+          if (image.naturalWidth >= 520) figure.dataset.wide = 'true';
+        }
+      };
+      image.addEventListener('load', sizeFigure, {once:true}); sizeFigure();
+      paragraph.replaceWith(figure); region.append(image); figure.append(region);
+      if (image.alt) figure.append(el('figcaption', '', image.alt));
+    }
+  }
   function renderExperiments(item, article) {
     for (const spec of (meta.experiments || []).filter(x => x.entry === C.key(item))) {
       const host = el('section');
@@ -324,7 +362,7 @@
       let figure = code.closest('figure.diagram'), image;
       if (figure) image = figure.querySelector('.diagram-output');
       else {figure = el('figure', 'diagram'); image = el('div', 'diagram-output'); const detail = el('details'); detail.append(el('summary', '', '图示源码')); pre.before(figure); detail.append(pre); figure.append(image, detail);}
-      if (!window.mermaid) {image.append(el('p', 'caption', '图示渲染器未加载\uff1b源码可展开阅读。')); continue;}
+      if (!window.mermaid) {image.textContent = '图示渲染器未加载。'; pre.closest('details').open = true; continue;}
       try {
         const {svg} = await window.mermaid.render('diagram-' + ticket + '-' + i, source);
         if (renderId !== ticket || !figure.isConnected) return;
@@ -366,6 +404,7 @@
           link.href = nav.href({...current, anchor: raw.slice(1)});
         }
       }
+      prepareArticle(article);
       renderExperiments(item, article);
     }
     const related = $('related'); related.replaceChildren();

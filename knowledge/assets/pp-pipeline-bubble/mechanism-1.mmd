@@ -1,0 +1,6 @@
+flowchart LR
+ B["8 个 Micro-batch"] --> S0["Stage0 层 0–2"]
+ S0 --> S1["Stage1 层 3–5"]
+ S1 --> S2["Stage2 层 6–8"]
+ S2 --> S3["Stage3 层 9–11"]
+ S3 --> L["Loss / Backward"]

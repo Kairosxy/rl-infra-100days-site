@@ -90,7 +90,8 @@
         "gradient-equivalence",
         "performance-measurement",
         "rl-throughput",
-        "evidence-standards"
+        "evidence-standards",
+        "distributed-fault-recovery"
       ]
     },
     {
@@ -101,7 +102,22 @@
         "multimodal-models",
         "generative-models",
         "mdp-value-return",
-        "embodied-world-models"
+        "embodied-world-models",
+        "continuous-action-posttraining"
+      ]
+    },
+    {
+      "title": "Agent 与长程决策",
+      "goal": "从环境状态、实际 Context 和动作记录理解长程信用分配及并行采集。",
+      "topics": [
+        "mdp-value-return",
+        "agent-harness-environment",
+        "agent-action",
+        "agent-context-lifecycle",
+        "long-horizon-credit",
+        "parallel-environment-collection",
+        "adaptive-rollout-search",
+        "self-improvement-loop"
       ]
     }
   ],
@@ -306,6 +322,51 @@
       "gpu-execution-memory",
       "cuda-streams",
       "transformer-attention"
+    ],
+    "gpu-resource-sharing": [
+      "gpu-execution-memory",
+      "cuda-streams"
+    ],
+    "agent-context-lifecycle": [
+      "autoregressive-serving",
+      "kv-scheduling",
+      "agent-harness-environment"
+    ],
+    "test-time-compute": [
+      "autoregressive-serving",
+      "probability-information",
+      "posttraining-feedback"
+    ],
+    "self-improvement-loop": [
+      "posttraining-feedback",
+      "rl-data-cycle"
+    ],
+    "adaptive-rollout-search": [
+      "ppo-grpo",
+      "importance-sampling",
+      "rl-data-cycle"
+    ],
+    "continuous-action-posttraining": [
+      "generative-models",
+      "embodied-world-models",
+      "policy-gradient",
+      "importance-sampling"
+    ],
+    "long-horizon-credit": [
+      "mdp-value-return",
+      "gae-bootstrap",
+      "agent-harness-environment",
+      "agent-action"
+    ],
+    "parallel-environment-collection": [
+      "agent-harness-environment",
+      "ray-data-runtime",
+      "gae-bootstrap"
+    ],
+    "distributed-fault-recovery": [
+      "gradient-equivalence",
+      "weight-publication",
+      "distributed-collectives"
     ]
   },
   "experiments": [
@@ -491,10 +552,12 @@
     "Q087": [
       "distributed-collectives",
       "rl-throughput",
-      "gpu-network-topology"
+      "gpu-network-topology",
+      "distributed-fault-recovery"
     ],
     "Q088": [
-      "rl-parallel-planning"
+      "rl-parallel-planning",
+      "gpu-resource-sharing"
     ],
     "Q090": [
       "agent-action",
@@ -507,7 +570,8 @@
       "weight-publication"
     ],
     "Q094": [
-      "async-rollout"
+      "async-rollout",
+      "distributed-fault-recovery"
     ],
     "Q100": [
       "logprob-contract"
@@ -518,7 +582,8 @@
     ],
     "Q103": [
       "training-sharding",
-      "kv-scheduling"
+      "kv-scheduling",
+      "distributed-fault-recovery"
     ],
     "Q120": [
       "ppo-grpo",
@@ -577,12 +642,14 @@
     "Q183": [
       "distributed-collectives",
       "rl-throughput",
-      "gpu-network-topology"
+      "gpu-network-topology",
+      "distributed-fault-recovery"
     ],
     "Q184": [
       "rl-parallel-planning",
       "rl-data-cycle",
-      "weight-publication"
+      "weight-publication",
+      "distributed-fault-recovery"
     ],
     "Q185": [
       "logprob-contract",
@@ -631,7 +698,8 @@
     ],
     "Q201": [
       "training-sharding",
-      "kv-scheduling"
+      "kv-scheduling",
+      "distributed-fault-recovery"
     ],
     "Q202": [
       "training-sharding"
@@ -656,7 +724,9 @@
     "Q217": [
       "async-rollout",
       "agent-harness-environment",
-      "ray-data-runtime"
+      "ray-data-runtime",
+      "parallel-environment-collection",
+      "distributed-fault-recovery"
     ],
     "Q219": [
       "evidence-standards",
@@ -673,7 +743,8 @@
     ],
     "Q099": [
       "rl-throughput",
-      "gpu-execution-memory"
+      "gpu-execution-memory",
+      "gpu-resource-sharing"
     ],
     "Q199": [
       "fp8-numerics",
@@ -684,7 +755,8 @@
       "rl-throughput",
       "gpu-execution-memory",
       "performance-measurement",
-      "kernel-optimization"
+      "kernel-optimization",
+      "gpu-resource-sharing"
     ],
     "Q007": [
       "policy-gradient",
@@ -748,20 +820,24 @@
     ],
     "Q063": [
       "agent-action",
-      "agent-harness-environment"
+      "agent-harness-environment",
+      "parallel-environment-collection"
     ],
     "Q064": [
       "agent-action",
-      "agent-harness-environment"
+      "agent-harness-environment",
+      "parallel-environment-collection"
     ],
     "Q065": [
       "agent-action",
       "mdp-value-return",
-      "agent-harness-environment"
+      "agent-harness-environment",
+      "long-horizon-credit"
     ],
     "Q071": [
       "agent-action",
-      "agent-harness-environment"
+      "agent-harness-environment",
+      "parallel-environment-collection"
     ],
     "Q079": [
       "logprob-contract",
@@ -807,7 +883,8 @@
     ],
     "Q124": [
       "ppo-grpo",
-      "gradient-equivalence"
+      "gradient-equivalence",
+      "distributed-fault-recovery"
     ],
     "Q129": [
       "ppo-grpo",
@@ -835,15 +912,18 @@
     ],
     "Q166": [
       "agent-action",
-      "agent-harness-environment"
+      "agent-harness-environment",
+      "agent-context-lifecycle"
     ],
     "Q167": [
       "agent-action",
-      "agent-harness-environment"
+      "agent-harness-environment",
+      "parallel-environment-collection"
     ],
     "Q171": [
       "agent-action",
-      "agent-harness-environment"
+      "agent-harness-environment",
+      "parallel-environment-collection"
     ],
     "Q191": [
       "kv-scheduling",
@@ -873,7 +953,8 @@
     "Q070": [
       "agent-action",
       "attention-context",
-      "agent-harness-environment"
+      "agent-harness-environment",
+      "agent-context-lifecycle"
     ],
     "Q163": [
       "async-rollout",
@@ -890,6 +971,82 @@
     "Q151": [
       "opd-kl",
       "feedback-services"
+    ],
+    "Q209": [
+      "rl-throughput",
+      "agent-context-lifecycle"
+    ],
+    "Q137": [
+      "opd-kl",
+      "test-time-compute"
+    ],
+    "Q142": [
+      "opd-kl",
+      "test-time-compute"
+    ],
+    "Q174": [
+      "agent-action",
+      "test-time-compute"
+    ],
+    "Q027": [
+      "ppo-grpo",
+      "adaptive-rollout-search"
+    ],
+    "Q031": [
+      "ppo-grpo",
+      "adaptive-rollout-search"
+    ],
+    "Q128": [
+      "ppo-grpo",
+      "adaptive-rollout-search"
+    ],
+    "Q133": [
+      "ppo-grpo",
+      "adaptive-rollout-search"
+    ],
+    "Q160": [
+      "async-rollout",
+      "adaptive-rollout-search"
+    ],
+    "Q162": [
+      "async-rollout",
+      "adaptive-rollout-search"
+    ],
+    "Q061": [
+      "agent-action",
+      "long-horizon-credit"
+    ],
+    "Q062": [
+      "agent-action",
+      "long-horizon-credit"
+    ],
+    "Q066": [
+      "agent-action",
+      "long-horizon-credit"
+    ],
+    "Q067": [
+      "agent-action",
+      "long-horizon-credit"
+    ],
+    "Q168": [
+      "agent-action",
+      "long-horizon-credit"
+    ],
+    "Q169": [
+      "agent-action",
+      "long-horizon-credit"
+    ],
+    "Q069": [
+      "agent-action",
+      "parallel-environment-collection"
+    ],
+    "Q173": [
+      "agent-action",
+      "parallel-environment-collection"
+    ],
+    "Q213": [
+      "rl-throughput",
+      "distributed-fault-recovery"
     ]
   },
   "domain_map": {
@@ -1052,6 +1209,15 @@
     "embodied-world-models": "VLA / World Model",
     "feedback-services": "Reward / Teacher 服务",
     "weight-publication": "Weight Sync",
-    "kernel-optimization": "Kernel / IO 优化"
+    "kernel-optimization": "Kernel / IO 优化",
+    "gpu-resource-sharing": "GPU 资源共享",
+    "agent-context-lifecycle": "Context 生命周期",
+    "test-time-compute": "推理时计算",
+    "self-improvement-loop": "自我改进",
+    "adaptive-rollout-search": "动态采样 / Tree Rollout",
+    "continuous-action-posttraining": "连续动作后训练",
+    "long-horizon-credit": "长程信用分配",
+    "parallel-environment-collection": "环境并行采集",
+    "distributed-fault-recovery": "分布式容错"
   }
 }

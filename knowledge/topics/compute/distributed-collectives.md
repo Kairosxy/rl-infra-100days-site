@@ -1,15 +1,8 @@
 # 为什么多加 GPU，有时比单卡还慢？
 
-先把分布式训练看成三个问题：每张卡持有什么状态、谁负责哪段计算、结果在哪个时间点必须一致。通信不是附加细节，而是并行算法的一部分。
+分布式训练需要确定每张卡持有的状态、负责的计算范围，以及结果必须一致的时间点。并行算法据此安排通信。
 
-```mermaid
-flowchart LR
- A["前置：Rank / GPU / HBM"] --> B["Process Group"]
- B --> C["Collective：AR / AG / RS / A2A"]
- C --> D["DDP / FSDP / TP / EP"]
- D --> E["拓扑 / 延迟 / 带宽"]
- E --> F["NCCL Hang / 低利用率"]
-```
+![从 Process Group 与 Collective 到并行策略和排障](../../assets/distributed-collectives/mechanism-1.svg)
 
 ## 同一个例子：8 GPU、一个 64 MiB 张量
 

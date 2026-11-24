@@ -4,17 +4,9 @@ Collective 是逻辑通信操作，不代表固定硬件路径。跨两块 GPU �
 
 ## 数据路径
 
-~~~mermaid
-flowchart LR
- G0[GPU 0] <--> F[NVLink / PCIe fabric]
- G1[GPU 1] <--> F
- G0 <--> N0[NIC / DMA]
- N0 <--> S[IB / RoCE network]
- S <--> N1[Remote NIC]
- N1 <--> G2[Remote GPU]
-~~~
+![节点内 GPU 互联与跨节点 NIC/RDMA 路径](../../assets/gpu-network-topology/mechanism-1.svg)
 
-图表示可能的直达路径，不是所有集群的真实拓扑。PCIe 和 NVLink 是节点内设备互联技术；InfiniBand 与 RoCE（RDMA over Converged Ethernet）是网络方案。RDMA 指跨机器内存访问机制，并非某种固定带宽的线缆。GPUDirect RDMA 在受支持的拓扑、驱动与内存注册条件下允许 NIC 对 GPU 内存直接进行 DMA，避免某些 Host staging；仍需控制面协作、传输与同步。
+图中是支持直接 DMA 时的一种可能路径。PCIe 和 NVLink 是节点内设备互联技术；InfiniBand 与 RoCE（RDMA over Converged Ethernet）是网络方案。RDMA 指跨机器内存访问机制，并非某种固定带宽的线缆。GPUDirect RDMA 在受支持的拓扑、驱动与内存注册条件下允许 NIC 对 GPU 内存直接进行 DMA，避免某些 Host staging；仍需控制面协作、传输与同步。
 
 ## 从字节到延迟
 

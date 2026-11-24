@@ -1,0 +1,7 @@
+flowchart LR
+ A["请求到达"] --> B["Admission / Continuous Batching"]
+ B --> C["Prefill：大规模 GEMM / Attention"]
+ C --> D["KV Cache"]
+ D --> E["Decode：小步迭代"]
+ E --> F["TP/DP/EP 与通信"]
+ F --> G["TTFT / TPOT / 吞吐 / P99"]

@@ -1,0 +1,7 @@
+flowchart LR
+ L[Scaled loss] --> B[Accumulate grads]
+ B --> U[Unscale]
+ U --> F[Nonfinite check]
+ F -->|finite| C[Global norm / clip]
+ C --> O[Optimizer step]
+ F -->|nonfinite| S[Skip update]

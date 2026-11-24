@@ -11,7 +11,7 @@ $$
 \frac{\partial L}{\partial X}=GW^T=[3,4].
 $$
 
-这就是 Linear Backward 的两个 GEMM。实际 PyTorch Linear 将 weight 存成 [O,H]，数学记法和存储方向不要混淆。对于 [B,H]=[4,4096]、O=8192，Forward 理论 FLOPs 是 $2BHO\approx 2.68\times10^8$，乘加按两次浮点操作计算；不是算子延迟。
+这就是 Linear Backward 的两个 GEMM。实际 PyTorch Linear 将 weight 存成 [O,H]，数学记法和存储方向不要混淆。对于 [B,H]=[4,4096]、O=8192，Forward 理论 FLOPs 是 $2BHO\approx 2.68\times10^8$（乘加按两次浮点操作计）。延迟还取决于硬件和算子实现。
 
 ~~~python
 import torch
@@ -24,7 +24,7 @@ assert w.grad.flatten().tolist() == [1., 2.]
 assert x.grad.flatten().tolist() == [3., 4.]
 ~~~
 
-这里是可复算的 CPU 教学片段。若学习率 0.1，SGD 会将 w 更新到 [2.9,3.8]。Gradient Descent 改变的是参数，不是直接编辑上一次输出。
+用这两个梯度做一次 SGD，学习率为 0.1 时，w 更新为 [2.9,3.8]。新的 Forward 将使用这组参数。
 
 ## 为什么训练需要保存 Activation
 

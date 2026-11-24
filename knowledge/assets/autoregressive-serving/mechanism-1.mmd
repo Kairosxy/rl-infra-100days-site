@@ -1,0 +1,13 @@
+sequenceDiagram
+ participant R as Request
+ participant S as Scheduler
+ participant M as Model
+ R->>S: Prompt token IDs
+ S->>M: Prefill prompt
+ M-->>S: KV and logits
+ S-->>R: First sampled token
+ loop Until stop
+ S->>M: Decode new position with KV
+ M-->>S: Updated KV and logits
+ S-->>R: Next sampled token
+ end

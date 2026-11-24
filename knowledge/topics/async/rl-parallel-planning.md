@@ -2,17 +2,7 @@
 
 RL 的 GPU 不只训练模型，还要生成 Token、算 Logprob、执行 Reward/Verifier、同步权重。把训练引擎的 TP/PP/EP 配置原样复制给推理引擎，常常不是最优解。
 
-```mermaid
-flowchart LR
- A["Prompt / Sampler"] --> B["Rollout Engine"]
- B --> C["Trajectory / Reward"]
- C --> D["Learner Engine"]
- D --> E["权重版本 v+1"]
- E --> F["权重转换 / 同步"]
- F --> B
- B --> G["KV / Decode / TP-EP"]
- D --> H["Gradient / Optimizer / TP-PP-EP-DP"]
-```
+![Rollout 与 Learner 的资源、数据和版本依赖](../../assets/rl-parallel-planning/mechanism-1.svg)
 
 ## 统一例子：2 节点 × 8 GPU
 

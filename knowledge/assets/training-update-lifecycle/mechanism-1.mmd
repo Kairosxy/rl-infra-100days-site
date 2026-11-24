@@ -1,0 +1,8 @@
+flowchart LR
+ D[Batch / Packing] --> F[Forward]
+ F --> L[Loss]
+ L --> B[Backward]
+ B --> A[Gradient Accumulation]
+ A --> R[Gradient Sync]
+ R --> O[Optimizer Step]
+ O --> W[New Weights]

@@ -2,16 +2,7 @@
 
 模型放不下时，第一反应往往是加 TP。但“切计算”与“切状态”是不同决策。前者减少单卡算子工作量，后者减少参数/梯度/优化器状态常驻量；两者可以组合。
 
-```mermaid
-flowchart LR
- A["模型状态"] --> B["DP/DDP：每卡完整副本"]
- A --> C["FSDP2/ZeRO：切参数/梯度/优化器状态"]
- A --> D["TP：切 GEMM"]
- C --> E["All-Gather / Reduce-Scatter"]
- D --> F["层内 Collective"]
- E --> G["峰值 HBM / 重叠"]
- F --> G
-```
+![DP 副本、状态分片与张量切分的差异](../../assets/training-sharding/mechanism-1.svg)
 
 ## 8 GPU、7B 参数的粗估
 

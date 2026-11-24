@@ -12,7 +12,9 @@
 
 2026-11-24 首批基础正文覆盖概率与 Autograd、Token/Embedding、Dense/MoE、GPU 执行与互联、CUDA Stream、训练更新、生成采样、MDP/GAE/IS、后训练反馈、RL 数据循环、Ray、Harness、低精度、梯度等价、投机解码、策略纠偏与性能测量。正文、稳定 ID、真实阅读路径及覆盖标记随 Catalog 更新。它们是基础入口，不代表 58 个家族全部完成。
 
-本轮进一步补齐了多模态理解与生成（ViT/VLM/Omni）、Diffusion/Flow Matching/DiT、VLA/World Model、Attention/位置与长上下文、Reward/Teacher Serving、权重发布和 Kernel/IO 优化的基础入口。下一批优先深化优化器数学、GPU 资源共享、容错、上下文生命周期、训练更新等价性与新的模型/算法分支，依据实际缺口增量推进。随后完善现代 RL 优化与采样各分支、连续动作 RL、Self-Play/RSI、系统和框架实现。已有父专题时按具体机制扩展，不为热门方法重复创建概览。每篇需要一个可复算示例或可执行验证，保留相关工程问题及源码证据；正文不足的节点仍标为待补。
+本轮进一步补齐了多模态理解与生成（ViT/VLM/Omni）、Diffusion/Flow Matching/DiT、VLA/World Model、Attention/位置与长上下文、Reward/Teacher Serving、权重发布和 Kernel/IO 优化的基础入口。后续优先深化优化器数学、训练更新等价性、现代 RL 优化与采样各分支，并核对连续动作 RL、Self-Play/RSI、系统和框架实现中的具体方法与适用边界。已有父专题时按具体机制扩展，不为热门方法重复创建概览。每篇需要一个可复算示例或可执行验证，保留相关工程问题及源码证据；正文不足的节点仍标为待补。
+
+九个尚无独立基础正文的家族已建立阅读入口：GPU 资源共享、Agent Context、推理时计算、持续学习、自适应采样、连续动作后训练、长时程信用分配、环境并行采集与容错。接下来继续深化具体分支，并补齐框架调用链及未覆盖的优化器、状态管理等机制。技术家族的维护规则、研究来源与日程增量记录见 [技术谱系维护记录](../docs/learning/technology-lineage-maintenance.md)。
 
 ## 其他日程的技术增量
 

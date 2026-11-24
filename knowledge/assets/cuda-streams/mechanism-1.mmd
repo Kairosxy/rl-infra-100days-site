@@ -1,0 +1,9 @@
+sequenceDiagram
+ participant H as Host
+ participant C as Compute Stream
+ participant N as Comm Stream
+ H->>C: launch GEMM A
+ H->>C: record Event e
+ H->>N: wait Event e
+ H->>N: launch Collective B
+ H->>C: launch independent GEMM C

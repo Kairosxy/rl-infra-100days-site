@@ -10,20 +10,9 @@
 
 ## 从更新到发布
 
-~~~mermaid
-sequenceDiagram
- participant L as Learner
- participant T as Transfer / Reshard
- participant R as Rollout
- L->>L: Optimizer commit version v+1
- L->>T: Export committed weights
- T->>R: Transfer and install shards
- R->>R: Validate version / cache policy
- R-->>L: Ready v+1
- R->>R: Admit requests under v+1
-~~~
+![提交、传输、安装和新权重准入的时序](../../assets/weight-publication/mechanism-1.svg)
 
-这是系统契约示意，不是具体框架唯一的时序。如果部分 Rank 安装成功、另一些失败，不能把混合状态当作全局已发布版本。异步允许继续使用完整旧版本或暂停准入，具体取决于资源和策略滞后约束。Optimizer Step 因非有限梯度被 Skip 时，也要区分尝试计数与有效更新版本。
+图中描述一种满足完整版本发布条件的时序；框架可采用其他实现。如果部分 Rank 安装成功、另一些失败，不能把混合状态当作全局已发布版本。异步允许继续使用完整旧版本或暂停准入，具体取决于资源和策略滞后约束。Optimizer Step 因非有限梯度被 Skip 时，也要区分尝试计数与有效更新版本。
 
 ## KV 与在途轨迹
 

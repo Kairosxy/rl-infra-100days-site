@@ -1,0 +1,7 @@
+flowchart LR
+ T["16 Tokens"] --> R["Router Top-2"]
+ R --> D["Pack / Dispatch"]
+ D --> A["All-to-All"]
+ A --> E["GPU0..3 / Expert GEMM"]
+ E --> B["All-to-All 返回"]
+ B --> C["Unpack / Combine"]

@@ -1,0 +1,108 @@
+<svg width="334pt" height="419pt"
+ viewBox="0.00 0.00 334.30 418.80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 404.4)">
+<title>从采样、评分到 Learner 更新及权重发布</title>
+
+<g id="edge1" class="edge">
+<title>P&#45;&gt;G</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M191.5,-353.9C191.5,-348.94 191.5,-343.43 191.5,-338.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="193.95,-338.09 191.5,-331.09 189.05,-338.09 193.95,-338.09"/>
+</g>
+
+<g id="edge2" class="edge">
+<title>G&#45;&gt;R</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M156.42,-295.05C143.57,-288.85 128.91,-281.76 115.52,-275.3"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="116.43,-273.02 109.06,-272.18 114.3,-277.43 116.43,-273.02"/>
+</g>
+
+<g id="edge3" class="edge">
+<title>G&#45;&gt;L</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M191.5,-294.88C191.5,-275.18 191.5,-242.67 191.5,-220.34"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="193.95,-220.19 191.5,-213.19 189.05,-220.19 193.95,-220.19"/>
+</g>
+
+<g id="edge4" class="edge">
+<title>R&#45;&gt;A</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M65.1,-235.9C62.55,-230.71 59.71,-224.92 57,-219.4"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="59.18,-218.29 53.89,-213.09 54.78,-220.45 59.18,-218.29"/>
+</g>
+
+<g id="edge5" class="edge">
+<title>L&#45;&gt;U</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M191.5,-176.9C191.5,-171.94 191.5,-166.43 191.5,-161.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="193.95,-161.09 191.5,-154.09 189.05,-161.09 193.95,-161.09"/>
+</g>
+
+<g id="edge6" class="edge">
+<title>A&#45;&gt;U</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M89.3,-176.9C108.01,-169.6 129.77,-161.1 148.39,-153.83"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="149.47,-156.04 155.1,-151.21 147.69,-151.47 149.47,-156.04"/>
+</g>
+
+<g id="edge7" class="edge">
+<title>U&#45;&gt;W</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M192.4,-117.9C192.66,-112.94 192.95,-107.43 193.23,-102.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="195.68,-102.21 193.6,-95.09 190.79,-101.95 195.68,-102.21"/>
+</g>
+
+<g id="edge8" class="edge">
+<title>W&#45;&gt;I</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M209.8,-58.9C214.74,-53.37 220.3,-47.17 225.53,-41.32"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="227.37,-42.94 230.21,-36.09 223.72,-39.67 227.37,-42.94"/>
+</g>
+
+<g id="edge9" class="edge">
+<title>I&#45;&gt;G</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M260.55,-36.2C270.03,-47.04 280.5,-59 280.5,-59 280.5,-59 300.5,-135 300.5,-135 300.5,-196 300.5,-196 300.5,-196 300.5,-196 244.1,-256.02 212.44,-289.72"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="210.59,-288.1 207.58,-294.88 214.16,-291.46 210.59,-288.1"/>
+</g>
+
+<g id="node1" class="node">
+<title>P</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M250.5,-390C250.5,-390 132.5,-390 132.5,-390 126.5,-390 120.5,-384 120.5,-378 120.5,-378 120.5,-366 120.5,-366 120.5,-360 126.5,-354 132.5,-354 132.5,-354 250.5,-354 250.5,-354 256.5,-354 262.5,-360 262.5,-366 262.5,-366 262.5,-378 262.5,-378 262.5,-384 256.5,-390 250.5,-390"/>
+<text text-anchor="middle" x="191.5" y="-368.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Prompt + group_id</text>
+</g>
+
+<g id="node2" class="node">
+<title>G</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M214.5,-331C214.5,-331 168.5,-331 168.5,-331 162.5,-331 156.5,-325 156.5,-319 156.5,-319 156.5,-307 156.5,-307 156.5,-301 162.5,-295 168.5,-295 168.5,-295 214.5,-295 214.5,-295 220.5,-295 226.5,-301 226.5,-307 226.5,-307 226.5,-319 226.5,-319 226.5,-325 220.5,-331 214.5,-331"/>
+<text text-anchor="middle" x="191.5" y="-309.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Rollout</text>
+</g>
+
+<g id="node3" class="node">
+<title>R</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M125,-272C125,-272 22,-272 22,-272 16,-272 10,-266 10,-260 10,-260 10,-248 10,-248 10,-242 16,-236 22,-236 22,-236 125,-236 125,-236 131,-236 137,-242 137,-248 137,-248 137,-260 137,-260 137,-266 131,-272 125,-272"/>
+<text text-anchor="middle" x="73.5" y="-250.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Reward / Verifier</text>
+</g>
+
+<g id="node4" class="node">
+<title>L</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M262.5,-213C262.5,-213 120.5,-213 120.5,-213 114.5,-213 108.5,-207 108.5,-201 108.5,-201 108.5,-189 108.5,-189 108.5,-183 114.5,-177 120.5,-177 120.5,-177 262.5,-177 262.5,-177 268.5,-177 274.5,-183 274.5,-189 274.5,-189 274.5,-201 274.5,-201 274.5,-207 268.5,-213 262.5,-213"/>
+<text text-anchor="middle" x="191.5" y="-191.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Behavior / Old logprob</text>
+</g>
+
+<g id="node5" class="node">
+<title>A</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M79,-213C79,-213 12,-213 12,-213 6,-213 0,-207 0,-201 0,-201 0,-189 0,-189 0,-183 6,-177 12,-177 12,-177 79,-177 79,-177 85,-177 91,-183 91,-189 91,-189 91,-201 91,-201 91,-207 85,-213 79,-213"/>
+<text text-anchor="middle" x="45.5" y="-191.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Advantage</text>
+</g>
+
+<g id="node6" class="node">
+<title>U</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M215.5,-154C215.5,-154 167.5,-154 167.5,-154 161.5,-154 155.5,-148 155.5,-142 155.5,-142 155.5,-130 155.5,-130 155.5,-124 161.5,-118 167.5,-118 167.5,-118 215.5,-118 215.5,-118 221.5,-118 227.5,-124 227.5,-130 227.5,-130 227.5,-142 227.5,-142 227.5,-148 221.5,-154 215.5,-154"/>
+<text text-anchor="middle" x="191.5" y="-132.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Learner</text>
+</g>
+
+<g id="node7" class="node">
+<title>W</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M259.5,-95C259.5,-95 129.5,-95 129.5,-95 123.5,-95 117.5,-89 117.5,-83 117.5,-83 117.5,-71 117.5,-71 117.5,-65 123.5,-59 129.5,-59 129.5,-59 259.5,-59 259.5,-59 265.5,-59 271.5,-65 271.5,-71 271.5,-71 271.5,-83 271.5,-83 271.5,-89 265.5,-95 259.5,-95"/>
+<text text-anchor="middle" x="194.5" y="-73.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Commit new weights</text>
+</g>
+
+<g id="node8" class="node">
+<title>I</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M293.5,-36C293.5,-36 197.5,-36 197.5,-36 191.5,-36 185.5,-30 185.5,-24 185.5,-24 185.5,-12 185.5,-12 185.5,-6 191.5,0 197.5,0 197.5,0 293.5,0 293.5,0 299.5,0 305.5,-6 305.5,-12 305.5,-12 305.5,-24 305.5,-24 305.5,-30 299.5,-36 293.5,-36"/>
+<text text-anchor="middle" x="245.5" y="-14.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Install / publish</text>
+</g>
+</g>
+</svg>

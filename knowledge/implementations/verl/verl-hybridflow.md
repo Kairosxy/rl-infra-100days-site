@@ -1,10 +1,10 @@
 # verl / HybridFlow：数据流与执行引擎怎么解耦？
 
-verl 的 HybridFlow 将 RL 的数据流/控制流与具体 Worker、不同并行策略的执行引擎组合。这个架构的价值不在于“有多少 Actor”，而是能让不同阶段使用适合自己的训练、推理和并行部署，并允许相关资源通过明确边界协作。
+verl 的 HybridFlow 将 RL 的数据流/控制流与具体 Worker、不同并行策略的执行引擎组合。各阶段可以选择适合自身负载的训练、推理和并行部署，通过明确的资源边界协作。
 
 ## 关心的数据与状态
 
-一个完整的训练周期至少涉及 Prompt、Response、Reward、Advantage、Old/Current Logprob、Policy Version、更新后的模型权重。最容易出问题的不是字段存在与否，而是**谁生成它、什么时候有效、是否能够跨版本重用**。
+一个完整的训练周期至少涉及 Prompt、Response、Reward、Advantage、Old/Current Logprob、Policy Version、更新后的模型权重。每个字段都需要明确**生产者、有效时间和跨版本复用条件**。
 
 - Rollout 端负责生成，Teacher Forcing 的训练侧要对固定 Token 重算可微 Logprob。
 - Group 内需要收齐有效回答才能按预定估计器计算相对优势；不同 Group 的额外等待是可优化的。

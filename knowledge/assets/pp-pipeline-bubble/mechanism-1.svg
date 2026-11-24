@@ -1,0 +1,72 @@
+<svg width="153pt" height="360pt"
+ viewBox="0.00 0.00 152.80 359.80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 345.4)">
+<title>模型层在四个 Pipeline Stage 间的划分</title>
+
+<g id="edge1" class="edge">
+<title>B&#45;&gt;S0</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M62,-294.9C62,-289.94 62,-284.43 62,-279.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="64.45,-279.09 62,-272.09 59.55,-279.09 64.45,-279.09"/>
+</g>
+
+<g id="edge2" class="edge">
+<title>S0&#45;&gt;S1</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M62,-235.9C62,-230.94 62,-225.43 62,-220.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="64.45,-220.09 62,-213.09 59.55,-220.09 64.45,-220.09"/>
+</g>
+
+<g id="edge3" class="edge">
+<title>S1&#45;&gt;S2</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M62,-176.9C62,-171.94 62,-166.43 62,-161.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="64.45,-161.09 62,-154.09 59.55,-161.09 64.45,-161.09"/>
+</g>
+
+<g id="edge4" class="edge">
+<title>S2&#45;&gt;S3</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M62,-117.9C62,-112.94 62,-107.43 62,-102.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="64.45,-102.09 62,-95.09 59.55,-102.09 64.45,-102.09"/>
+</g>
+
+<g id="edge5" class="edge">
+<title>S3&#45;&gt;L</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M62,-58.9C62,-53.94 62,-48.43 62,-43.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="64.45,-43.09 62,-36.09 59.55,-43.09 64.45,-43.09"/>
+</g>
+
+<g id="node1" class="node">
+<title>B</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M112,-331C112,-331 12,-331 12,-331 6,-331 0,-325 0,-319 0,-319 0,-307 0,-307 0,-301 6,-295 12,-295 12,-295 112,-295 112,-295 118,-295 124,-301 124,-307 124,-307 124,-319 124,-319 124,-325 118,-331 112,-331"/>
+<text text-anchor="middle" x="62" y="-309.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">8 个 Micro&#45;batch</text>
+</g>
+
+<g id="node2" class="node">
+<title>S0</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M103.5,-272C103.5,-272 20.5,-272 20.5,-272 14.5,-272 8.5,-266 8.5,-260 8.5,-260 8.5,-248 8.5,-248 8.5,-242 14.5,-236 20.5,-236 20.5,-236 103.5,-236 103.5,-236 109.5,-236 115.5,-242 115.5,-248 115.5,-248 115.5,-260 115.5,-260 115.5,-266 109.5,-272 103.5,-272"/>
+<text text-anchor="middle" x="62" y="-250.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Stage0 层 0–2</text>
+</g>
+
+<g id="node3" class="node">
+<title>S1</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M103.5,-213C103.5,-213 20.5,-213 20.5,-213 14.5,-213 8.5,-207 8.5,-201 8.5,-201 8.5,-189 8.5,-189 8.5,-183 14.5,-177 20.5,-177 20.5,-177 103.5,-177 103.5,-177 109.5,-177 115.5,-183 115.5,-189 115.5,-189 115.5,-201 115.5,-201 115.5,-207 109.5,-213 103.5,-213"/>
+<text text-anchor="middle" x="62" y="-191.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Stage1 层 3–5</text>
+</g>
+
+<g id="node4" class="node">
+<title>S2</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M103.5,-154C103.5,-154 20.5,-154 20.5,-154 14.5,-154 8.5,-148 8.5,-142 8.5,-142 8.5,-130 8.5,-130 8.5,-124 14.5,-118 20.5,-118 20.5,-118 103.5,-118 103.5,-118 109.5,-118 115.5,-124 115.5,-130 115.5,-130 115.5,-142 115.5,-142 115.5,-148 109.5,-154 103.5,-154"/>
+<text text-anchor="middle" x="62" y="-132.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Stage2 层 6–8</text>
+</g>
+
+<g id="node5" class="node">
+<title>S3</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M107.5,-95C107.5,-95 16.5,-95 16.5,-95 10.5,-95 4.5,-89 4.5,-83 4.5,-83 4.5,-71 4.5,-71 4.5,-65 10.5,-59 16.5,-59 16.5,-59 107.5,-59 107.5,-59 113.5,-59 119.5,-65 119.5,-71 119.5,-71 119.5,-83 119.5,-83 119.5,-89 113.5,-95 107.5,-95"/>
+<text text-anchor="middle" x="62" y="-73.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Stage3 层 9–11</text>
+</g>
+
+<g id="node6" class="node">
+<title>L</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M112,-36C112,-36 12,-36 12,-36 6,-36 0,-30 0,-24 0,-24 0,-12 0,-12 0,-6 6,0 12,0 12,0 112,0 112,0 118,0 124,-6 124,-12 124,-12 124,-24 124,-24 124,-30 118,-36 112,-36"/>
+<text text-anchor="middle" x="62" y="-14.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Loss / Backward</text>
+</g>
+</g>
+</svg>

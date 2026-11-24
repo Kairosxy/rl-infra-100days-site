@@ -4,20 +4,7 @@ Agent Harness 管理模型之外的执行：组织上下文、调用模型、解
 
 ## 一次多轮交互
 
-~~~mermaid
-sequenceDiagram
- participant H as Harness
- participant M as Model
- participant E as Environment
- H->>M: Context + tool schema
- M-->>H: Assistant action
- H->>H: Parse and validate
- H->>E: Execute tool with attempt ID
- E-->>H: Observation / status
- H->>H: Append history and update state
- H->>M: Next context
- M-->>H: Final answer / stop
-~~~
+![Harness 与模型、环境的多轮调用时序](../../assets/agent-harness-environment/mechanism-1.svg)
 
 例如模型先生成 8 个 Action Token，工具返回 20 个 Observation Token，模型再生成 5 个 Token，则完整交互增加 33 个 Token，而模型实际采样的位置只有 13 个。只要这些 Observation 会成为后续条件上下文，训练前向就需要包含它们或等价表示；Actor loss 则只覆盖定义中的模型 Action。详细 mask 对齐见 [Agent 的 Action](agent-action.md)。
 

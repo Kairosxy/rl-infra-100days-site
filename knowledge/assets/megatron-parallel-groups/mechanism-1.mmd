@@ -1,0 +1,9 @@
+flowchart TD
+ A["16 GPU / 2 nodes"] --> B["Dense: TP=2 × PP=2 × DP=4"]
+ B --> C["TP 组：层内 GEMM / Attention"]
+ B --> D["PP 组：跨 Stage Activation"]
+ B --> E["DP 组：副本梯度归约"]
+ C --> F["SP / CP：序列与 KV 访问"]
+ E --> G["MoE: EP 复用 Rank 维度"]
+ G --> H["Expert DP / All-to-All"]
+ H --> I["NCCL Trace / Rank Group 验证"]

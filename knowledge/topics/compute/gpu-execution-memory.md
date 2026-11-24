@@ -1,6 +1,6 @@
 # GPU 执行模型、显存与算术强度
 
-GPU 不是把一条 Python 语句变成一个大核执行。CPU 发起 Kernel，GPU 将线程块分配到 SM（Streaming Multiprocessor）。CUDA 线程在一个 Block 内以 32 线程组成 Warp；分支不一致可能让部分 Lane 在同一段指令中不做有效工作。
+CPU 发起 Kernel，GPU 将线程块分配到 SM（Streaming Multiprocessor）。CUDA 线程在一个 Block 内以 32 线程组成 Warp；分支不一致可能让部分 Lane 在同一段指令中不做有效工作。
 
 ## 从计算到数据搬运
 
@@ -29,7 +29,7 @@ $$
 T_{\rm lower}\geq\max(F/P,\;D/BW).
 $$
 
-这是简化下界，不是 GPU 实测。实际 HBM 流量可能因 cache、重复加载、量化 scale、工作区及实现而改变。大 M 也可能受低占用率、通信、显存容量或算子效率限制。
+以上时间为简化成本模型的下界。实际 HBM 流量可能因 cache、重复加载、量化 scale、工作区及实现而改变。大 M 也可能受低占用率、通信、显存容量或算子效率限制。
 
 ## 从估算走到 Trace
 

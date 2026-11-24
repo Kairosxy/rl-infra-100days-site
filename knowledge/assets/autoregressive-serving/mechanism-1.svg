@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="544" viewBox="0 0 760 544" role="img" aria-label="请求进入、Prefill、首 Token 与迭代 Decode">
+<title>请求进入、Prefill、首 Token 与迭代 Decode</title>
+<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#35654f"/></marker></defs>
+<rect width="760" height="544" rx="6" fill="#f7f8f3"/>
+<g font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="16" fill="#293a31">
+<rect x="26.0" y="16" width="182" height="43" rx="5" fill="#e8eee5" stroke="#799083"/><text x="117.0" y="43" text-anchor="middle" font-weight="600">Request</text>
+<path d="M117.0 59 V534" stroke="#799083" stroke-dasharray="4 5" fill="none" opacity=".65"/>
+<rect x="289.0" y="16" width="182" height="43" rx="5" fill="#e8eee5" stroke="#799083"/><text x="380.0" y="43" text-anchor="middle" font-weight="600">Scheduler</text>
+<path d="M380.0 59 V534" stroke="#799083" stroke-dasharray="4 5" fill="none" opacity=".65"/>
+<rect x="552.0" y="16" width="182" height="43" rx="5" fill="#e8eee5" stroke="#799083"/><text x="643.0" y="43" text-anchor="middle" font-weight="600">Model</text>
+<path d="M643.0 59 V534" stroke="#799083" stroke-dasharray="4 5" fill="none" opacity=".65"/>
+<rect x="14" y="307" width="732" height="192" rx="4" fill="none" stroke="#a38a60" stroke-dasharray="5 4"/><text x="25" y="323" font-size="12" fill="#293a31">loop · Until stop</text>
+<text x="248.5" y="97" font-size="14" text-anchor="middle">Prompt token IDs</text>
+<path d="M117.0 119 H380.0" stroke="#35654f" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+<text x="511.5" y="157" font-size="14" text-anchor="middle">Prefill prompt</text>
+<path d="M380.0 179 H643.0" stroke="#35654f" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+<text x="511.5" y="217" font-size="14" text-anchor="middle">KV and logits</text>
+<path d="M643.0 239 H380.0" stroke="#35654f" stroke-width="1.5" fill="none" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="248.5" y="277" font-size="14" text-anchor="middle">First sampled token</text>
+<path d="M380.0 299 H117.0" stroke="#35654f" stroke-width="1.5" fill="none" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="511.5" y="337" font-size="14" text-anchor="middle">Decode new position with KV</text>
+<path d="M380.0 359 H643.0" stroke="#35654f" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+<text x="511.5" y="397" font-size="14" text-anchor="middle">Updated KV and logits</text>
+<path d="M643.0 419 H380.0" stroke="#35654f" stroke-width="1.5" fill="none" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="248.5" y="457" font-size="14" text-anchor="middle">Next sampled token</text>
+<path d="M380.0 479 H117.0" stroke="#35654f" stroke-width="1.5" fill="none" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+</g></svg>

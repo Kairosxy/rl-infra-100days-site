@@ -2,15 +2,7 @@
 
 训练在较大 Token Batch 上做 Forward/Backward，推理 Decode 每次通常只追加少量 Token。相同 TP Degree 下，推理每层的小 GEMM 与跨卡 Collective 可能让通信延迟占比更高；而权重能否放下、KV 容量和请求并发又可能要求不同的切分。
 
-```mermaid
-flowchart LR
- A["请求到达"] --> B["Admission / Continuous Batching"]
- B --> C["Prefill：大规模 GEMM / Attention"]
- C --> D["KV Cache"]
- D --> E["Decode：小步迭代"]
- E --> F["TP/DP/EP 与通信"]
- F --> G["TTFT / TPOT / 吞吐 / P99"]
-```
+![Serving 请求调度、KV 与并行通信](../../assets/serving-parallelism/mechanism-1.svg)
 
 ## 一个可复算的 KV 锚点
 

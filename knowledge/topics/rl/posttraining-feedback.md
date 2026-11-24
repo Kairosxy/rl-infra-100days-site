@@ -17,7 +17,7 @@
 
 ## 偏好模型与 DPO
 
-Bradley-Terry 偏好模型用 $\sigma(r_A-r_B)$ 表达 A 胜过 B 的概率。若打分差为 2，则胜率约 0.881，观察到 A 胜出的负对数似然约 0.127。该分数差学习相对偏好，而非天然具有绝对奖励单位。
+Bradley-Terry 偏好模型用 $\sigma(r_A-r_B)$ 表达 A 胜过 B 的概率。若打分差为 2，则胜率约 0.881，观察到 A 胜出的负对数似然约 0.127。该分数差描述相对偏好；绝对奖励尺度仍需单独定义。
 
 DPO 将特定 KL-regularized reward 优化问题重参数化。令
 $d(y)=\log\pi_\theta(y|x)-\log\pi_{\rm ref}(y|x)$，则典型偏好损失为
@@ -26,7 +26,7 @@ $$
 -\log\sigma(\beta[d(y_w)-d(y_l)]).
 $$
 
-若 beta=0.1，d(chosen)=2，d(rejected)=−1，则 sigmoid 输入为 0.3，loss 约 0.554。DPO 不需要在原始训练阶段显式拟合独立 RM，也不需要本轮在线 rollout；在线偏好数据生成是另一种工作流，并非此结论的反例。
+若 beta=0.1，d(chosen)=2，d(rejected)=−1，则 sigmoid 输入为 0.3，loss 约 0.554。DPO 不需要在原始训练阶段显式拟合独立 RM，也不需要本轮在线 rollout；在线偏好学习可以另行生成新的偏好数据。
 
 ## 反馈粒度与验证
 

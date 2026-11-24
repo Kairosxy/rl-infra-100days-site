@@ -4,17 +4,7 @@ CUDA Kernel 启动通常是对 CPU 异步的。Stream 表达有序的设备工�
 
 ## 提交、等待与可见性
 
-~~~mermaid
-sequenceDiagram
- participant H as Host
- participant C as Compute Stream
- participant N as Comm Stream
- H->>C: launch GEMM A
- H->>C: record Event e
- H->>N: wait Event e
- H->>N: launch Collective B
- H->>C: launch independent GEMM C
-~~~
+![Host 提交计算、Event 依赖与通信 Stream](../../assets/cuda-streams/mechanism-1.svg)
 
 B 只能在 A 完成后读取其结果。独立的 C 可与 B 重叠；若 C 依赖 B，则 Compute Stream 还必须等待相应通信完成信号。CPU 提交顺序不能替代跨 Stream 的设备依赖。
 
@@ -43,6 +33,6 @@ print(start.elapsed_time(end) / 20)
 
 假设 A=4ms、B=3ms、C=5ms，A 后 B 与 C 无依赖且可完全重叠，关键路径是 4+max(3,5)=9ms，而串行为 12ms。实际并发争抢 SM、HBM 或网络，耗时可能变化，不能直接取理想 max 当实测。
 
-CUDA Graph 捕获可重放的操作图，降低重复提交的 CPU/launch 开销；不是把多个算子自动融合成一个 Kernel。地址、Shape、控制流、同步方式与动态数据更新必须满足对应实现的捕获约束。推理引擎常按不同 batch 规模准备图；不满足条件时可能回退普通执行。
+CUDA Graph 捕获并重放操作图，降低 CPU 重复提交和 launch 的开销。图中仍可包含多个独立 Kernel。地址、Shape、控制流、同步方式与动态数据更新必须满足对应实现的捕获约束。推理引擎常按不同 batch 规模准备图；不满足条件时可能回退普通执行。
 
 参考：[CUDA Programming Guide](https://docs.nvidia.com/cuda/cuda-programming-guide/index.html)、[PyTorch CUDA semantics](https://docs.pytorch.org/docs/stable/notes/cuda.html)、[Nsight Systems](https://docs.nvidia.com/nsight-systems/UserGuide/)。

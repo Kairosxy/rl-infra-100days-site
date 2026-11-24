@@ -1,0 +1,66 @@
+<svg width="338pt" height="242pt"
+ viewBox="0.00 0.00 337.80 241.80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 227.4)">
+<title>语言目标、观测、策略与环境的反馈回路</title>
+
+<g id="edge1" class="edge">
+<title>O&#45;&gt;P</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M187.8,-176.9C175.62,-170.53 161.71,-163.26 149.13,-156.68"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="150.02,-154.38 142.68,-153.31 147.75,-158.72 150.02,-154.38"/>
+</g>
+
+<g id="edge3" class="edge">
+<title>P&#45;&gt;A</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M111.5,-117.9C111.5,-112.94 111.5,-107.43 111.5,-102.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="113.95,-102.09 111.5,-95.09 109.05,-102.09 113.95,-102.09"/>
+</g>
+
+<g id="edge2" class="edge">
+<title>L&#45;&gt;P</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M73.7,-176.9C78.93,-171.37 84.82,-165.17 90.35,-159.32"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="92.27,-160.86 95.31,-154.09 88.72,-157.49 92.27,-160.86"/>
+</g>
+
+<g id="edge4" class="edge">
+<title>A&#45;&gt;E</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M127.7,-58.9C132.93,-53.37 138.82,-47.17 144.35,-41.32"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="146.27,-42.86 149.31,-36.09 142.72,-39.49 146.27,-42.86"/>
+</g>
+
+<g id="edge5" class="edge">
+<title>E&#45;&gt;O</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M181.84,-36.2C192.14,-47.04 203.5,-59 203.5,-59 203.5,-59 212.53,-130.7 217.43,-169.59"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="215.04,-170.26 218.35,-176.9 219.9,-169.65 215.04,-170.26"/>
+</g>
+
+<g id="node1" class="node">
+<title>O</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M297,-213C297,-213 144,-213 144,-213 138,-213 132,-207 132,-201 132,-201 132,-189 132,-189 132,-183 138,-177 144,-177 144,-177 297,-177 297,-177 303,-177 309,-183 309,-189 309,-189 309,-201 309,-201 309,-207 303,-213 297,-213"/>
+<text text-anchor="middle" x="220.5" y="-191.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Camera / proprioception</text>
+</g>
+
+<g id="node2" class="node">
+<title>P</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M130.5,-154C130.5,-154 92.5,-154 92.5,-154 86.5,-154 80.5,-148 80.5,-142 80.5,-142 80.5,-130 80.5,-130 80.5,-124 86.5,-118 92.5,-118 92.5,-118 130.5,-118 130.5,-118 136.5,-118 142.5,-124 142.5,-130 142.5,-130 142.5,-142 142.5,-142 142.5,-148 136.5,-154 130.5,-154"/>
+<text text-anchor="middle" x="111.5" y="-132.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Policy</text>
+</g>
+
+<g id="node3" class="node">
+<title>L</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M103,-213C103,-213 12,-213 12,-213 6,-213 0,-207 0,-201 0,-201 0,-189 0,-189 0,-183 6,-177 12,-177 12,-177 103,-177 103,-177 109,-177 115,-183 115,-189 115,-189 115,-201 115,-201 115,-207 109,-213 103,-213"/>
+<text text-anchor="middle" x="57.5" y="-191.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Language goal</text>
+</g>
+
+<g id="node4" class="node">
+<title>A</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M182.5,-95C182.5,-95 40.5,-95 40.5,-95 34.5,-95 28.5,-89 28.5,-83 28.5,-83 28.5,-71 28.5,-71 28.5,-65 34.5,-59 40.5,-59 40.5,-59 182.5,-59 182.5,-59 188.5,-59 194.5,-65 194.5,-71 194.5,-71 194.5,-83 194.5,-83 194.5,-89 188.5,-95 182.5,-95"/>
+<text text-anchor="middle" x="111.5" y="-73.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Action or action chunk</text>
+</g>
+
+<g id="node5" class="node">
+<title>E</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M219.5,-36C219.5,-36 111.5,-36 111.5,-36 105.5,-36 99.5,-30 99.5,-24 99.5,-24 99.5,-12 99.5,-12 99.5,-6 105.5,0 111.5,0 111.5,0 219.5,0 219.5,0 225.5,0 231.5,-6 231.5,-12 231.5,-12 231.5,-24 231.5,-24 231.5,-30 225.5,-36 219.5,-36"/>
+<text text-anchor="middle" x="165.5" y="-14.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Robot / simulator</text>
+</g>
+</g>
+</svg>

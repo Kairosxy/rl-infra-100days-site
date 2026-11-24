@@ -1,0 +1,74 @@
+<svg width="365pt" height="313pt"
+ viewBox="0.00 0.00 365.30 312.80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 298.4)">
+<title>SP 与 CP 的切分位置及 CP 的通信约束</title>
+
+<g id="edge1" class="edge">
+<title>A&#45;&gt;B</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M136.22,-247.97C127.05,-241.25 116.4,-233.47 106.72,-226.38"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="107.93,-224.23 100.84,-222.08 105.04,-228.19 107.93,-224.23"/>
+</g>
+
+<g id="edge2" class="edge">
+<title>A&#45;&gt;C</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M183.06,-247.97C191.08,-242.17 200.21,-235.57 208.87,-229.31"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="210.53,-231.14 214.76,-225.05 207.66,-227.16 210.53,-231.14"/>
+</g>
+
+<g id="edge3" class="edge">
+<title>C&#45;&gt;D</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M242.5,-182.72C242.5,-177.89 242.5,-172.65 242.5,-167.55"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="244.95,-167.24 242.5,-160.24 240.05,-167.24 244.95,-167.24"/>
+</g>
+
+<g id="edge4" class="edge">
+<title>D&#45;&gt;E</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M242.5,-117.69C242.5,-112.75 242.5,-107.43 242.5,-102.33"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="244.95,-102.09 242.5,-95.09 240.05,-102.09 244.95,-102.09"/>
+</g>
+
+<g id="edge5" class="edge">
+<title>E&#45;&gt;F</title>
+<path fill="none" stroke="#35654f" stroke-width="1.25" d="M242.5,-58.9C242.5,-53.94 242.5,-48.43 242.5,-43.12"/>
+<polygon fill="#35654f" stroke="#35654f" stroke-width="1.25" points="244.95,-43.09 242.5,-36.09 240.05,-43.09 244.95,-43.09"/>
+</g>
+
+<g id="node1" class="node">
+<title>A</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M193.5,-284C193.5,-284 125.5,-284 125.5,-284 119.5,-284 113.5,-278 113.5,-272 113.5,-272 113.5,-260 113.5,-260 113.5,-254 119.5,-248 125.5,-248 125.5,-248 193.5,-248 193.5,-248 199.5,-248 205.5,-254 205.5,-260 205.5,-260 205.5,-272 205.5,-272 205.5,-278 199.5,-284 193.5,-284"/>
+<text text-anchor="middle" x="159.5" y="-262.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">输入 [B,T,H]</text>
+</g>
+
+<g id="node2" class="node">
+<title>B</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M143,-222C143,-222 12,-222 12,-222 6,-222 0,-216 0,-210 0,-210 0,-198 0,-198 0,-192 6,-186 12,-186 12,-186 143,-186 143,-186 149,-186 155,-192 155,-198 155,-198 155,-210 155,-210 155,-216 149,-222 143,-222"/>
+<text text-anchor="middle" x="77.5" y="-200.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">SP：切分激活的序列维</text>
+</g>
+
+<g id="node3" class="node">
+<title>C</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M300.5,-225C300.5,-225 184.5,-225 184.5,-225 178.5,-225 172.5,-219 172.5,-213 172.5,-213 172.5,-195 172.5,-195 172.5,-189 178.5,-183 184.5,-183 184.5,-183 300.5,-183 300.5,-183 306.5,-183 312.5,-189 312.5,-195 312.5,-195 312.5,-213 312.5,-213 312.5,-219 306.5,-225 300.5,-225"/>
+<text text-anchor="middle" x="242.5" y="-207.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">CP：切分 Attention</text>
+<text text-anchor="middle" x="242.5" y="-193.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">的上下文位置</text>
+</g>
+
+<g id="node4" class="node">
+<title>D</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M324.5,-160C324.5,-160 160.5,-160 160.5,-160 154.5,-160 148.5,-154 148.5,-148 148.5,-148 148.5,-130 148.5,-130 148.5,-124 154.5,-118 160.5,-118 160.5,-118 324.5,-118 324.5,-118 330.5,-118 336.5,-124 336.5,-130 336.5,-130 336.5,-148 336.5,-148 336.5,-154 330.5,-160 324.5,-160"/>
+<text text-anchor="middle" x="242.5" y="-142.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">跨 Rank KV 交换 / Attention</text>
+<text text-anchor="middle" x="242.5" y="-128.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">归约</text>
+</g>
+
+<g id="node5" class="node">
+<title>E</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M321,-95C321,-95 164,-95 164,-95 158,-95 152,-89 152,-83 152,-83 152,-71 152,-71 152,-65 158,-59 164,-59 164,-59 321,-59 321,-59 327,-59 333,-65 333,-71 333,-71 333,-83 333,-83 333,-89 327,-95 321,-95"/>
+<text text-anchor="middle" x="242.5" y="-73.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">Mask / Position / 数值等价</text>
+</g>
+
+<g id="node6" class="node">
+<title>F</title>
+<path fill="#e8eee5" stroke="#799083" stroke-width="1.15" d="M287.5,-36C287.5,-36 197.5,-36 197.5,-36 191.5,-36 185.5,-30 185.5,-24 185.5,-24 185.5,-12 185.5,-12 185.5,-6 191.5,0 197.5,0 197.5,0 287.5,0 287.5,0 293.5,0 299.5,-6 299.5,-12 299.5,-12 299.5,-24 299.5,-24 299.5,-30 293.5,-36 287.5,-36"/>
+<text text-anchor="middle" x="242.5" y="-14.6" font-family="Noto Sans CJK SC, Microsoft YaHei, PingFang SC, WenQuanYi Zen Hei, sans-serif" font-size="13.00" fill="#293a31">显存峰值与通信</text>
+</g>
+</g>
+</svg>
