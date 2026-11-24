@@ -81,6 +81,14 @@ def main():
             for fragment in ['#topic=tp-matrix-communication','#topic=pp-pipeline-bubble','#question=Q081','#topic=tp-matrix-communication']:
                 go(fragment)
             check(not errors,'interactive article lifecycle regression')
+            go('')
+            check(page.locator('#home .directory-group').count() == 11, 'eleven chapter directory')
+            page.locator('#home .directory-group').first.locator('summary').first.click()
+            check(page.locator('#home .directory-group').first.evaluate('(e)=>e.open'), 'chapter expands')
+            go('#view=paths')
+            check(page.locator('#paths .entry').count() > 0, 'learning paths retain actual topic links')
+            go('#view=questions&kind=case')
+            check(page.locator('#questions .entry').count() > 0, 'engineering issues are directly accessible')
             go('#topic=tp-matrix-communication')
             check(page.locator('#article img').first.evaluate('(e)=>e.complete && e.naturalWidth>0'),'TP static figure loads')
             for topic_id in ('pp-pipeline-bubble', 'ep-token-routing', 'kv-scheduling', 'fp8-numerics', 'ppo-grpo', 'async-rollout'):
