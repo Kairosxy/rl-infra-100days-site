@@ -23,7 +23,9 @@ class ProductDataTest(unittest.TestCase):
     def test_paths_and_prerequisites_validate(self):
         catalog,bank=self.load()
         enrich_payload(ROOT,catalog,bank)
-        self.assertEqual(len(catalog['learning_map']['paths']),3)
+        self.assertEqual(len(catalog['learning_map']['paths']),4)
+        self.assertEqual(catalog['learning_map']['paths'][0]['topics'][0], 'transformer-attention')
+        self.assertTrue(all(path['topics'] for path in catalog['learning_map']['paths']))
         self.assertGreaterEqual(len(catalog['learning_map']['experiments']),12)
     def test_invalid_metadata_fails_loudly(self):
         for changes in ({'prerequisites':{'policy-gradient':['policy-gradient']}},{'question_links':{'Q999':['policy-gradient']}}):
