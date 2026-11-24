@@ -6,7 +6,7 @@
   const graph = C.index(data), meta = data.learning_map || {}, $ = id => document.getElementById(id);
   const knownIds = new Set(graph.questions.map(q => q.id));
   const labels = {topic: '知识', case: 'Issue', implementation: '框架实现', question: '问答'};
-  let current = C.route(location.hash), lastList = '#view=questions', renderId = 0, searchTimer = null;
+  let current = C.route(location.hash), renderId = 0, searchTimer = null;
   const state = {storageError: ''};
   const el = (tag, cls, text) => {const out = document.createElement(tag); if (cls) out.className = cls; if (text !== undefined) out.textContent = text; return out;};
   const a = (text, values, cls) => {const link = el('a', cls, text); link.href = typeof values === 'string' ? values : C.url(values); return link;};
@@ -32,7 +32,10 @@
     const h = el('div', 'section-heading'); h.append(el('h2', '', title)); if (trailing) h.append(trailing); host.append(h);
   }
   function row(item, options = {}) {
-    const link = a('', detailURL(item), 'entry');
+    const target = detailURL(item);
+    if (options.context) Object.assign(target, scope());
+    if (options.fromList) Object.assign(target, scope(), {from: current.get('view'), back: location.hash});
+    const link = a('', target, 'entry');
     const marker = item.type === 'question' ? item.code : labels[item.type];
     link.append(el('span', 'entry-meta', marker), el('strong', '', item.title));
     if (options.summary && item.type !== 'question') link.append(el('p', '', item.summary));
@@ -40,17 +43,39 @@
     return link;
   }
   function sectionItems(section) {return graph.items.filter(item => graph.inSection(item, section.id));}
-  function scope(item) {
-    const topic = item?.type === 'topic' ? item : graph.lookup.get('topic:' + item?.topics?.[0]);
-    return {area: current.get('area') || current.get('chapter') || topic?.chapter || '', section: current.get('section') || (topic ? graph.topicSection.get(topic.id) : '') || '', ref: current.get('ref') || (item?.type === 'topic' ? item.id : '')};
+  function detailItem() {
+    return ['topic','case','implementation','question'].map(k => graph.lookup.get(k + ':' + current.get(k))).find(Boolean);
+  }
+  function scope(item = detailItem()) {
+    return graph.resolveScope({...values(current), area: current.get('area') || current.get('chapter')}, item);
+  }
+  function activeMode() {
+    const view = current.get('view');
+    if (view === 'questions' || view === 'library') return view;
+    if (current.has('case') || current.has('question')) return current.get('from') === 'library' ? 'library' : 'questions';
+    if (detailItem() && current.get('from') === 'library') return 'library';
+    return 'map';
+  }
+  function listState(mode) {
+    const source = current.get('view') === mode ? current : current.get('from') === mode ? C.route(current.get('back') || '') : new URLSearchParams();
+    const state = {};
+    for (const k of ['q', 'kind', 'level', 'review']) if (source.has(k)) state[k] = source.get(k);
+    if (!state.q && ['questions','library'].includes(current.get('view'))) state.q = current.get('q') || '';
+    return state;
+  }
+  function scopedRoute(mode, raw, preserveFilters = true) {
+    const context = graph.normalizeScope(raw);
+    if (mode !== 'map') return {view: mode, ...(preserveFilters ? listState(mode) : {}), ...context};
+    if (context.impl) return {implementation: context.impl};
+    if (context.ref) return {topic: context.ref};
+    if (context.area) return {chapter: context.area, section: context.section, framework: context.framework};
+    return {};
   }
   function reveal(view, scroll) {
     document.querySelectorAll('.view').forEach(v => {v.hidden = v.id !== view;});
     $('mobile-directory').close();
     document.querySelectorAll('[data-nav]').forEach(n => {
-      const detailKind = current.has('case') || current.has('question');
-      const active = (n.dataset.nav === 'map' && (['home', 'chapter', 'paths'].includes(view) || (view === 'detail' && !detailKind))) || (n.dataset.nav === 'questions' && view === 'detail' && detailKind) || n.dataset.nav === view;
-      if (active) n.setAttribute('aria-current', 'page'); else n.removeAttribute('aria-current');
+      if (n.dataset.nav === activeMode()) n.setAttribute('aria-current', 'page'); else n.removeAttribute('aria-current');
     });
     if (scroll) window.scrollTo({top: 0, behavior: 'instant'});
   }
@@ -66,22 +91,38 @@
     }
     return [...groups].map(([title, items]) => ({title, items}));
   }
+  function directoryLink(label, raw, cls, role = 'entry') {
+    const link = a(label, scopedRoute('map', raw), cls);
+    link.dataset.directoryScope = JSON.stringify(graph.normalizeScope(raw));
+    link.dataset.directoryLabel = label;
+    link.dataset.directoryRole = role;
+    return link;
+  }
+  function countLabel(raw) {
+    const count = el('span', 'directory-count');
+    count.dataset.countScope = JSON.stringify(graph.normalizeScope(raw));
+    return count;
+  }
   function directory(host, overview = false) {
     host.replaceChildren();
+    host.append(directoryLink('全部知识', {}, 'tree-overview tree-root', 'root'));
     for (const [i, chapter] of data.chapters.entries()) {
       const group = el('details', overview ? 'directory-group' : 'tree-group');
       group.dataset.area = chapter.id;
-      const groups = chapterGroups(chapter);
-      const count = groups.reduce((n, s) => n + s.items.length, 0);
+      const raw = {area: chapter.id};
       const summary = el('summary', '', (i + 1) + '. ' + chapter.title);
-      if (overview) summary.append(el('span', 'directory-count', String(count) + ' 篇'));
-      group.append(summary, a('章节概览', {chapter: chapter.id}, 'tree-overview'));
-      for (const s of groups) {
-        const sub = el('details', 'tree-section'); if (s.id) sub.dataset.section = s.id;
-        sub.append(el('summary', 'tree-section-title', s.title));
-        if (s.id) sub.append(a('小节概览', {chapter: chapter.id, section: s.id}, 'tree-overview'));
+      summary.append(countLabel(raw));
+      group.append(summary, directoryLink('章节概览', raw, 'tree-overview', 'chapter'));
+      for (const s of chapterGroups(chapter)) {
+        const sub = el('details', 'tree-section');
+        const sectionScope = s.id ? {section: s.id} : {area: 'frameworks', framework: s.title};
+        if (s.id) sub.dataset.section = s.id; else sub.dataset.framework = s.title;
+        const subSummary = el('summary', 'tree-section-title', s.title);
+        subSummary.append(countLabel(sectionScope));
+        sub.append(subSummary, directoryLink('小节概览', sectionScope, 'tree-overview', 'section'));
         for (const item of s.items) {
-          const link = a(item.title, detailURL(item), 'tree-topic');
+          const entryScope = item.type === 'implementation' ? {impl: item.id} : {ref: item.id};
+          const link = directoryLink(item.title, entryScope, 'tree-topic');
           link.dataset.entry = item.type + ':' + item.id;
           sub.append(link);
         }
@@ -89,18 +130,38 @@
       }
       host.append(group);
     }
-    host.append(a('学习路线', {view: 'paths'}, 'tree-overview'), a('工程 Issues', {view: 'questions', kind: 'case'}, 'tree-overview'), a('全部问答', {view: 'questions', kind: 'question'}, 'tree-overview'));
+    host.append(a('学习路线', {view: 'paths'}, 'tree-overview'));
   }
   function tree(host) {directory(host);}
   function updateTree(item) {
-    const area = current.get('chapter') || current.get('area') || (item?.type === 'implementation' ? 'frameworks' : item?.type === 'topic' ? item.chapter : graph.lookup.get('topic:' + item?.topics?.[0])?.chapter);
-    const selected = item?.type === 'implementation' ? 'implementation:' + item.id : item?.type === 'topic' ? 'topic:' + item.id : current.get('ref') ? 'topic:' + current.get('ref') : '';
-    document.querySelectorAll('.tree-group').forEach(group => {if (group.dataset.area === area) group.open = true;});
-    document.querySelectorAll('.tree-group [data-entry]').forEach(link => {
-      if (link.dataset.entry === selected) {
-        link.setAttribute('aria-current', 'page');
-        link.closest('.tree-section').open = true;
-      } else link.removeAttribute('aria-current');
+    const context = scope(item), mode = activeMode();
+    const key = value => JSON.stringify(graph.normalizeScope(value));
+    const currentKey = key(context);
+    const loaded = mode === 'questions' && current.get('review') ? reviewState().state : undefined;
+    const candidates = mode === 'map' ? [] : filtered(mode === 'questions' ? graph.items.filter(x => ['case','question'].includes(x.type)) : graph.items, loaded, {}, current.get('view') === mode ? current : C.route(C.url(listState(mode))));
+    function count(raw) {
+      const selection = graph.normalizeScope(raw);
+      if (mode === 'map') return graph.entries.filter(x => (selection.area === 'frameworks' ? x.type === 'implementation' : selection.area ? x.type === 'topic' : ['topic','implementation'].includes(x.type)) && graph.inScope(x, selection)).length;
+      return candidates.filter(x => graph.inScope(x, selection)).length;
+    }
+    const modeLabel = mode === 'questions' ? 'Issues' : mode === 'library' ? '搜索' : '知识';
+    document.querySelectorAll('[data-directory-scope]').forEach(link => {
+      const raw = JSON.parse(link.dataset.directoryScope), role = link.dataset.directoryRole;
+      const label = role === 'root' ? (mode === 'library' ? '全库搜索' : '全部' + modeLabel) : role === 'chapter' ? '本章' + modeLabel : role === 'section' ? '本节' + modeLabel : link.dataset.directoryLabel;
+      link.href = C.url(scopedRoute(mode, raw));
+      link.replaceChildren(el('span', 'tree-label', label));
+      if (mode !== 'map' && role === 'entry') link.append(el('span', 'tree-entry-count', String(count(raw))));
+      if (key(raw) === currentKey) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
+    });
+    document.querySelectorAll('[data-count-scope]').forEach(node => {
+      const raw = JSON.parse(node.dataset.countScope);
+      node.textContent = String(count(raw));
+    });
+    document.querySelectorAll('.tree-group, .directory-group').forEach(group => {
+      if (group.dataset.area === context.area) group.open = true;
+      for (const sub of group.querySelectorAll('.tree-section')) {
+        if ((context.section && sub.dataset.section === context.section) || (context.framework && sub.dataset.framework === context.framework)) sub.open = true;
+      }
     });
   }
   function renderHome() {
@@ -122,8 +183,8 @@
   }
   function renderChapter(id) {
     const chapter = graph.chapters.get(id); if (!chapter) return missing();
-    const host = $('chapter'); host.replaceChildren(); head(host, chapter.title, chapter.description);
-    if (id === 'frameworks') {for (const group of chapterGroups(chapter)) {const section = el('section', 'topic-section'); sectionHead(section, group.title); group.items.forEach(x => section.append(row(x, {summary: true}))); host.append(section);} return;}
+    const host = $('chapter'); host.replaceChildren(); scopeHeading(host, 'map'); head(host, chapter.title, chapter.description);
+    if (id === 'frameworks') {for (const group of chapterGroups(chapter)) {if (current.get('framework') && group.title !== current.get('framework')) continue; const section = el('section', 'topic-section'); sectionHead(section, group.title); group.items.forEach(x => section.append(row(x, {summary: true}))); host.append(section);} return;}
     if (!chapter.sections.length) {host.append(el('p', 'caption', '待补充')); return;}
     const selected = current.get('section');
     if (selected && !chapter.sections.some(s => s.id === selected)) return missing();
@@ -137,7 +198,7 @@
         const fold = el('details'); fold.open = true; fold.append(el('summary', '', '框架实现 / ' + implementations.length)); implementations.forEach(x => fold.append(row(x))); section.append(fold);
       }
       if (problems.length) {
-        const fold = el('details'); fold.open = true; fold.append(el('summary', '', 'Issues 与问答 / ' + problems.length)); const cases = problems.filter(x => x.type === 'case'), questions = problems.filter(x => x.type === 'question'); cases.forEach(x => fold.append(row(x))); questions.slice(0, 4).forEach(x => fold.append(row(x))); fold.append(a('查看全部问题', {view: 'questions', area: id, section: s.id}, 'more')); section.append(fold);
+        const fold = el('details'); fold.open = true; fold.append(el('summary', '', 'Issues 与问答 / ' + problems.length)); const cases = problems.filter(x => x.type === 'case'), questions = problems.filter(x => x.type === 'question'); cases.forEach(x => fold.append(row(x, {context: true}))); questions.slice(0, 4).forEach(x => fold.append(row(x, {context: true}))); fold.append(a('查看全部问题', {view: 'questions', area: id, section: s.id}, 'more')); section.append(fold);
       }
       host.append(section);
     }
@@ -148,37 +209,37 @@
     if (result.error) notice('复习记录暂不可读。未覆盖原记录\uff1b请先导出备份。');
     return result;
   }
-  function scopeHeading(host) {
-    const p = current, topic = graph.lookup.get('topic:' + p.get('ref'));
-    const chapter = graph.chapters.get(p.get('area'));
-    const section = graph.sections.get(p.get('section'));
-    const strip = el('nav', 'scope-heading'); strip.setAttribute('aria-label', '当前筛选范围');
-    strip.append(el('span', 'caption', '范围'), a('全部知识', {...values(p), area: '', section: '', ref: '', page: ''}));
-    if (chapter) strip.append(el('span', '', '/'), a(chapter.title, {...values(p), section: '', ref: '', page: ''}));
-    if (section) strip.append(el('span', '', '/'), a(section.title, {...values(p), ref: '', page: ''}));
-    if (topic) strip.append(el('span', '', '/'), a(topic.title, {topic: topic.id}));
+  function appendScopeLinks(strip, mode, context) {
+    const nodes = [[mode === 'map' ? '知识库' : mode === 'questions' ? '全部 Issues' : '全库搜索', {}]];
+    if (context.area) nodes.push([graph.chapters.get(context.area).title, {area: context.area}]);
+    if (context.section) nodes.push([graph.sections.get(context.section).title, {section: context.section}]);
+    if (context.framework) nodes.push([context.framework, {framework: context.framework}]);
+    if (context.ref) nodes.push([graph.lookup.get('topic:' + context.ref).title, {ref: context.ref}]);
+    if (context.impl) nodes.push([graph.lookup.get('implementation:' + context.impl).title, {impl: context.impl}]);
+    nodes.forEach(([label, raw], i) => {
+      if (i) strip.append(el('span', 'caption', '/'));
+      const link = a(label, scopedRoute(mode, raw)); if (i === nodes.length - 1) link.setAttribute('aria-current', 'page'); strip.append(link);
+    });
+  }
+  function scopeHeading(host, mode = activeMode()) {
+    const strip = el('nav', 'scope-heading'); strip.setAttribute('aria-label', '当前目录范围');
+    appendScopeLinks(strip, mode, scope());
     host.append(strip);
   }
   function filters(host, kind) {
-    scopeHeading(host);
-    const form = el('div', 'filters'); const p = values(current);
-    const set = (key, value) => {const next = {...p, [key]: value, page: ''}; if (key === 'area') next.section = ''; if (key === 'area' || key === 'section') next.ref = ''; save(next, true, false);};
-    form.append(field('章节', [['', '全部'], ...data.chapters.map(c => [c.id, c.title])], p.area, v => set('area', v), 'area'));
-    const sections = [...graph.sections.values()].filter(s => !p.area || s.chapter === p.area);
-    form.append(field('小节', [['', '全部'], ...sections.map(s => [s.id, s.title])], p.section, v => set('section', v), 'section'));
+    scopeHeading(host, kind);
+    const form = el('div', 'filters'), p = values(current);
+    const set = (key, value) => save({...p, [key]: value, page: ''}, true, false);
     if (kind === 'questions') {
-      form.append(field('类型', [['', '全部'], ['question', '问答'], ['case', 'Issue']], p.kind, v => set('kind', v), 'kind'));
       form.append(field('难度', [['', '全部'], ['基础', '基础'], ['进阶', '进阶']], p.level, v => set('level', v), 'level'));
       form.append(field('复习', [['', '全部'], ['due', '待复习'], ['weak', '需巩固'], ['bookmarked', '收藏'], ['new', '未自评']], p.review, v => set('review', v), 'review'));
     } else form.append(field('类型', [['', '全部'], ...Object.entries(labels)], p.kind, v => set('kind', v), 'kind'));
     host.append(form);
   }
-  function filtered(items, progress) {
-    const p = current;
+  function filtered(items, progress, context = scope(), p = current) {
     return graph.search(items, p.get('q') || '').filter(x => {
       if (p.get('kind') && x.type !== p.get('kind')) return false;
-      if (!graph.inChapter(x, p.get('area')) || !graph.inSection(x, p.get('section'))) return false;
-      if (p.get('ref') && !graph.topicsOf(x).includes(p.get('ref'))) return false;
+      if (!graph.inScope(x, context)) return false;
       if (p.get('level') && x.level !== p.get('level')) return false;
       const mode = p.get('review'), record = progress?.records[x.id] || {};
       if (mode && x.type !== 'question') return false;
@@ -194,7 +255,7 @@
     const page = Math.min(pages, Math.max(1, Math.floor(Number(current.get('page'))) || 1));
     host.append(el('p', 'count', items.length + ' 项结果 / ' + page + ' · ' + pages));
     if (!items.length) host.append(el('p', 'empty', '没有匹配内容。可以减少关键词或放宽筛选。'));
-    items.slice((page - 1) * size, page * size).forEach(x => host.append(row(x, {summary: true})));
+    items.slice((page - 1) * size, page * size).forEach(x => host.append(row(x, {summary: true, fromList: true})));
     const pager = el('nav', 'pager'); pager.setAttribute('aria-label', '分页');
     if (page > 1) pager.append(a('上一页', {...values(current), page: page - 1}));
     if (page < pages) pager.append(a('下一页', {...values(current), page: page + 1})); host.append(pager);
@@ -305,13 +366,11 @@
     // The article owns its figures. Navigation discards the entire previous subtree.
     article.replaceChildren(); $('detail-title').textContent = item.title; $('detail-type').textContent = labels[type] + (item.code ? ' / ' + item.code : item.framework ? ' / ' + item.framework : '');
     $('detail-summary').textContent = type === 'question' ? item.chapter + ' / ' + item.level : item.summary;
-    const bc = $('breadcrumbs'); bc.replaceChildren(a('知识库', {}));
-    const topic = type === 'topic' ? item : graph.lookup.get('topic:' + item.topics?.[0]);
-    if (topic) {
-      bc.append(el('span', '', '/'), a(graph.chapters.get(topic.chapter).title, {chapter: topic.chapter}));
-      const section = sectionOf(topic); if (section) bc.append(el('span', '', '/'), a(section.title, {chapter: topic.chapter, section: section.id}));
-    }
-    if (type === 'question' || type === 'case') bc.append(a('返回问题列表', lastList, 'back'));
+    const bc = $('breadcrumbs'); bc.replaceChildren();
+    appendScopeLinks(bc, activeMode(), scope(item));
+    const origin = current.get('from'), back = current.get('back');
+    if (['questions','library'].includes(origin) && back?.startsWith('#') && C.route(back).get('view') === origin) bc.append(a(origin === 'library' ? '返回搜索结果' : '返回问题列表', back, 'back'));
+    else if (type === 'question' || type === 'case') bc.append(a('返回关联问题', scopedRoute('questions', scope(item), false), 'back'));
     const req = $('prerequisites'); req.replaceChildren(); const pre = type === 'topic' ? (meta.prerequisites?.[id] || []) : [];
     req.hidden = !pre.length; if (pre.length) {req.append(el('span', 'caption', '阅读前可先看')); pre.forEach(id => req.append(a(graph.lookup.get('topic:' + id).title, {topic: id})));}
     if (type === 'question') {
@@ -328,15 +387,15 @@
     const linked = graph.related(item), docs = linked.filter(x => !['case', 'question'].includes(x.type)), problems = linked.filter(x => ['case', 'question'].includes(x.type));
     if (docs.length) {sectionHead(related, '相关文档'); docs.forEach(x => related.append(row(x)));}
     const cases = problems.filter(x => x.type === 'case'), questions = problems.filter(x => x.type === 'question');
-    if (cases.length) {sectionHead(related, '相关 Issues'); cases.forEach(x => related.append(row(x)));}
-    if (questions.length) {sectionHead(related, '关联问答'); questions.slice(0, 6).forEach(x => related.append(row(x)));}
-    if (type === 'topic' && problems.length) related.append(a('查看全部 ' + problems.length + ' 个关联问题', {view: 'questions', ref: id}, 'more'));
+    if (cases.length) {sectionHead(related, '相关 Issues'); cases.forEach(x => related.append(row(x, {context: true})));}
+    if (questions.length) {sectionHead(related, '关联问答'); questions.slice(0, 6).forEach(x => related.append(row(x, {context: true})));}
+    if (type === 'topic' && problems.length) related.append(a('查看全部 ' + problems.length + ' 个关联问题', scopedRoute('questions', {ref: id}, false), 'more'));
     if (type === 'topic') {
       const order = graph.chapters.get(item.chapter).sections.flatMap(s => s.topics), pos = order.indexOf(id), pager = el('nav', 'pager');
       if (pos > 0) pager.append(a('上一篇\uff1a' + graph.lookup.get('topic:' + order[pos - 1]).title, {topic: order[pos - 1]}));
       if (pos < order.length - 1) pager.append(a('下一篇\uff1a' + graph.lookup.get('topic:' + order[pos + 1]).title, {topic: order[pos + 1]})); related.append(pager);
     }
-    renderReview(item); toc(article, item); updateTree(item);
+    renderReview(item); toc(article, item);
     if (type !== 'question') renderDiagrams(article, renderId);
     if (window.MathJax?.typesetPromise) window.MathJax.typesetPromise([article]).catch(() => {});
     return item;
@@ -349,7 +408,7 @@
     if (current.has('category') && current.get('category') !== 'all') current.set('kind', current.get('category'));
     if (current.has('q') && /^\d+$/.test(current.get('q')) && !current.has('view')) current.set('question', 'Q' + current.get('q').padStart(3, '0'));
     let view = current.get('view'), title = 'RL Infra', detail = null;
-    if (view === 'questions') {lastList = location.hash; renderQuestions();}
+    if (view === 'questions') renderQuestions();
     else if (view === 'library') renderLibrary();
     else if (view === 'paths') renderPaths();
     else if (['topic', 'case', 'implementation', 'question'].some(k => current.has(k))) {
@@ -359,8 +418,7 @@
     else {view = 'home'; renderHome();}
     reveal(view, scroll); updateTree(detail); document.title = title;
     const context = scope(detail);
-    document.querySelector('[data-nav="map"]').href = C.url(context.ref ? {topic: context.ref} : context.area ? {chapter: context.area, section: context.section} : {});
-    for (const mode of ['questions', 'library']) document.querySelector('[data-nav="' + mode + '"]').href = C.url({view: mode, ...context});
+    for (const mode of ['map', 'questions', 'library']) document.querySelector('[data-nav="' + mode + '"]').href = C.url(scopedRoute(mode, context));
     if (view === 'detail' && current.get('anchor')) {
       const anchor = document.getElementById(current.get('anchor')); if (anchor && $('article').contains(anchor)) {
         const parentDetails = anchor.closest('details'); if (parentDetails) parentDetails.open = true; anchor.scrollIntoView();
@@ -368,7 +426,8 @@
     }
   }
   function search(replace) {
-    const target = current.get('view') === 'questions' ? {...values(current), q: $('search').value.trim(), page: ''} : {view: 'library', ...scope(['topic','case','implementation','question'].map(k => graph.lookup.get(k + ':' + current.get(k))).find(Boolean)), q: $('search').value.trim()};
+    const mode = activeMode() === 'questions' ? 'questions' : 'library';
+    const target = {...scopedRoute(mode, scope()), q: $('search').value.trim(), page: ''};
     save(target, replace, false);
   }
   tree($('chapter-list')); tree($('mobile-tree'));

@@ -32,4 +32,21 @@ test('Review writes preserve other records, drafts and legacy format',()=>{
 });
 test('Import validates first and never replaces existing local records',()=>{assert.throws(()=>M.validateProgress({version:1,records:{999:{}}},new Set([1])));assert.throws(()=>M.validateProgress({version:1,records:[]}));const a={version:1,records:{1:M.blankRecord()}},b={version:1,records:{1:{...M.blankRecord(),note:'conflict'},2:M.blankRecord()}};const r=M.mergeProgress(a,b);assert.equal(r.added,1);assert.equal(r.conflicts,1);assert.equal(r.state.records[1].note,'');});
 test('Storage read failure cannot be mistaken for empty valid storage',()=>{const st={getItem:()=>'{broken',setItem:()=>assert.fail('must not overwrite')};assert.ok(M.readProgress(st).error);assert.throws(()=>M.saveRecord(st,1,{rating:'good'},new Set([1])));});
+test('Shared directory scope resolves hierarchy and framework-linked issues',()=>{
+ const data=JSON.parse(fs.readFileSync('knowledge/catalog.json','utf8'));
+ const bank=JSON.parse(fs.readFileSync('quiz/data/questions.json','utf8'));
+ const graph=M.index({...data,question_bank:bank.questions});
+ const tp=graph.lookup.get('topic:tp-matrix-communication');
+ assert.deepEqual(graph.resolveScope({ref:tp.id}),{area:'parallel',section:'parallel-2',ref:tp.id});
+ assert.deepEqual(graph.resolveScope({section:'parallel-2'}),{area:'parallel',section:'parallel-2'});
+ const impl=graph.lookup.get('implementation:megatron-parallel-groups');
+ const context=graph.resolveScope({},impl);
+ assert.equal(context.area,'frameworks');assert.equal(context.impl,impl.id);
+ assert.ok(graph.inScope(tp,context));assert.ok(graph.inScope(impl,context));
+ assert.ok(!graph.inScope(graph.lookup.get('topic:policy-gradient'),context));
+ const related=graph.questions.find(q=>graph.topicsOf(q).includes(tp.id));
+ assert.ok(related);assert.ok(graph.inScope(related,{ref:tp.id}));
+ assert.deepEqual(graph.resolveScope({ref:tp.id},related),graph.resolveScope({ref:tp.id}));
+ assert.deepEqual(graph.resolveScope({ref:'unknown'}),{});
+});
 console.log(`Mechanism checks passed: ${checks}`);

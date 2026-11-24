@@ -44,6 +44,36 @@
     function inSection(item, id) {
       return !id || topicsOf(item).some(t => topicSection.get(t) === id);
     }
+    const implementations = entries.filter(x => x.type === 'implementation');
+    const frameworkNames = new Set(implementations.map(x => x.framework));
+    function normalizeScope(raw = {}) {
+      const impl = lookup.get('implementation:' + raw.impl);
+      if (impl) return {area: 'frameworks', framework: impl.framework, impl: impl.id};
+      const topic = lookup.get('topic:' + raw.ref);
+      if (topic) return {area: topic.chapter, section: topicSection.get(topic.id), ref: topic.id};
+      if (frameworkNames.has(raw.framework)) return {area: 'frameworks', framework: raw.framework};
+      const section = sections.get(raw.section);
+      if (section) return {area: section.chapter, section: section.id};
+      return chapters.has(raw.area) ? {area: raw.area} : {};
+    }
+    function inScope(item, raw = {}) {
+      const scope = normalizeScope(raw);
+      if (scope.area === 'frameworks') {
+        const selected = implementations.filter(x => (!scope.impl || x.id === scope.impl) && (!scope.framework || x.framework === scope.framework));
+        if (item.type === 'implementation') return selected.some(x => x.id === item.id);
+        const relatedTopics = new Set(selected.flatMap(topicsOf));
+        return topicsOf(item).some(t => relatedTopics.has(t)) || (item.type === 'case' && selected.some(x => (x.cases || []).includes(item.id)));
+      }
+      return (!scope.ref || topicsOf(item).includes(scope.ref)) && inChapter(item, scope.area) && inSection(item, scope.section);
+    }
+    function resolveScope(raw = {}, item) {
+      const preferred = normalizeScope(raw);
+      if (!item) return preferred;
+      if (item.type === 'topic') return normalizeScope({ref: item.id});
+      if (item.type === 'implementation') return normalizeScope({impl: item.id});
+      if (preferred.area && inScope(item, preferred)) return preferred;
+      return normalizeScope({ref: topicsOf(item)[0]});
+    }
     function related(item) {
       const selected = new Map();
       const add = x => { if (x && key(x) !== key(item)) selected.set(key(x), x); };
@@ -61,7 +91,7 @@
       const words = normalized(query).trim().split(/\s+/).filter(Boolean);
       return itemsToSearch.filter(x => words.every(w => corpus.get(key(x)).includes(w)));
     }
-    return {chapters, sections, topicSection, entries, questions, items, lookup, topicsOf, inChapter, inSection, related, search};
+    return {chapters, sections, topicSection, entries, questions, items, lookup, topicsOf, inChapter, inSection, normalizeScope, resolveScope, inScope, related, search};
   }
   function blankRecord() { return {answer: '', layers: {}, note: '', rating: '', attempts: 0, streak: 0, due: null, bookmarked: false, history: []}; }
   function dateAfter(offset = 0, base = new Date()) {
