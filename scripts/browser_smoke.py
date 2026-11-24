@@ -81,6 +81,14 @@ def main():
             for fragment in ['#topic=tp-matrix-communication','#topic=pp-pipeline-bubble','#question=Q081','#topic=tp-matrix-communication']:
                 go(fragment)
             check(not errors,'interactive article lifecycle regression')
+            go('#topic=tp-matrix-communication')
+            check(page.locator('#article img').first.evaluate('(e)=>e.complete && e.naturalWidth>0'),'TP static figure loads')
+            page.locator('[data-nav=questions]').click()
+            check('ref=tp-matrix-communication' in page.url,'topic scope survives Issues navigation')
+            page.locator('[data-nav=library]').click()
+            check('ref=tp-matrix-communication' in page.url,'topic scope survives search navigation')
+            page.locator('[data-nav=map]').click()
+            expect(page.locator('#detail-title')).to_have_text(next(t for k,i,t in entries if i=='tp-matrix-communication'))
             go('#view=questions&kind=question')
             check('224' in page.locator('#questions .count').inner_text(),'question filter includes all 224')
             page.locator('#search').fill('Q081')
@@ -110,6 +118,7 @@ def main():
             page.locator('#questions input[type=file]').set_input_files({'name':'invalid.json','mimeType':'application/json','buffer':json.dumps(incoming).encode()})
             page.wait_for_timeout(80)
             check(page.evaluate('(key)=>JSON.parse(localStorage.getItem(key))',KEY)==stored,'invalid import is atomic and does not change stored data')
+            page.locator('.review-panel summary').click()
             with page.expect_download() as download_info:
                 page.locator('#questions .review-tools button').first.click()
             download_info.value.save_as(args.output/'review-roundtrip.json')

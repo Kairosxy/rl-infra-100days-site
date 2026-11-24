@@ -40,20 +40,25 @@
     return link;
   }
   function sectionItems(section) {return graph.items.filter(item => graph.inSection(item, section.id));}
+  function scope(item) {
+    const topic = item?.type === 'topic' ? item : graph.lookup.get('topic:' + item?.topics?.[0]);
+    return {area: current.get('area') || current.get('chapter') || topic?.chapter || '', section: current.get('section') || (topic ? graph.topicSection.get(topic.id) : '') || '', ref: current.get('ref') || (item?.type === 'topic' ? item.id : '')};
+  }
   function reveal(view, scroll) {
     document.querySelectorAll('.view').forEach(v => {v.hidden = v.id !== view;});
     $('mobile-directory').close();
     document.querySelectorAll('[data-nav]').forEach(n => {
-      const active = (n.dataset.nav === 'map' && ['home', 'chapter', 'detail'].includes(view)) || n.dataset.nav === view;
+      const detailKind = current.has('case') || current.has('question');
+      const active = (n.dataset.nav === 'map' && (['home', 'chapter'].includes(view) || (view === 'detail' && !detailKind))) || (n.dataset.nav === 'questions' && view === 'detail' && detailKind) || n.dataset.nav === view;
       if (active) n.setAttribute('aria-current', 'page'); else n.removeAttribute('aria-current');
     });
     if (scroll) window.scrollTo({top: 0, behavior: 'instant'});
   }
   function tree(host) {
     host.replaceChildren();
-    for (const chapter of data.chapters) {
+    for (const [i, chapter] of data.chapters.entries()) {
       const group = el('details', 'tree-group'); group.dataset.area = chapter.id;
-      const summary = el('summary', '', chapter.title); group.append(summary, a('概览', {chapter: chapter.id}, 'tree-overview'));
+      const summary = el('summary', '', (i + 1) + '. ' + chapter.title); group.append(summary, a('概览', {chapter: chapter.id}, 'tree-overview'));
       for (const section of chapter.sections || []) {
         const sub = el('div', 'tree-section'); sub.append(a(section.title, {chapter: chapter.id, section: section.id}, 'tree-section-title'));
         for (const id of section.topics) {
@@ -62,47 +67,40 @@
         }
         group.append(sub);
       }
+      if (chapter.id === 'frameworks') graph.entries.filter(x => x.type === 'implementation').forEach(x => group.append(a(x.title, detailURL(x), 'tree-topic')));
       host.append(group);
     }
   }
   function updateTree(item) {
-    const area = current.get('chapter') || current.get('area') || (item?.type === 'topic' ? item.chapter : graph.lookup.get('topic:' + item?.topics?.[0])?.chapter);
+    const area = current.get('chapter') || current.get('area') || (item?.type === 'implementation' ? 'frameworks' : item?.type === 'topic' ? item.chapter : graph.lookup.get('topic:' + item?.topics?.[0])?.chapter);
     document.querySelectorAll('.tree-group').forEach(group => {if (group.dataset.area === area) group.open = true;});
     document.querySelectorAll('[data-topic]').forEach(link => {
-      if (item?.type === 'topic' && link.dataset.topic === item.id) link.setAttribute('aria-current', 'page');
+      if (link.dataset.topic === (item?.type === 'topic' ? item.id : current.get('ref'))) link.setAttribute('aria-current', 'page');
       else link.removeAttribute('aria-current');
     });
   }
   function renderHome() {
     const host = $('home'); host.replaceChildren();
-    head(host, 'RL 训练系统', '算法、训练引擎、推理引擎与调度。按系统环节找内容\uff0c也可以从具体问题进入。');
-    host.append(el('p', 'inventory', graph.entries.length + ' 篇文档 / ' + graph.questions.length + ' 道问答 / ' + graph.sections.size + ' 个专题'));
-    sectionHead(host, '知识目录');
+    head(host, 'RL Infra 技术手册');
     for (const [i, chapter] of data.chapters.entries()) {
-      const line = el('section', 'area-row');
-      line.append(el('span', 'index', String(i + 1).padStart(2, '0')), a(chapter.title, {chapter: chapter.id}, 'area-title'));
-      const desc = el('div'); desc.append(el('p', '', chapter.description));
-      const topics = graph.entries.filter(x => x.type === 'topic' && x.chapter === chapter.id), questions = graph.questions.filter(x => graph.inChapter(x, chapter.id));
-      desc.append(el('span', 'caption', topics.length + ' 篇知识 / ' + questions.length + ' 道关联题'));
-      const links = el('div', 'section-links'); (chapter.sections || []).forEach(s => links.append(a(s.title, {chapter: chapter.id, section: s.id}))); desc.append(links); line.append(desc); host.append(line);
+      const section = el('section', 'topic-section');
+      sectionHead(section, (i + 1) + '. ' + chapter.title);
+      if (chapter.id === 'frameworks') {
+        graph.entries.filter(x => x.type === 'implementation').forEach(x => section.append(row(x)));
+      } else if (!chapter.sections.length) {
+        section.append(el('p', 'caption', '待补充'));
+      } else for (const s of chapter.sections) {
+        const heading = el('h3'); heading.append(a(s.title, {chapter: chapter.id, section: s.id})); section.append(heading);
+        s.topics.forEach(id => section.append(row(graph.lookup.get('topic:' + id))));
+      }
+      host.append(section);
     }
-    sectionHead(host, '一次训练迭代');
-    const flow = el('ol', 'system-flow');
-    for (const stage of meta.system_flow || []) {
-      const li = el('li'); const link = a('', {topic: stage.topic}); link.append(el('strong', '', stage.title), el('span', '', stage.detail)); li.append(link); flow.append(li);
-    }
-    host.append(flow, el('p', 'caption', '更新后的权重返回 Rollout。数据依赖与资源条件满足时\uff0c部分阶段可重叠执行。'));
-    const cross = el('div', 'link-strip'); for (const [id, label] of [['parallel', '并行与通信'], ['async', '数据供给与版本'], ['diagnosis', '可观测与排障']]) cross.append(a(label, {chapter: id})); host.append(cross);
-    sectionHead(host, '阅读顺序');
-    for (const path of meta.paths || []) {
-      const group = el('details', 'learning-path'); group.append(el('summary', '', path.title), el('p', 'caption', path.goal));
-      const ol = el('ol'); path.topics.forEach(id => {const item = graph.lookup.get('topic:' + id); if (item) {const li = el('li'); li.append(a(item.title, {topic: id})); ol.append(li);}}); group.append(ol); host.append(group);
-    }
-
   }
   function renderChapter(id) {
     const chapter = graph.chapters.get(id); if (!chapter) return missing();
     const host = $('chapter'); host.replaceChildren(); head(host, chapter.title, chapter.description);
+    if (id === 'frameworks') {graph.entries.filter(x => x.type === 'implementation').forEach(x => host.append(row(x, {summary: true}))); return;}
+    if (!chapter.sections.length) {host.append(el('p', 'caption', '待补充')); return;}
     const selected = current.get('section');
     if (selected && !chapter.sections.some(s => s.id === selected)) return missing();
     for (const s of chapter.sections || []) {
@@ -126,12 +124,24 @@
     if (result.error) notice('复习记录暂不可读。未覆盖原记录\uff1b请先导出备份。');
     return result;
   }
+  function scopeHeading(host) {
+    const p = current, topic = graph.lookup.get('topic:' + p.get('ref'));
+    const chapter = graph.chapters.get(p.get('area'));
+    const section = graph.sections.get(p.get('section'));
+    const strip = el('nav', 'scope-heading'); strip.setAttribute('aria-label', '当前筛选范围');
+    strip.append(el('span', 'caption', '范围'), a('全部知识', {...values(p), area: '', section: '', ref: '', page: ''}));
+    if (chapter) strip.append(el('span', '', '/'), a(chapter.title, {...values(p), section: '', ref: '', page: ''}));
+    if (section) strip.append(el('span', '', '/'), a(section.title, {...values(p), ref: '', page: ''}));
+    if (topic) strip.append(el('span', '', '/'), a(topic.title, {topic: topic.id}));
+    host.append(strip);
+  }
   function filters(host, kind) {
+    scopeHeading(host);
     const form = el('div', 'filters'); const p = values(current);
-    const set = (key, value) => {const next = {...p, [key]: value, page: ''}; if (key === 'area') next.section = ''; save(next, true, false);};
-    form.append(field('领域', [['', '全部'], ...data.chapters.map(c => [c.id, c.title])], p.area, v => set('area', v), 'area'));
+    const set = (key, value) => {const next = {...p, [key]: value, page: ''}; if (key === 'area') next.section = ''; if (key === 'area' || key === 'section') next.ref = ''; save(next, true, false);};
+    form.append(field('章节', [['', '全部'], ...data.chapters.map(c => [c.id, c.title])], p.area, v => set('area', v), 'area'));
     const sections = [...graph.sections.values()].filter(s => !p.area || s.chapter === p.area);
-    form.append(field('专题', [['', '全部'], ...sections.map(s => [s.id, s.title])], p.section, v => set('section', v), 'section'));
+    form.append(field('小节', [['', '全部'], ...sections.map(s => [s.id, s.title])], p.section, v => set('section', v), 'section'));
     if (kind === 'questions') {
       form.append(field('类型', [['', '全部'], ['question', '问答'], ['case', 'Issue']], p.kind, v => set('kind', v), 'kind'));
       form.append(field('难度', [['', '全部'], ['基础', '基础'], ['进阶', '进阶']], p.level, v => set('level', v), 'level'));
@@ -196,12 +206,13 @@
   function renderQuestions() {
     const host = $('questions'); host.replaceChildren();
     head(host, 'Issues', data.cases.length + ' 个工程问题 · ' + graph.questions.length + ' 道关联问答');
-    const loaded = reviewState(); progressControls(host, loaded); filters(host, 'questions');
-    if (current.get('ref')) host.append(a('取消知识点限定', {...values(current), ref: ''}, 'more'));
+    const loaded = reviewState(); filters(host, 'questions');
+    const review = el('details', 'review-panel'); review.append(el('summary', '', '学习记录')); progressControls(review, loaded); host.append(review);
+    
     paginate(host, filtered(graph.items.filter(x => ['case', 'question'].includes(x.type)), loaded.state));
   }
   function renderLibrary() {
-    const host = $('library'); host.replaceChildren(); head(host, '检索', '搜索标题、正文、完整答案和追问。'); filters(host, 'library'); paginate(host, filtered(graph.items));
+    const host = $('library'); host.replaceChildren(); head(host, '搜索'); filters(host, 'library'); paginate(host, filtered(graph.items));
   }
   function paragraphs(host, text) {
     String(text || '').split(/\n\s*\n/).forEach(part => host.append(el('p', 'source-text', part.replace(/\\([|\[\]_])/g, '$1'))));
@@ -320,6 +331,9 @@
     } else if (current.has('chapter')) {if (!graph.chapters.has(current.get('chapter'))) return missing(); if (current.get('section') && !graph.chapters.get(current.get('chapter')).sections.some(s => s.id === current.get('section'))) return missing(); view = 'chapter'; renderChapter(current.get('chapter'));}
     else {view = 'home'; renderHome();}
     reveal(view, scroll); updateTree(detail); document.title = title;
+    const context = scope(detail);
+    document.querySelector('[data-nav="map"]').href = C.url(context.ref ? {topic: context.ref} : context.area ? {chapter: context.area, section: context.section} : {});
+    for (const mode of ['questions', 'library']) document.querySelector('[data-nav="' + mode + '"]').href = C.url({view: mode, ...context});
     if (view === 'detail' && current.get('anchor')) {
       const anchor = document.getElementById(current.get('anchor')); if (anchor && $('article').contains(anchor)) {
         const parentDetails = anchor.closest('details'); if (parentDetails) parentDetails.open = true; anchor.scrollIntoView();
@@ -327,7 +341,7 @@
     }
   }
   function search(replace) {
-    const target = current.get('view') === 'questions' ? {...values(current), q: $('search').value.trim(), page: ''} : {view: 'library', q: $('search').value.trim()};
+    const target = current.get('view') === 'questions' ? {...values(current), q: $('search').value.trim(), page: ''} : {view: 'library', ...scope(['topic','case','implementation','question'].map(k => graph.lookup.get(k + ':' + current.get(k))).find(Boolean)), q: $('search').value.trim()};
     save(target, replace, false);
   }
   tree($('chapter-list')); tree($('mobile-tree'));

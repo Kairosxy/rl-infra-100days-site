@@ -52,8 +52,10 @@ def render_markdown(source: Path, root: Path, drop_title: bool = True) -> str:
 
     def inline_image(match: re.Match[str]) -> str:
         referenced = local_reference(match.group(2), source, root)
-        if referenced is None or not referenced.is_file():
+        if referenced is None:
             return match.group(0)
+        if not referenced.is_file():
+            raise FileNotFoundError(f'Missing image in {source}: {referenced}')
         mime = mimetypes.guess_type(referenced.name)[0]
         if mime not in ("image/svg+xml", "image/png", "image/jpeg", "image/webp"):
             return match.group(0)
