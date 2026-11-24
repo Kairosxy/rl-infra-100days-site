@@ -40,11 +40,16 @@
     return link;
   }
   function sectionItems(section) {return graph.items.filter(item => graph.inSection(item, section.id));}
+  function scope(item) {
+    const topic = item?.type === 'topic' ? item : graph.lookup.get('topic:' + item?.topics?.[0]);
+    return {area: current.get('area') || current.get('chapter') || topic?.chapter || '', section: current.get('section') || (topic ? graph.topicSection.get(topic.id) : '') || '', ref: current.get('ref') || (item?.type === 'topic' ? item.id : '')};
+  }
   function reveal(view, scroll) {
     document.querySelectorAll('.view').forEach(v => {v.hidden = v.id !== view;});
     $('mobile-directory').close();
     document.querySelectorAll('[data-nav]').forEach(n => {
-      const active = (n.dataset.nav === 'map' && ['home', 'chapter', 'detail'].includes(view)) || n.dataset.nav === view;
+      const detailKind = current.has('case') || current.has('question');
+      const active = (n.dataset.nav === 'map' && (['home', 'chapter'].includes(view) || (view === 'detail' && !detailKind))) || (n.dataset.nav === 'questions' && view === 'detail' && detailKind) || n.dataset.nav === view;
       if (active) n.setAttribute('aria-current', 'page'); else n.removeAttribute('aria-current');
     });
     if (scroll) window.scrollTo({top: 0, behavior: 'instant'});
@@ -121,10 +126,10 @@
   }
   function filters(host, kind) {
     const form = el('div', 'filters'); const p = values(current);
-    const set = (key, value) => {const next = {...p, [key]: value, page: ''}; if (key === 'area') next.section = ''; save(next, true, false);};
-    form.append(field('领域', [['', '全部'], ...data.chapters.map(c => [c.id, c.title])], p.area, v => set('area', v), 'area'));
+    const set = (key, value) => {const next = {...p, [key]: value, page: ''}; if (key === 'area') next.section = ''; if (key === 'area' || key === 'section') next.ref = ''; save(next, true, false);};
+    form.append(field('章节', [['', '全部'], ...data.chapters.map(c => [c.id, c.title])], p.area, v => set('area', v), 'area'));
     const sections = [...graph.sections.values()].filter(s => !p.area || s.chapter === p.area);
-    form.append(field('专题', [['', '全部'], ...sections.map(s => [s.id, s.title])], p.section, v => set('section', v), 'section'));
+    form.append(field('小节', [['', '全部'], ...sections.map(s => [s.id, s.title])], p.section, v => set('section', v), 'section'));
     if (kind === 'questions') {
       form.append(field('类型', [['', '全部'], ['question', '问答'], ['case', 'Issue']], p.kind, v => set('kind', v), 'kind'));
       form.append(field('难度', [['', '全部'], ['基础', '基础'], ['进阶', '进阶']], p.level, v => set('level', v), 'level'));
@@ -313,6 +318,9 @@
     } else if (current.has('chapter')) {if (!graph.chapters.has(current.get('chapter'))) return missing(); if (current.get('section') && !graph.chapters.get(current.get('chapter')).sections.some(s => s.id === current.get('section'))) return missing(); view = 'chapter'; renderChapter(current.get('chapter'));}
     else {view = 'home'; renderHome();}
     reveal(view, scroll); updateTree(detail); document.title = title;
+    const context = scope(detail);
+    document.querySelector('[data-nav="map"]').href = C.url(context.ref ? {topic: context.ref} : context.area ? {chapter: context.area, section: context.section} : {});
+    for (const mode of ['questions', 'library']) document.querySelector('[data-nav="' + mode + '"]').href = C.url({view: mode, ...context});
     if (view === 'detail' && current.get('anchor')) {
       const anchor = document.getElementById(current.get('anchor')); if (anchor && $('article').contains(anchor)) {
         const parentDetails = anchor.closest('details'); if (parentDetails) parentDetails.open = true; anchor.scrollIntoView();
@@ -320,7 +328,7 @@
     }
   }
   function search(replace) {
-    const target = current.get('view') === 'questions' ? {...values(current), q: $('search').value.trim(), page: ''} : {view: 'library', q: $('search').value.trim()};
+    const target = current.get('view') === 'questions' ? {...values(current), q: $('search').value.trim(), page: ''} : {view: 'library', ...scope(['topic','case','implementation','question'].map(k => graph.lookup.get(k + ':' + current.get(k))).find(Boolean)), q: $('search').value.trim()};
     save(target, replace, false);
   }
   tree($('chapter-list')); tree($('mobile-tree'));
