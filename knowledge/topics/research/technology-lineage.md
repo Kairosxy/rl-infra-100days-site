@@ -88,7 +88,7 @@ Device Mesh/Process Group、多维并行组、显存/激活估算、批量与微
 
 **训练生命周期与优化器** · 模型从数据进入到参数保存经历什么？  
 Pretraining/SFT、Packing/动态 Token Batch、DataLoader、梯度累积、AdamW/Adafactor/Muon 等优化器家族、LR Schedule、梯度裁剪、Checkpoint/Reshard/异步保存。优化器不是并行策略。  
-阅读：[从 DataLoader 到 Optimizer Step](../parallel/training-update-lifecycle.md)（基础）
+阅读：[从 DataLoader 到 Optimizer Step](../parallel/training-update-lifecycle.md)（基础）；[SGD、AdamW 与优化器状态](../parallel/optimizer-state.md)（机制与 PyTorch v2.10.0 实现）
 
 ### 推理与 Serving
 

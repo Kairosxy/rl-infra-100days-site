@@ -110,7 +110,8 @@
           "id": "training-lifecycle",
           "title": "训练流程与优化器",
           "topics": [
-            "training-update-lifecycle"
+            "training-update-lifecycle",
+            "optimizer-state"
           ]
         },
         {
@@ -1173,6 +1174,30 @@
         "fsdp2-sharding"
       ],
       "source": "topics/parallel/training-update-lifecycle.md"
+    },
+    {
+      "id": "optimizer-state",
+      "title": "SGD、AdamW 与优化器状态",
+      "chapter": "parallel",
+      "summary": "从同一梯度序列推导 SGD、Adam 与 AdamW，理解动量、二阶矩、解耦衰减、状态显存及恢复边界。",
+      "recall": {
+        "question": "为什么当前梯度为零，AdamW 仍可能改变参数？",
+        "answer": "已存在的动量及独立 Weight Decay 都可能继续生效；显式零梯度与 grad=None 不等价。"
+      },
+      "keywords": [
+        "SGD",
+        "Adam",
+        "AdamW",
+        "momentum",
+        "weight decay",
+        "optimizer state",
+        "checkpoint"
+      ],
+      "cases": [],
+      "implementations": [
+        "fsdp2-sharding"
+      ],
+      "source": "topics/parallel/optimizer-state.md"
     },
     {
       "id": "autoregressive-serving",
@@ -2430,6 +2455,11 @@
       "date": "2026-11-24",
       "kind": "topic",
       "id": "distributed-fault-recovery"
+    },
+    {
+      "date": "2026-11-25",
+      "kind": "topic",
+      "id": "optimizer-state"
     }
   ]
 }
