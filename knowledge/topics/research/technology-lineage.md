@@ -112,7 +112,7 @@ Static/Continuous Batching、Chunked Prefill、Admission/Preemption、DP Attenti
 
 **投机解码** · 怎样减少串行 Target Forward 次数？  
 经典 Draft–Verify；独立小模型；N-gram/Suffix；Medusa/Native MTP；EAGLE 家族；并行 Draft（PARD、DFlash、DFlash2、DSpark）；动态 Draft 长度、Adaptive Verification、精确/近似验证。MTP 训练与 Draft 训练另连模型目标；方法支持按版本核验。  
-阅读：[投机解码：Draft、Verify 与技术分支](../serving/speculative-decoding.md)（基础）
+阅读：[投机解码：让大模型一次多走几步](../serving/speculative-decoding.md)（基础）
 
 **推理时计算与搜索** · 怎样用额外候选预算改善任务表现？  
 Best-of-N、Beam/Tree Search、Verifier Rerank、MCTS、Adaptive Compute、Reasoning Budget；与生成加速分开衡量。  

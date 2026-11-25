@@ -1303,9 +1303,9 @@
     },
     {
       "id": "speculative-decoding",
-      "title": "投机解码：Draft、Verify 与技术分支",
+      "title": "投机解码：让大模型一次多走几步",
       "chapter": "serving",
-      "summary": "解释精确投机采样、接受概率、Block draft、MTP/EAGLE/DFlash 的关系和收益上限。",
+      "summary": "从普通解码的串行依赖出发，解释 Draft 与 Target 的实际采样分布、精确验证与残差补采，推导接受率、接受长度和端到端成本。",
       "recall": {
         "question": "为什么 Draft 的接受率很高，端到端吞吐仍可能下降？",
         "answer": "每轮提交 Token 数要除以 Draft、Verify、KV 与调度成本；并发下验证宽度还可能损害吞吐。",
@@ -1318,7 +1318,11 @@
         "MTP",
         "EAGLE",
         "DFlash",
-        "acceptance"
+        "acceptance",
+        "greedy",
+        "residual sampling",
+        "accepted length",
+        "total variation"
       ],
       "cases": [],
       "implementations": [],
@@ -2430,6 +2434,11 @@
       "date": "2026-11-24",
       "kind": "topic",
       "id": "distributed-fault-recovery"
+    },
+    {
+      "date": "2026-11-25",
+      "kind": "topic",
+      "id": "speculative-decoding"
     }
   ]
 }

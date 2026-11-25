@@ -39,7 +39,8 @@
         "attention-context",
         "gpu-execution-memory",
         "autoregressive-serving",
-        "kv-scheduling"
+        "kv-scheduling",
+        "speculative-decoding"
       ]
     },
     {
