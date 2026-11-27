@@ -88,7 +88,7 @@ Device Mesh/Process Group、多维并行组、显存/激活估算、批量与微
 
 **训练生命周期与优化器** · 模型从数据进入到参数保存经历什么？  
 Pretraining/SFT、Packing/动态 Token Batch、DataLoader、梯度累积、AdamW/Adafactor/Muon 等优化器家族、LR Schedule、梯度裁剪、Checkpoint/Reshard/异步保存。优化器不是并行策略。  
-阅读：[从 DataLoader 到 Optimizer Step](../parallel/training-update-lifecycle.md)（基础）
+阅读：[从 DataLoader 到 Optimizer Step](../parallel/training-update-lifecycle.md)（基础）；[SGD、AdamW 与优化器状态](../parallel/optimizer-state.md)（机制与 PyTorch v2.10.0 实现）
 
 ### 推理与 Serving
 
@@ -112,7 +112,7 @@ Static/Continuous Batching、Chunked Prefill、Admission/Preemption、DP Attenti
 
 **投机解码** · 怎样减少串行 Target Forward 次数？  
 经典 Draft–Verify；独立小模型；N-gram/Suffix；Medusa/Native MTP；EAGLE 家族；并行 Draft（PARD、DFlash、DFlash2、DSpark）；动态 Draft 长度、Adaptive Verification、精确/近似验证。MTP 训练与 Draft 训练另连模型目标；方法支持按版本核验。  
-阅读：[投机解码：Draft、Verify 与技术分支](../serving/speculative-decoding.md)（基础）
+阅读：[投机解码：让大模型一次多走几步](../serving/speculative-decoding.md)（基础）
 
 **推理时计算与搜索** · 怎样用额外候选预算改善任务表现？  
 Best-of-N、Beam/Tree Search、Verifier Rerank、MCTS、Adaptive Compute、Reasoning Budget；与生成加速分开衡量。  
