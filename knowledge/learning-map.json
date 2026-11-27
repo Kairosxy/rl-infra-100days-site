@@ -66,6 +66,7 @@
         "gpu-network-topology",
         "distributed-collectives",
         "training-update-lifecycle",
+        "optimizer-state",
         "parallel-topology",
         "tp-matrix-communication",
         "pp-pipeline-bubble",
@@ -368,6 +369,9 @@
       "gradient-equivalence",
       "weight-publication",
       "distributed-collectives"
+    ],
+    "optimizer-state": [
+      "training-update-lifecycle"
     ]
   },
   "experiments": [
@@ -1219,6 +1223,7 @@
     "continuous-action-posttraining": "连续动作后训练",
     "long-horizon-credit": "长程信用分配",
     "parallel-environment-collection": "环境并行采集",
-    "distributed-fault-recovery": "分布式容错"
+    "distributed-fault-recovery": "分布式容错",
+    "optimizer-state": "优化器状态"
   }
 }

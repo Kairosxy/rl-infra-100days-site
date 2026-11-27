@@ -36,4 +36,4 @@ $$
 
 异步系统记录 policy version age，并结合 actual log-ratio、ESS、Clip/Mask Fraction 判断数据是否还能训练。版本年龄相同并不意味着策略分布距离相同；不能单独凭 staleness 数值决定所有 correction。
 
-继续阅读 [训推概率契约](../learner/logprob-contract.md)、[策略纠偏](../learner/policy-correction.md) 与 [异步 Rollout](../async/async-rollout.md)。参考：Sutton & Barto (2018), Ch.5；[IMPALA / V-trace](https://arxiv.org/abs/1802.01528)。
+继续阅读 [训推概率契约](../learner/logprob-contract.md)、[策略纠偏](../learner/policy-correction.md) 与 [异步 Rollout](../async/async-rollout.md)。参考：Sutton & Barto (2018), Ch.5；[IMPALA / V-trace](https://arxiv.org/abs/1802.01561)。

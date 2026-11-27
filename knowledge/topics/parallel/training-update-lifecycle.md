@@ -18,7 +18,7 @@
 
 ## Optimizer 与持久化
 
-SGD 更新 $w'=w-\eta g$；Adam 类方法维护一阶与二阶矩估计，使用偏差修正后的一阶矩除以二阶矩平方根与 epsilon。AdamW 的 Weight Decay 与自适应梯度更新解耦。
+SGD 更新 $w'=w-\eta g$；Adam 类方法维护一阶与二阶矩估计，使用偏差修正后的一阶矩除以二阶矩平方根与 epsilon。AdamW 的 Weight Decay 与自适应梯度更新解耦。具体推导、矩状态、零梯度与缺失梯度的区别见 [SGD、AdamW 与优化器状态](optimizer-state.md)。
 
 假设 BF16 参数、BF16 梯度、独立 FP32 master weight 和两个 FP32 moment，单参数理想载荷为 2+2+4+4+4=16 B；1B 参数约 16 GB。实际实现可能无 master weight、使用不同梯度 dtype、状态分片或延迟初始化，因此不可把 16 B 当成所有框架固定预算。
 
